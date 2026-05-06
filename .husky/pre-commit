@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Ejecutando pre-commit hooks (DataVital)..."
+
+echo "📝 Ejecutando lint-staged (Formateo y Linting)..."
+if ! npx lint-staged; then
+  echo "❌ Error en el formateo o linting. Revisa los errores arriba."
+  exit 1
+fi
+echo "✅ Formateo y linting correctos."
+
+echo "🔍 Verificando tipos (TypeScript)..."
+if ! npm run typecheck; then
+  echo "❌ Error de tipos detectado en el proyecto."
+  exit 1
+fi
+echo "✅ Verificación de tipos correcta."
+
+echo "🎉 Todo está en orden. Procediendo con el commit..."
