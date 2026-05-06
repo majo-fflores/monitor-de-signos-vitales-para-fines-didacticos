@@ -8,7 +8,7 @@ export function UserProfile() {
       </div>
       <div className="text-left hidden sm:block">
         <div className="text-sm font-semibold text-foreground leading-tight transition-colors duration-200">
-          Dr. Smith
+          Usuario
         </div>
         <div className="text-[11px] text-muted-foreground leading-none mt-0.5 font-medium transition-colors duration-200">
           Administrador

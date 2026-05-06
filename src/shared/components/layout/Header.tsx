@@ -2,7 +2,6 @@ import { Menu } from 'lucide-react';
 import { ArduinoStatus } from './ArduinoStatus';
 import { LiveClock } from './LiveClock';
 import { ThemeToggle } from './ThemeToggle';
-import { UserProfile } from './UserProfile';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -37,8 +36,6 @@ export function Header({ onMenuClick }: HeaderProps) {
           <LiveClock />
         </div>
         <ThemeToggle />
-        <div className="h-8 w-[1px] bg-border hidden sm:block"></div>
-        <UserProfile />
       </div>
     </header>
   );
