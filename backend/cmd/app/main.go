@@ -1,16 +1,23 @@
 package main
 
 import (
+	"backend/cmd/database"
+	"backend/internal/users"
 	"log"
 	"net/http"
-	"sist-inteligentes/cmd/database"
-	"sist-inteligentes/internal/users"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
 
 func main() {
+	// Cargar variables de entorno desde el archivo .env si existe
+	if err := godotenv.Load(); err != nil {
+		log.Println("Aviso: No se pudo cargar el archivo .env, usando variables del entorno del sistema")
+	}
+
 	// Inicializar Base de Datos
 	database.InitDB()
 
@@ -18,6 +25,11 @@ func main() {
 	if err := database.DB.AutoMigrate(&users.User{}); err != nil {
 		log.Fatalf("Error al realizar la auto-migración: %v", err)
 	}
+
+	// ─── ¡ACÁ TIENE QUE IR! ──────────────────────────────────────────
+	// Inicializar la capa de servicio de usuarios (fuera del bloque de error)
+	users.ServiceInstance = users.NewService(database.DB)
+	// ─────────────────────────────────────────────────────────────────
 
 	// Inicializar servidor Echo
 	e := echo.New()
@@ -33,13 +45,17 @@ func main() {
 		})
 	})
 
-	// Rutas de API para Usuarios
-	e.POST("/users", users.CreateUser)
-	e.GET("/users", users.GetUsers)
-	e.GET("/users/:id", users.GetUser)
+	// Rutas de API para Usuarios usando la función limpia
+	users.RegisterUserRoutes(e)
 
-	// Iniciar servidor en el puerto 8080
-	if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
+	// Iniciar servidor en el puerto configurado
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Servidor corriendo en el puerto: %s", port)
+	if err := e.Start(":" + port); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Error al iniciar el servidor: %v", err)
 	}
 }

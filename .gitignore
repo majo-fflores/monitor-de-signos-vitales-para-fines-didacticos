@@ -56,3 +56,4 @@ app.*.map.json
 /backend/*.db-journal
 /backend/*.db-shm
 /backend/*.db-wal
+/backend/.env
