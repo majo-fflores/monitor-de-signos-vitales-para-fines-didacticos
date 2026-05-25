@@ -62,6 +62,10 @@ dependencies:
   # Utilidad de espaciado
   gap: ^3.0.1
 
+  # Generación y visualización de PDF
+  pdf: ^3.10.8
+  printing: ^5.11.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

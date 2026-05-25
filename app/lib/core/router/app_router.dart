@@ -4,6 +4,8 @@ import '../../shared/widgets/layout/main_layout.dart';
 import '../../features/dashboard/views/dashboard_view.dart';
 import '../../features/alerts/views/alerts_view.dart';
 import '../../features/history/views/history_view.dart';
+import '../../features/history/views/pdf_preview_view.dart';
+import '../../shared/utils/report_pdf_helper.dart';
 import '../../features/settings/views/settings_view.dart';
 
 /// Configuración de ruteo de la aplicación utilizando GoRouter.
@@ -27,6 +29,15 @@ final GoRouter appRouter = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: HistoryView(),
           ),
+          routes: [
+            GoRoute(
+              path: 'preview-pdf',
+              builder: (context, state) {
+                final datos = state.extra as ReporteDatos;
+                return PdfPreviewView(datos: datos);
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: '/alertas',

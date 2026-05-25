@@ -133,59 +133,6 @@ class SettingsView extends ConsumerWidget {
               ],
             ),
           ),
-          const Gap(24),
-
-          // CONFIGURACIÓN DE CONEXIÓN (MOCK ENDPOINTS / GO BACKEND)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: theme.cardTheme.color,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.settings_ethernet,
-                      color: isDark ? Colors.cyanAccent : Colors.cyan,
-                    ),
-                    const Gap(10),
-                    Text(
-                      'Sincronización con Servidor Go',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const Gap(8),
-                Text(
-                  'El frontend se comunica con el servidor de Go mediante WebSockets y REST.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: subtitleColor,
-                  ),
-                ),
-                const Gap(16),
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                    const Gap(8),
-                    Text(
-                      'Modo Simulado Activo (Listo para producción en Go)',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -209,13 +156,21 @@ class SettingsView extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(icono, color: colorAcento, size: 20),
-                const Gap(8),
-                Text(titulo, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-              ],
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(icono, color: colorAcento, size: 20),
+                  const Gap(8),
+                  Expanded(
+                    child: Text(
+                      titulo,
+                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const Gap(16),
             Text(
               '${rangoActual.start.round()} - ${rangoActual.end.round()} $unidad',
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -257,13 +212,21 @@ class SettingsView extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(icono, color: colorAcento, size: 20),
-                const Gap(8),
-                Text(titulo, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-              ],
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(icono, color: colorAcento, size: 20),
+                  const Gap(8),
+                  Expanded(
+                    child: Text(
+                      titulo,
+                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const Gap(16),
             Text(
               '${valorActual.round()} $unidad',
               style: theme.textTheme.bodyMedium?.copyWith(

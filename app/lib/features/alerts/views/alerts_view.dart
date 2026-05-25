@@ -40,25 +40,27 @@ class AlertsView extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sistema de Alarmas Operativo',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.error,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sistema de Alarmas Operativo',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.error,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Monitoreando umbrales normales de salud y ambiente.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Monitoreando umbrales normales de salud y ambiente.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
