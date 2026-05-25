@@ -18,19 +18,27 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/',
-          builder: (BuildContext context, GoRouterState state) => const DashboardView(),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: DashboardView(),
+          ),
         ),
         GoRoute(
           path: '/historial',
-          builder: (BuildContext context, GoRouterState state) => const HistoryView(),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: HistoryView(),
+          ),
         ),
         GoRoute(
           path: '/alertas',
-          builder: (BuildContext context, GoRouterState state) => const AlertsView(),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: AlertsView(),
+          ),
         ),
         GoRoute(
           path: '/configuracion',
-          builder: (BuildContext context, GoRouterState state) => const SettingsView(),
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: SettingsView(),
+          ),
         ),
       ],
     ),

@@ -13,8 +13,8 @@
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/packages/lucide_icons_flutter/assets/lucide.ttf
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
-/home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/shaders/ink_sparkle.frag
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/shaders/stretch_effect.frag
+/home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/shaders/ink_sparkle.frag
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/NativeAssetsManifest.json
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.bin
 /home/lk/Proyectos/STR/DataVital---Frontend/app/build/linux/x64/debug/bundle/data/flutter_assets/FontManifest.json

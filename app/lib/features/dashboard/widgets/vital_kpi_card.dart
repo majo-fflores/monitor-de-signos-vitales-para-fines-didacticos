@@ -24,56 +24,73 @@ class TarjetaKpiVital extends StatelessWidget {
 
     return Container(
       height: 128,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        border: Border(
-          left: BorderSide(color: colorAcento, width: 4), // Borde distintivo
-          top: BorderSide(color: esOscuro ? ColoresOscuros.border : ColoresClaros.border),
-          right: BorderSide(color: esOscuro ? ColoresOscuros.border : ColoresClaros.border),
-          bottom: BorderSide(color: esOscuro ? ColoresOscuros.border : ColoresClaros.border),
+        border: Border.all(
+          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+          width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            titulo.toUpperCase(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Row(
+          children: [
+            // Barra decorativa vertical de acento a la izquierda (Sensor color indicator)
+            Container(
+              width: 5,
+              height: double.infinity,
               color: colorAcento,
-              letterSpacing: 1.2,
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                valor,
-                style: const TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.w800,
-                  fontFeatures: [FontFeature.tabularFigures()], // Evita jitter numérico
-                  fontFamily: 'monospace',
+            
+            // Contenido del KPI
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      titulo.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: colorAcento,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          valor,
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w800,
+                            fontFeatures: [FontFeature.tabularFigures()], // Evita jitter numérico
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          unidad,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 6),
-              Text(
-                unidad,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

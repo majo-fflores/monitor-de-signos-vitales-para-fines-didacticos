@@ -28,6 +28,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;

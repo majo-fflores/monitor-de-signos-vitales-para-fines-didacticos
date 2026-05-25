@@ -25,8 +25,10 @@ class ThemeNotifier extends _$ThemeNotifier {
 
   Future<void> alternarTema() async {
     final nuevoModo = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    
     state = nuevoModo;
-    _prefs ??= await SharedPreferences.getInstance(); // Corregido a operador ??=
+    
+    _prefs ??= await SharedPreferences.getInstance();
     await _prefs?.setBool(_themeKey, nuevoModo == ThemeMode.dark);
   }
 }

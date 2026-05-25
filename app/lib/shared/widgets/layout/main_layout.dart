@@ -67,89 +67,117 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
             children: [
               // BANNER DE ALERTA MÉDICA CRÍTICA (Ciclo de 30 segundos)
               if (estadoAlarma.alarmaActiva)
-                Container(
-                  width: double.infinity,
-                  color: Colors.red.shade900,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
-                            const Gap(12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'ALARMA ACTIVA: VALOR CRÍTICO DETECTADO',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${estadoAlarma.metricaCritica}: ${estadoAlarma.valorCritico} — Finalizando ciclo de seguridad en ${estadoAlarma.segundosRestantes}s',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.8),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                LayoutBuilder(
+                  builder: (context, bannerConstraints) {
+                    final esMobileChico = bannerConstraints.maxWidth < 600;
+                    
+                    final infoAlarma = Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
+                        const Gap(8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'ALARMA CRÍTICA',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.0,
+                                ),
                               ),
-                            ),
+                              Text(
+                                '${estadoAlarma.metricaCritica}: ${estadoAlarma.valorCritico} — Ciclo de seguridad en curso',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+
+                    final controlesAlarma = Row(
+                      mainAxisAlignment: esMobileChico ? MainAxisAlignment.end : MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.timer, color: Colors.white, size: 12),
+                              const Gap(4),
+                              Text(
+                                '${estadoAlarma.segundosRestantes}s',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Gap(8),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.red.shade900,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          ),
+                          onPressed: () {
+                            ref.read(notificadorAlarmaProvider.notifier).silenciarAlarma();
+                          },
+                          icon: const Icon(Icons.volume_off, size: 14),
+                          label: const Text(
+                            'SILENCIAR',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                        ),
+                      ],
+                    );
+
+                    if (esMobileChico) {
+                      return Container(
+                        width: double.infinity,
+                        color: Colors.red.shade900,
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            infoAlarma,
+                            const Gap(8),
+                            controlesAlarma,
                           ],
                         ),
-                      ),
-                      Row(
+                      );
+                    }
+
+                    return Container(
+                      width: double.infinity,
+                      color: Colors.red.shade900,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.timer, color: Colors.white, size: 14),
-                                const Gap(6),
-                                Text(
-                                  '${estadoAlarma.segundosRestantes}s',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontFamily: 'monospace',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Gap(12),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.red.shade900,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            onPressed: () {
-                              ref.read(notificadorAlarmaProvider.notifier).silenciarAlarma();
-                            },
-                            icon: const Icon(Icons.volume_off, size: 16),
-                            label: const Text(
-                              'SILENCIAR',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                          ),
+                          Expanded(child: infoAlarma),
+                          const Gap(16),
+                          controlesAlarma,
                         ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               Expanded(
                 child: Row(

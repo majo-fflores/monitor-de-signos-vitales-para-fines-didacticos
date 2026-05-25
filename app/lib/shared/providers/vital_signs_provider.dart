@@ -72,24 +72,26 @@ class EstadoSignosVitales {
 
 /// Notifier reactivo que simula los sensores en tiempo real de forma matemática.
 /// Reemplazo directo con Riverpod del store de Zustand (useVitalSignsStore).
-@riverpod
+@Riverpod(keepAlive: true)
 class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   Timer? _timer;
   double _anguloEcg = 0.0;
   double _anguloSpo2 = 0.0;
+  bool _estaActivo = false;
   final math.Random _random = math.Random();
 
   @override
   EstadoSignosVitales build() {
-    // Al destruirse el notifier o desmontarse el dashboard, liberamos recursos
-    ref.onDispose(() {
-      detenerSimulacion();
-    });
+    _estaActivo = true;
     return EstadoSignosVitales.inicial();
   }
 
   void iniciarSimulacion() {
-    if (_timer != null) return;
+    _estaActivo = true;
+    
+    // Cancelamos activamente cualquier Timer previo para evitar hilos huérfanos concurrentes
+    _timer?.cancel();
+    _timer = null;
 
     final ahora = DateTime.now().millisecondsSinceEpoch.toDouble();
     final ecgInicial = <PuntoBiometrico>[];
@@ -113,31 +115,33 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
 
     // Bucle de simulación en tiempo real blando cada 100ms
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      // 1. Salvaguarda asíncrona al inicio del tick: validamos identidad de Timer
+      if (_timer != timer || !_estaActivo) {
+        timer.cancel();
+        return;
+      }
       final tActual = DateTime.now().millisecondsSinceEpoch.toDouble();
 
-      // 1. Simulación matemática de ECG (Onda rítmica con pico QRS)
+      // Simulación matemática de ECG (Onda rítmica con pico QRS)
       _anguloEcg += 0.5;
       final baseEcg = math.sin(_anguloEcg) * 10;
       final qrs = _random.nextDouble() > 0.92 ? 80.0 : 0.0;
       final valorEcg = baseEcg + qrs;
 
-      // 2. Simulación SpO2 (Onda pletismográfica dicrota)
+      // Simulación SpO2 (Onda pletismográfica dicrota)
       _anguloSpo2 += 0.25;
       final valorSpo2 = (math.sin(_anguloSpo2) * 30) + (math.cos(_anguloSpo2 * 2) * 10) + 50;
 
-      // 3. Simulación LM386 (Fonocardiograma / Señal acústica de audio)
-      // Generamos un pulso rápido acústico sincronizado parcialmente con el ciclo
+      // Simulación LM386 (Fonocardiograma / Señal acústica de audio)
       final esLatidoSonido = _anguloEcg % (2 * math.pi) < 1.0;
       final valorPcg = esLatidoSonido 
           ? (math.sin(_anguloEcg * 10) * (30 + _random.nextInt(40))) 
           : (math.sin(_anguloEcg * 2) * (2 + _random.nextInt(3)));
       final nuevaAmplitud = esLatidoSonido ? 65 + _random.nextInt(20) : 10 + _random.nextInt(5);
 
-      // 4. Fluctuaciones leves de los KPIs
+      // Fluctuaciones leves de los KPIs
       final nuevaFrecuencia = 70 + _random.nextInt(5); // 70-74 lpm
       final nuevoSpo2 = 97 + _random.nextInt(4); // 97-100%
-      // El CO2 fluctúa entre 350 ppm y 450 ppm (valores normales en ambiente)
-      // A veces simula un pico de alerta para testing (1 de cada 150 ticks supera 800 ppm si no hay alarma activa)
       final nuevoCo2 = _random.nextDouble() > 0.99 
           ? 850 + _random.nextInt(100) 
           : 350 + _random.nextInt(50);
@@ -155,26 +159,38 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
       if (nuevosPcg.isNotEmpty) nuevosPcg.removeAt(0);
       nuevosPcg.add(PuntoBiometrico(tActual, valorPcg));
 
-      state = state.copiarCon(
-        ecgDatos: nuevosEcg,
-        spo2Datos: nuevosSpo2,
-        pcgDatos: nuevosPcg,
-        frecuenciaCardiaca: nuevaFrecuencia,
-        nivelSpo2: nuevoSpo2,
-        nivelCo2: nuevoCo2,
-        amplitudAcustica: nuevaAmplitud,
-      );
+      // 2. Salvaguarda asíncrona crítica JUSTO antes de mutar el estado
+      try {
+        if (_timer != timer || !_estaActivo) {
+          timer.cancel();
+          return;
+        }
 
-      // Monitorear valores a través del gestor de alarmas
-      ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
-        fc: nuevaFrecuencia,
-        spo2: nuevoSpo2,
-        co2: nuevoCo2,
-      );
+        state = state.copiarCon(
+          ecgDatos: nuevosEcg,
+          spo2Datos: nuevosSpo2,
+          pcgDatos: nuevosPcg,
+          frecuenciaCardiaca: nuevaFrecuencia,
+          nivelSpo2: nuevoSpo2,
+          nivelCo2: nuevoCo2,
+          amplitudAcustica: nuevaAmplitud,
+        );
+
+        // Monitorear valores a través del gestor de alarmas
+        ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
+          fc: nuevaFrecuencia,
+          spo2: nuevoSpo2,
+          co2: nuevoCo2,
+        );
+      } catch (e) {
+        // Captura y silencia de forma elegante cualquier excepción defunct asíncrona al desmontar
+        timer.cancel();
+      }
     });
   }
 
   void detenerSimulacion() {
+    _estaActivo = false;
     _timer?.cancel();
     _timer = null;
   }

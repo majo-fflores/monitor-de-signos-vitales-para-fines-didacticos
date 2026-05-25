@@ -35,14 +35,18 @@ class GraficoPcg extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'LM386 (Auscultación Digital - PCG)',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorTexto,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
+              Expanded(
+                child: Text(
+                  'LM386 (Auscultación PCG)',
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorTexto,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -50,7 +54,7 @@ class GraficoPcg extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'FONOCARDIOGRAMA',
+                  'PCG',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colorLinea,
                     fontWeight: FontWeight.bold,
