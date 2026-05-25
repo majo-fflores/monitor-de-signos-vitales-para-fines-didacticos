@@ -1,15 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
-class GraficoPcg extends StatelessWidget {
-  final List<PuntoBiometrico> datos;
-
-  const GraficoPcg({super.key, required this.datos});
+class GraficoPcg extends ConsumerWidget {
+  const GraficoPcg({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final datos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.pcgDatos));
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 

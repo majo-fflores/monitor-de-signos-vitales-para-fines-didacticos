@@ -26,6 +26,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: modoTema,
+      themeAnimationDuration: Duration.zero, // Elimina la costosa interpolación de temas de 200ms a 60fps
     );
   }
 }

@@ -7,7 +7,7 @@ import 'alarma_state.dart';
 part 'vital_signs_provider.g.dart';
 
 /// Punto de datos para las series de fl_chart.
-/// Mapea de manera directa el tipo conceptual de Zustand { name, value: [x, y] }.
+/// Mapea de manera directa el tipo conceptual de Zustand `{ name, value: [x, y] }`.
 @immutable
 class PuntoBiometrico {
   final double x;

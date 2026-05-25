@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
 /// Widget de gráfico de SpO2 Oximetría (MAX30100) en tiempo real.
 /// Implementación con fl_chart que incluye gradiente vertical suave en el área inferior de la curva.
-class GraficoSpo2 extends StatelessWidget {
-  final List<PuntoBiometrico> datos;
-
-  const GraficoSpo2({super.key, required this.datos});
+class GraficoSpo2 extends ConsumerWidget {
+  const GraficoSpo2({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final datos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.spo2Datos));
     // Convertimos los PuntoBiometrico a FlSpot de fl_chart
     final spots = datos.map((d) => FlSpot(d.x, d.y)).toList();
 
@@ -48,50 +48,52 @@ class GraficoSpo2 extends StatelessWidget {
           width: double.infinity,
           color: Colors.black,
           padding: const EdgeInsets.all(12),
-          child: LineChart(
-            LineChartData(
-              minY: 0,
-              maxY: 100,
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                drawHorizontalLine: true,
-                getDrawingHorizontalLine: (value) => const FlLine(
-                  color: Color(0xFF222222),
-                  strokeWidth: 1,
-                  dashArray: [4, 4],
-                ),
-                getDrawingVerticalLine: (value) => const FlLine(
-                  color: Color(0xFF222222),
-                  strokeWidth: 1,
-                  dashArray: [4, 4],
-                ),
-              ),
-              titlesData: const FlTitlesData(show: false),
-              borderData: FlBorderData(show: false),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: spots,
-                  isCurved: true,
-                  color: ColoresSensores.spo2Azul,
-                  barWidth: 2,
-                  isStrokeCapRound: true,
-                  dotData: const FlDotData(show: false),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        ColoresSensores.spo2Azul.withValues(alpha: 0.4),
-                        ColoresSensores.spo2Azul.withValues(alpha: 0.0),
-                      ],
-                    ),
+          child: RepaintBoundary(
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: 100,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  drawHorizontalLine: true,
+                  getDrawingHorizontalLine: (value) => const FlLine(
+                    color: Color(0xFF222222),
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
+                  ),
+                  getDrawingVerticalLine: (value) => const FlLine(
+                    color: Color(0xFF222222),
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
                   ),
                 ),
-              ],
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: ColoresSensores.spo2Azul,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          ColoresSensores.spo2Azul.withValues(alpha: 0.4),
+                          ColoresSensores.spo2Azul.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              duration: Duration.zero, // Cero latencia
             ),
-            duration: Duration.zero, // Cero latencia
           ),
         ),
       ],

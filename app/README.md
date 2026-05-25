@@ -64,6 +64,22 @@ A continuación se listan los comandos principales para desarrollar, auditar y c
     ```
     *Se utiliza cuando creas o modificas anotaciones `@riverpod` en los proveedores para autogenerar las clases de soporte correspondientes.*
 
+### 📖 Generación de Documentación Automática
+*   **Generar Documentación en HTML (para el API y clases del código)**:
+    ```bash
+    dart doc .
+    ```
+    *Este comando escanea todos los comentarios de documentación de tres barras (`///`) y genera un sitio web estático interactivo en la carpeta `doc/api/` con la referencia completa y cruzada de clases, métodos, widgets y proveedores del proyecto.*
+
+    Para ejecutar en localhost la documentacion
+    ```bash
+    npx serve doc/api
+    ```
+    o
+    ```bash
+    xdg-open doc/api/index.html
+    ```
+
 ### Compilación para Producción
 *   **Compilar para la Web (Genera archivos SPA optimizados en `build/web`)**:
     ```bash

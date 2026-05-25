@@ -37,20 +37,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
     
-    // Suscripción selectiva a cada signo vital para evitar re-pintados innecesarios
-    final ecgDatos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgDatos));
-    final spo2Datos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.spo2Datos));
-    final pcgDatos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.pcgDatos));
-    final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
-    final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
-    final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
-    final amplitudAcustica = ref.watch(notificadorSignosVitalesProvider.select((s) => s.amplitudAcustica));
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final esMobile = constraints.maxWidth < Breakpoints.tablet;
 
-        final contenidoPrincipal = Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header de la sección
@@ -74,48 +65,28 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             Expanded(
               child: SingleChildScrollView(
                 child: esMobile
-                    ? Column(
+                    ? const Column(
                         children: [
                           // En móviles: KPI Cards primero en forma compacta
-                          _buildPanelesKpi(
-                            frecuenciaCardiaca: frecuenciaCardiaca,
-                            nivelSpo2: nivelSpo2,
-                            nivelCo2: nivelCo2,
-                            amplitudAcustica: amplitudAcustica,
-                            esMobile: true,
-                          ),
-                          const SizedBox(height: 24),
+                          _PanelesKpi(esMobile: true),
+                          SizedBox(height: 24),
                           // Gráficos debajo
-                          _buildGraficosOndas(
-                            ecgDatos: ecgDatos, 
-                            spo2Datos: spo2Datos,
-                            pcgDatos: pcgDatos,
-                          ),
+                          _GraficosOndas(),
                         ],
                       )
-                    : Row(
+                    : const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // En pantallas grandes: Gráficos a la izquierda (flex 3)
                           Expanded(
                             flex: 3,
-                            child: _buildGraficosOndas(
-                              ecgDatos: ecgDatos, 
-                              spo2Datos: spo2Datos,
-                              pcgDatos: pcgDatos,
-                            ),
+                            child: _GraficosOndas(),
                           ),
-                          const SizedBox(width: 24),
+                          SizedBox(width: 24),
                           // KPI Cards a la derecha (flex 1)
                           Expanded(
                             flex: 1,
-                            child: _buildPanelesKpi(
-                              frecuenciaCardiaca: frecuenciaCardiaca,
-                              nivelSpo2: nivelSpo2,
-                              nivelCo2: nivelCo2,
-                              amplitudAcustica: amplitudAcustica,
-                              esMobile: false,
-                            ),
+                            child: _PanelesKpi(esMobile: false),
                           ),
                         ],
                       ),
@@ -123,47 +94,51 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             ),
           ],
         );
-
-        return contenidoPrincipal;
       },
     );
   }
+}
 
-  Widget _buildGraficosOndas({
-    required List<PuntoBiometrico> ecgDatos,
-    required List<PuntoBiometrico> spo2Datos,
-    required List<PuntoBiometrico> pcgDatos,
-  }) {
-    return Column(
+class _GraficosOndas extends StatelessWidget {
+  const _GraficosOndas();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
       children: [
         // Card ECG (AD8232)
         Card(
           clipBehavior: Clip.antiAlias,
-          child: GraficoEcg(datos: ecgDatos),
+          child: GraficoEcg(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // Card SpO2 (MAX30100)
         Card(
           clipBehavior: Clip.antiAlias,
-          child: GraficoSpo2(datos: spo2Datos),
+          child: GraficoSpo2(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         // Card Fonocardiograma (LM386)
         Card(
           clipBehavior: Clip.antiAlias,
-          child: GraficoPcg(datos: pcgDatos),
+          child: GraficoPcg(),
         ),
       ],
     );
   }
+}
 
-  Widget _buildPanelesKpi({
-    required int frecuenciaCardiaca,
-    required int nivelSpo2,
-    required int nivelCo2,
-    required int amplitudAcustica,
-    required bool esMobile,
-  }) {
+class _PanelesKpi extends ConsumerWidget {
+  final bool esMobile;
+  const _PanelesKpi({required this.esMobile});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
+    final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
+    final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
+    final amplitudAcustica = ref.watch(notificadorSignosVitalesProvider.select((s) => s.amplitudAcustica));
+
     final listaKpis = [
       TarjetaKpiVital(
         titulo: 'AD8232 (Frecuencia Cardíaca)',
