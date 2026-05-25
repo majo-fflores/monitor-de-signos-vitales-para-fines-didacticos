@@ -6,30 +6,48 @@ Esta aplicación está construida con **Flutter** y **Dart**, y soporta compilac
 
 ---
 
-## 🚀 Instalación de Flutter
+## 🚀 Instalación y Configuración del Entorno
 
-Sigue estos pasos para configurar tu entorno y poder ejecutar la aplicación:
+Sigue las instrucciones según tu sistema operativo para dejar tu entorno listo para ejecutar y compilar la aplicación:
 
-### Método Recomendado (Arch Linux / CachyOS)
-Instala las dependencias y el SDK de Flutter directamente con el gestor de paquetes de tu sistema:
-```bash
-# 1. Instalar dependencias del sistema y el SDK de Flutter
-sudo pacman -S curl git unzip xz zip mesa libglu flutter
+###  Windows (Host para compilar .exe)
+1. **Descargar el SDK**: Descarga el archivo zip de Flutter desde la [web oficial de Flutter](https://docs.flutter.dev/get-started/install/windows) y extráelo en una carpeta local (ej: `C:\development\flutter`).
+2. **Configurar el PATH**:
+   * Busca *"Editar las variables de entorno del sistema"* en el menú Inicio de Windows.
+   * Haz clic en *Variables de entorno*.
+   * En *Variables de usuario*, busca la variable `Path`, selecciónala y haz clic en *Editar*.
+   * Añade una nueva línea con la ruta completa a la carpeta bin del SDK (ej: `C:\development\flutter\bin`).
+3. **Instalar Herramientas de Compilación C++**:
+   * Descarga e instala [Visual Studio Community](https://visualstudio.microsoft.com/es/downloads/).
+   * Durante la instalación, selecciona obligatoriamente la carga de trabajo: **"Desarrollo para el escritorio con C++"** (Desktop development with C++). Esto es necesario para compilar el binario nativo de Windows.
+4. **Verificar**: Abre una terminal (PowerShell o CMD) y corre:
+   ```bash
+   flutter doctor
+   ```
 
-# 2. Agregar el SDK al PATH de tu shell (si aplica)
-fish_add_path /usr/bin/flutter
-```
-
-### Método Manual (Vía VS Code)
-1.  Abre VS Code e instala la extensión oficial de **Flutter** desde el marketplace.
-2.  Presiona `Ctrl + Shift + P` para abrir la paleta de comandos.
-3.  Escribe `Flutter: New Project` y presiona Enter.
-4.  Selecciona la opción **Download SDK** (Descargar SDK) en el aviso emergente y elige una ruta local conveniente (por ejemplo, `~/development/`).
-5.  Una vez finalizada la descarga, haz clic en **Add SDK to PATH** en la notificación para registrar el entorno automáticamente.
-6.  Si utilizas Fish shell, agrega la ruta manualmente:
-    ```fish
-    fish_add_path ~/development/flutter/bin
-    ```
+### 🐧 Linux (Host para compilar binario de Linux)
+1. **Instalar dependencias del sistema**:
+   * **Arch Linux / CachyOS**:
+     ```bash
+     sudo pacman -S curl git unzip xz zip mesa libglu flutter
+     ```
+   * **Ubuntu / Debian**:
+     ```bash
+     sudo apt update
+     sudo apt install -y clang cmake dbus-1-dev libgtk-3-dev liblzma-dev ninja-build pkg-config unzip xz-utils zip
+     ```
+2. **Configurar el PATH**:
+   * **Fish shell**:
+     ```fish
+     fish_add_path /usr/bin/flutter # Si lo instalaste vía pacman
+     # O si descargaste el SDK manualmente:
+     fish_add_path ~/development/flutter/bin
+     ```
+   * **Bash (`~/.bashrc`) / Zsh (`~/.zshrc`)**:
+     ```bash
+     echo 'export PATH="$PATH:$HOME/development/flutter/bin"' >> ~/.bashrc
+     source ~/.bashrc
+     ```
 
 ---
 
@@ -45,8 +63,8 @@ A continuación se listan los comandos principales para desarrollar, auditar y c
 *   **Ejecutar en Modo Desarrollo (Hot Reload habilitado)**:
     ```bash
     flutter run -d chrome    # Para ejecutar en el navegador
-    # O también:
-    flutter run -d linux     # Para compilar de forma nativa en Linux
+    flutter run -d linux     # Para compilar y ejecutar nativo en Linux
+    flutter run -d windows   # Para compilar y ejecutar nativo en Windows
     flutter run -d android   # Para ejecutar en un dispositivo o emulador Android
     ```
 
@@ -71,23 +89,29 @@ A continuación se listan los comandos principales para desarrollar, auditar y c
     ```
     *Este comando escanea todos los comentarios de documentación de tres barras (`///`) y genera un sitio web estático interactivo en la carpeta `doc/api/` con la referencia completa y cruzada de clases, métodos, widgets y proveedores del proyecto.*
 
-    Para ejecutar en localhost la documentacion
+    Para ejecutar la documentación localmente:
     ```bash
     npx serve doc/api
-    ```
-    o
-    ```bash
+    # o bien abrirlo de forma directa:
     xdg-open doc/api/index.html
     ```
 
-### Compilación para Producción
+### Compilación para Producción (Distribución)
+*   **Compilar para Linux Desktop (Nativo)**:
+    ```bash
+    flutter build linux --release
+    ```
+    *Genera la carpeta `build/linux/x64/release/bundle/`. Para distribuirla debes comprimir toda esa carpeta (debe llevar el ejecutable `datavital_flutter` junto con las carpetas de soporte `lib/` y `data/`).*
+
+*   **Compilar para Windows Desktop (Nativo)**:
+    ```bash
+    flutter build windows --release
+    ```
+    *Genera la carpeta `build\windows\x64\runner\Release\`. Al igual que en Linux, debes comprimir toda la carpeta (contiene el archivo `.exe` junto a los archivos `.dll` y la carpeta `data/` de soporte).*
+
 *   **Compilar para la Web (Genera archivos SPA optimizados en `build/web`)**:
     ```bash
     flutter build web --release
-    ```
-*   **Compilar para Linux Desktop Nativo (Genera archivos en `build/linux`)**:
-    ```bash
-    flutter build linux --release
     ```
 *   **Compilar para Android (Genera un App Bundle `.aab` optimizado para Google Play)**:
     ```bash
