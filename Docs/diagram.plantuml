@@ -1,0 +1,125 @@
+@startuml
+title Modelo de clases - Sistema de mediciones de signos vitales
+
+skinparam classAttributeIconSize 0
+hide circle
+
+class User {
+  +id: UUID
+  +nombre: String
+  +dni: String
+  +email: String
+}
+
+class Session {
+  +id: UUID
+  +user_id: UUID
+  +date: DateTime
+  +started_at: DateTime
+  +ended_at: DateTime?
+}
+
+class UmbralAlarma {
+  +id: UUID
+  +nombre: String
+  +metric: String
+  +minValue: Decimal?
+  +maxValue: Decimal?
+  +enabled: Boolean
+}
+
+class EventoAlarma {
+  +id: UUID
+  +session_id: UUID
+  +metric: String
+  +valor: Decimal
+  +estado: AlarmState
+  +started_at: DateTime
+  +silenced_at: DateTime?
+}
+
+abstract class Medicion {
+  +id: UUID
+  +session_id: UUID
+  +sensor: SensorType
+  +datos: JSON
+  +millis: Integer
+}
+
+enum SensorType {
+  AD8232
+  MAX30100
+  MQ135
+  LM386
+}
+
+enum AlarmState {
+  ACTIVE
+  SILENCED
+  RESOLVED
+}
+
+class MedicionECG {
+  +ecgRaw: Integer
+  +lodMinus: Boolean
+  +lodPlus: Boolean
+}
+
+class MedicionPPG {
+  +irRaw: Number
+  +redRaw: Number
+  +temperatura: Decimal
+}
+
+class MedicionFrecuenciaCardiaca {
+  +bpm: Integer
+}
+
+class MedicionSpO2 {
+  +porcentaje: Decimal
+}
+
+class MedicionCalidadAire {
+  +analogValue: Integer
+  +digitalThreshold: Boolean
+  +co2Ppm: Decimal
+}
+
+class MedicionFonocardiograma {
+  +amplitud: Number
+}
+
+User "1" -- "0..*" Session : tiene
+Session "1" -- "0..*" Medicion : contiene
+Session "1" -- "0..*" EventoAlarma : registra
+UmbralAlarma "1" -- "0..*" EventoAlarma : dispara
+
+Medicion <|-- MedicionECG
+Medicion <|-- MedicionPPG
+Medicion <|-- MedicionFrecuenciaCardiaca
+Medicion <|-- MedicionSpO2
+Medicion <|-- MedicionCalidadAire
+Medicion <|-- MedicionFonocardiograma
+
+note right of Medicion
+  datos: JSON permite guardar la muestra cruda,
+  batches de datos o metadata específica
+  sin forzar todas las mediciones a tener
+  la misma estructura.
+  millis registra una referencia temporal relativa
+  sin requerir fecha y hora reales en la SD.
+end note
+
+note bottom of MedicionPPG
+  MAX30100 puede generar varias mediciones:
+  PPG, frecuencia cardíaca y SpO2.
+  Por eso se separan en clases distintas.
+end note
+
+note right of UmbralAlarma
+  Los umbrales se configuran desde Flutter,
+  se persisten en SQLite mediante Go/Echo
+  y pueden sincronizarse al firmware.
+end note
+
+@enduml
