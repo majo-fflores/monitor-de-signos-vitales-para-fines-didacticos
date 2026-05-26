@@ -49,10 +49,11 @@ app.*.map.json
 
 # Backend
 # Binarios
-/backend/server
+backend/server
+backend/.env
 
 # Base de datos local (SQLite)
-/backend/*.db
-/backend/*.db-journal
-/backend/*.db-shm
-/backend/*.db-wal
+backend/**/*.db
+backend/**/*.db-journal
+backend/**/*.db-shm
+backend/**/*.db-wal

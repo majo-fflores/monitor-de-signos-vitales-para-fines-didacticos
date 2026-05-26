@@ -10,7 +10,7 @@ Este archivo contiene los comandos esenciales de Go utilizados para inicializar,
 Inicializa un nuevo módulo Go en el directorio actual, creando el archivo `go.mod`. Este archivo define la ruta de importación de tu módulo y las dependencias que requiere.
 *   **Ejemplo utilizado**:
     ```bash
-    go mod init sist-inteligentes
+    go mod init backend
     ```
 
 ### `go mod tidy`
