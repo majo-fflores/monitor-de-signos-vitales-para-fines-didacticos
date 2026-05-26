@@ -44,12 +44,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
     final estadoAlarma = ref.watch(notificadorAlarmaProvider);
     final theme = Theme.of(context);
 
-    final warningBorder = estadoAlarma.alarmaActiva
-        ? Border.all(
-            color: Colors.red.withValues(alpha: _borderOpacityAnimation.value),
-            width: 4,
-          )
-        : null;
+
 
     Widget buildLayout(bool esMobile) {
       return Scaffold(
@@ -217,6 +212,12 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
         return AnimatedBuilder(
           animation: _borderOpacityAnimation,
           builder: (context, child) {
+            final warningBorder = estadoAlarma.alarmaActiva
+                ? Border.all(
+                    color: Colors.red.withValues(alpha: _borderOpacityAnimation.value),
+                    width: 4,
+                  )
+                : null;
             return Container(
               decoration: BoxDecoration(
                 border: warningBorder,

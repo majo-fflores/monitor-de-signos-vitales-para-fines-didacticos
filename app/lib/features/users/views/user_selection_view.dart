@@ -7,7 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/usuario_provider.dart';
 import '../../../../shared/utils/almacenamiento_local.dart';
 import '../widgets/create_user_form.dart';
-import '../widgets/user_card.dart';
+import '../widgets/segmented_toggle.dart';
+import '../widgets/user_selection_tab.dart';
 
 /// Pantalla de selección de usuario (Gateway obligatorio).
 /// Usa IndexedStack para cambio de pestaña instantáneo sin jank.
@@ -188,7 +189,7 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                       const Gap(32),
 
                       // ── Segmented Control (sin TabBar) ──
-                      _SegmentedToggle(
+                      SegmentedToggle(
                         selectedIndex: _tabActual,
                         labels: const ['Seleccionar Usuario', 'Registrar Nuevo'],
                         onChanged: (i) => setState(() => _tabActual = i),
@@ -201,9 +202,16 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                         curve: Curves.easeOut,
                         alignment: Alignment.topCenter,
                         child: _tabActual == 0
-                            ? _buildTabSeleccion(
-                                theme, esOscuro, estadoUsuarios, usuariosFiltrados)
-                            : _buildTabRegistro(),
+                            ? UserSelectionTab(
+                                searchController: _searchController,
+                                usuariosFiltrados: usuariosFiltrados,
+                                estadoUsuarios: estadoUsuarios,
+                                sessionCounts: _sessionCounts,
+                                filtroBusqueda: _filtroBusqueda,
+                                onSeleccionarUsuario: _seleccionarUsuario,
+                                onEliminarUsuario: _eliminarUsuario,
+                              )
+                            : FormularioCrearUsuario(onSubmit: _crearUsuario),
                       ),
                     ],
                   ),
@@ -212,171 +220,6 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // ── Tab 1: Seleccionar usuario ──
-  Widget _buildTabSeleccion(
-    ThemeData theme,
-    bool esOscuro,
-    EstadoUsuarios estadoUsuarios,
-    List<dynamic> usuariosFiltrados,
-  ) {
-    if (estadoUsuarios.usuarios.isEmpty) {
-      return SizedBox(
-        height: 240,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                LucideIcons.usersRound,
-                size: 48,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-              ),
-              const Gap(12),
-              Text(
-                'No hay usuarios creados',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const Gap(6),
-              Text(
-                'Crea un usuario en la pestaña de Registro.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: esOscuro
-                      ? ColoresOscuros.mutedForeground
-                      : ColoresClaros.mutedForeground,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Buscador
-        TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Buscar por nombre o correo...',
-            prefixIcon: const Icon(LucideIcons.search, size: 18),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-        ),
-        const Gap(16),
-        // Lista (con altura máxima para no explotar verticalmente)
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 340),
-          child: usuariosFiltrados.isEmpty
-              ? SizedBox(
-                  height: 120,
-                  child: Center(
-                    child: Text(
-                      'Sin resultados para "$_filtroBusqueda"',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground,
-                      ),
-                    ),
-                  ),
-                )
-              : ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: usuariosFiltrados.length,
-                  separatorBuilder: (_, __) => const Gap(10),
-                  itemBuilder: (context, index) {
-                    final u = usuariosFiltrados[index];
-                    final esActivo = estadoUsuarios.usuarioActivo?.id == u.id;
-                    final sesiones = _sessionCounts[u.id] ?? 0;
-
-                    return TarjetaUsuario(
-                      usuario: u,
-                      esSeleccionado: esActivo,
-                      cantidadSesiones: sesiones,
-                      onTap: () => _seleccionarUsuario(u),
-                      onDelete: () => _eliminarUsuario(u.id),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  // ── Tab 2: Registrar nuevo usuario ──
-  Widget _buildTabRegistro() {
-    return FormularioCrearUsuario(onSubmit: _crearUsuario);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Widget custom de toggle segmentado sin TabBar (0 jank, 0 physics)
-// ─────────────────────────────────────────────────────────────────────────────
-class _SegmentedToggle extends StatelessWidget {
-  final int selectedIndex;
-  final List<String> labels;
-  final ValueChanged<int> onChanged;
-
-  const _SegmentedToggle({
-    required this.selectedIndex,
-    required this.labels,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: esOscuro
-            ? Colors.white.withValues(alpha: 0.03)
-            : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: esOscuro ? const Color(0xFF333333) : const Color(0xFFECECF0),
-        ),
-      ),
-      padding: const EdgeInsets.all(4),
-      child: Row(
-        children: List.generate(labels.length, (i) {
-          final esActivo = selectedIndex == i;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onChanged(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: esActivo ? theme.colorScheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  labels[i],
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: esActivo
-                        ? theme.colorScheme.onPrimary
-                        : (esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
       ),
     );
   }

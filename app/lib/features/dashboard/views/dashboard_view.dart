@@ -9,10 +9,8 @@ import '../../../core/models/registro_medicion.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 import '../../../shared/providers/usuario_provider.dart';
 import '../../../shared/providers/historial_provider.dart';
-import '../widgets/ecg_chart.dart';
-import '../widgets/spo2_chart.dart';
-import '../widgets/pcg_chart.dart';
-import '../widgets/vital_kpi_card.dart';
+import '../widgets/kpi_panels.dart';
+import '../widgets/wave_charts.dart';
 
 /// Vista principal de monitoreo en tiempo real.
 /// Se suscribe de manera selectiva a los flujos del NotificadorSignosVitales.
@@ -273,9 +271,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 child: esMobile
                     ? const Column(
                         children: [
-                          _PanelesKpi(esMobile: true),
+                          KpiPanels(esMobile: true),
                           SizedBox(height: 24),
-                          _GraficosOndas(),
+                          WaveCharts(),
                         ],
                       )
                     : const Row(
@@ -283,12 +281,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                         children: [
                           Expanded(
                             flex: 3,
-                            child: _GraficosOndas(),
+                            child: WaveCharts(),
                           ),
                           SizedBox(width: 24),
                           Expanded(
                             flex: 1,
-                            child: _PanelesKpi(esMobile: false),
+                            child: KpiPanels(esMobile: false),
                           ),
                         ],
                       ),
@@ -298,92 +296,5 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         );
       },
     );
-  }
-}
-
-class _GraficosOndas extends StatelessWidget {
-  const _GraficosOndas();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: GraficoEcg(),
-        ),
-        SizedBox(height: 16),
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: GraficoSpo2(),
-        ),
-        SizedBox(height: 16),
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: GraficoPcg(),
-        ),
-      ],
-    );
-  }
-}
-
-class _PanelesKpi extends ConsumerWidget {
-  final bool esMobile;
-  const _PanelesKpi({required this.esMobile});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
-    final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
-    final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
-    final amplitudAcustica = ref.watch(notificadorSignosVitalesProvider.select((s) => s.amplitudAcustica));
-
-    final listaKpis = [
-      TarjetaKpiVital(
-        titulo: 'AD8232 (Frecuencia Cardíaca)',
-        valor: '$frecuenciaCardiaca',
-        unidad: 'LPM',
-        colorAcento: ColoresSensores.ecgVerde,
-      ),
-      const SizedBox(height: 16),
-      TarjetaKpiVital(
-        titulo: 'MAX30100 (Saturación SpO2)',
-        valor: '$nivelSpo2',
-        unidad: '%',
-        colorAcento: ColoresSensores.spo2Azul,
-      ),
-      const SizedBox(height: 16),
-      TarjetaKpiVital(
-        titulo: 'MQ-135 (Dióxido de Carbono)',
-        valor: '$nivelCo2',
-        unidad: 'ppm',
-        colorAcento: ColoresSensores.co2Amarillo,
-      ),
-      const SizedBox(height: 16),
-      TarjetaKpiVital(
-        titulo: 'LM386 (Amplitud de Audio)',
-        valor: '$amplitudAcustica',
-        unidad: '%',
-        colorAcento: Colors.cyanAccent.shade400,
-      ),
-    ];
-
-    if (esMobile) {
-      return Column(
-        children: [
-          listaKpis[0],
-          const SizedBox(height: 12),
-          listaKpis[2],
-          const SizedBox(height: 12),
-          listaKpis[4],
-          const SizedBox(height: 12),
-          listaKpis[6],
-        ],
-      );
-    } else {
-      return Column(
-        children: listaKpis,
-      );
-    }
   }
 }
