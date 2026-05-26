@@ -52,8 +52,7 @@ app.*.map.json
 /backend/server
 
 # Base de datos local (SQLite)
-/backend/*.db
-/backend/*.db-journal
-/backend/*.db-shm
-/backend/*.db-wal
-/backend/.env
+backend/**/*.db
+backend/**/*.db-journal
+backend/**/*.db-shm
+backend/**/*.db-wal
