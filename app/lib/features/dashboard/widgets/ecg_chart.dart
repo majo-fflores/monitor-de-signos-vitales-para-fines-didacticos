@@ -7,7 +7,9 @@ import '../../../shared/providers/vital_signs_provider.dart';
 /// Widget de gráfico de ECG (AD8232) en tiempo real blando.
 /// Implementación con fl_chart con cero delay de refresco para simulación de alta frecuencia.
 class GraficoEcg extends ConsumerWidget {
-  const GraficoEcg({super.key});
+  final bool esCompacto;
+  final bool expandir;
+  const GraficoEcg({super.key, this.esCompacto = false, this.expandir = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -15,86 +17,101 @@ class GraficoEcg extends ConsumerWidget {
     // Convertimos los PuntoBiometrico a FlSpot de fl_chart
     final spots = datos.map((d) => FlSpot(d.x, d.y)).toList();
 
+    final theme = Theme.of(context);
+    final esOscuro = theme.brightness == Brightness.dark;
+
+    final colorFondoHeader = esOscuro ? Colors.black : const Color(0xFFF3F4F6);
+    final colorFondoGrafico = esOscuro ? const Color(0xFF0F0F12) : Colors.white;
+    final colorRejilla = esOscuro ? const Color(0xFF222222) : const Color(0xFFE5E7EB);
+    final colorLinea = esOscuro ? ColoresSensores.ecgVerde : const Color(0xFF16A34A);
+
+    final chartWidget = Container(
+      width: double.infinity,
+      color: colorFondoGrafico,
+      padding: EdgeInsets.all(esCompacto ? 6 : 12),
+      child: RepaintBoundary(
+        child: LineChart(
+          LineChartData(
+            minY: -30,
+            maxY: 100,
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: true,
+              drawHorizontalLine: true,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: colorRejilla,
+                strokeWidth: 1,
+                dashArray: const [4, 4],
+              ),
+              getDrawingVerticalLine: (value) => FlLine(
+                color: colorRejilla,
+                strokeWidth: 1,
+                dashArray: const [4, 4],
+              ),
+            ),
+            titlesData: const FlTitlesData(show: false),
+            borderData: FlBorderData(show: false),
+            lineBarsData: [
+              LineChartBarData(
+                spots: spots,
+                isCurved: false,
+                color: colorLinea,
+                barWidth: 2,
+                isStrokeCapRound: true,
+                dotData: const FlDotData(show: false),
+                belowBarData: BarAreaData(show: false),
+              ),
+            ],
+          ),
+          duration: Duration.zero,
+        ),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Cabecera idéntica al original
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.only(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: esCompacto ? 6 : 10),
+          decoration: BoxDecoration(
+            color: colorFondoHeader,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
               topRight: Radius.circular(16),
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 'AD8232 (Frecuencia Cardíaca - ECG)',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: esCompacto ? 10 : 12,
                   fontWeight: FontWeight.bold,
-                  color: ColoresSensores.ecgVerde,
+                  color: colorLinea,
                 ),
               ),
-              Text(
-                '100mm/s',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF717182),
+              if (!esCompacto)
+                Text(
+                  '100mm/s',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: esOscuro ? const Color(0xFF717182) : Colors.grey.shade600,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
         
         // Área del gráfico
-        Container(
-          height: 256,
-          width: double.infinity,
-          color: Colors.black,
-          padding: const EdgeInsets.all(12),
-          child: RepaintBoundary(
-            child: LineChart(
-              LineChartData(
-                minY: -30,
-                maxY: 100,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: true,
-                  drawHorizontalLine: true,
-                  getDrawingHorizontalLine: (value) => const FlLine(
-                    color: Color(0xFF222222),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                  getDrawingVerticalLine: (value) => const FlLine(
-                    color: Color(0xFF222222),
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
-                ),
-                titlesData: const FlTitlesData(show: false),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: false, // Desactivar suavizado de curvas en ECG para evitar cálculos cúbicos pesados y fidelidad fisiológica.
-                    color: ColoresSensores.ecgVerde,
-                    barWidth: 2,
-                    isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
+        expandir
+            ? Expanded(child: chartWidget)
+            : SizedBox(
+                height: esCompacto ? 110 : 256,
+                child: chartWidget,
               ),
-              duration: Duration.zero, // Renderizado a alta frecuencia inmediato
-            ),
-          ),
-        ),
       ],
     );
   }

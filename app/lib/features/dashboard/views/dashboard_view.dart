@@ -24,6 +24,7 @@ class DashboardView extends ConsumerStatefulWidget {
 class _DashboardViewState extends ConsumerState<DashboardView> {
   // Estado para la grabación de sesiones
   bool _grabando = false;
+  bool _vistaCompacta = true;
   int _segundosGrabacion = 0;
   Timer? _timerGrabacion;
   final List<int> _frecuenciasGrabadas = [];
@@ -247,6 +248,19 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 
                 // Botón de control de grabación
                 if (usuarioActivo != null) ...[
+                  IconButton(
+                    tooltip: _vistaCompacta ? 'Vista Extendida (Lista)' : 'Vista Compacta (Cuadrícula)',
+                    icon: Icon(
+                      _vistaCompacta ? LucideIcons.layoutList : LucideIcons.layoutGrid,
+                      color: _vistaCompacta ? theme.colorScheme.primary : (esOscuro ? Colors.white70 : Colors.black54),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _vistaCompacta = !_vistaCompacta;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
                   _grabando
                       ? OutlinedButton.icon(
                           onPressed: _detenerYGuardar,
@@ -277,22 +291,22 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             Expanded(
               child: SingleChildScrollView(
                 child: esMobile
-                    ? const Column(
+                    ? Column(
                         children: [
-                          KpiPanels(esMobile: true),
-                          SizedBox(height: 24),
-                          WaveCharts(),
+                          const KpiPanels(esMobile: true),
+                          const SizedBox(height: 24),
+                          WaveCharts(esCompacto: _vistaCompacta),
                         ],
                       )
-                    : const Row(
+                    : Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             flex: 3,
-                            child: WaveCharts(),
+                            child: WaveCharts(esCompacto: _vistaCompacta),
                           ),
-                          SizedBox(width: 24),
-                          Expanded(
+                          const SizedBox(width: 24),
+                          const Expanded(
                             flex: 1,
                             child: KpiPanels(esMobile: false),
                           ),

@@ -7,12 +7,14 @@ import '../../../shared/providers/vital_signs_provider.dart';
 /// Widget premium de calidad de aire (MQ-135) adaptado a un diseño ancho.
 /// Distribuye el Gauge a la izquierda y un panel clínico explicativo legible a la derecha.
 class GraficoCo2 extends ConsumerWidget {
-  const GraficoCo2({super.key});
+  final bool esCompacto;
+  final bool expandir;
+  const GraficoCo2({super.key, this.esCompacto = false, this.expandir = false});
 
-  Color _getColorForCo2(double value) {
-    if (value < 600) return Colors.greenAccent.shade400;
-    if (value < 1000) return ColoresSensores.co2Amarillo;
-    return Colors.redAccent.shade400;
+  Color _getColorForCo2(double value, bool esOscuro) {
+    if (value < 600) return esOscuro ? Colors.greenAccent.shade400 : const Color(0xFF16A34A);
+    if (value < 1000) return esOscuro ? ColoresSensores.co2Amarillo : const Color(0xFFD97706);
+    return esOscuro ? Colors.redAccent.shade400 : const Color(0xFFDC2626);
   }
 
   String _getLabelForCo2(double value) {
@@ -33,13 +35,116 @@ class GraficoCo2 extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final esOscuro = theme.brightness == Brightness.dark;
+
     final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2)).toDouble();
-    final colorActual = _getColorForCo2(nivelCo2);
+    final colorActual = _getColorForCo2(nivelCo2, esOscuro);
     final estadoTexto = _getLabelForCo2(nivelCo2);
     final recomendacion = _getRecomendacionCo2(nivelCo2);
 
-    final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+
+    if (esCompacto) {
+      final widgetCompacto = Container(
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: esOscuro ? const Color(0xFF1E1E1E) : const Color(0xFFF3F4F6),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'MQ-135 (Dióxido de Carbono - CO2)',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: colorActual,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 1.2,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final size = math.min(constraints.maxWidth, constraints.maxHeight) - 8;
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CustomPaint(
+                              size: Size(size, size),
+                              painter: _PremiumGaugePainter(
+                                value: nivelCo2,
+                                minValue: 300.0,
+                                maxValue: 1500.0,
+                                accentColor: colorActual,
+                                esOscuro: esOscuro,
+                              ),
+                            ),
+                            Positioned(
+                              top: size * 0.28,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${nivelCo2.toInt()}',
+                                    style: TextStyle(
+                                      fontSize: size * 0.18,
+                                      fontWeight: FontWeight.w900,
+                                      fontFamily: 'monospace',
+                                      color: esOscuro ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                  Text(
+                                    'ppm',
+                                    style: TextStyle(
+                                      fontSize: size * 0.07,
+                                      color: esOscuro ? Colors.grey.shade400 : Colors.grey.shade600,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (expandir) {
+        return widgetCompacto;
+      } else {
+        return SizedBox(height: 140, child: widgetCompacto);
+      }
+    }
 
     return Container(
       decoration: BoxDecoration(
