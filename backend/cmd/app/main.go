@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/cmd/database"
+	"backend/internal/sensors"
 	"backend/internal/users"
 	"log"
 	"net/http"
@@ -29,6 +30,11 @@ func main() {
 	// ─── ¡ACÁ TIENE QUE IR! ──────────────────────────────────────────
 	// Inicializar la capa de servicio de usuarios (fuera del bloque de error)
 	users.ServiceInstance = users.NewService(database.DB)
+
+	// Inicializar sensores en segundo plano
+	source := sensors.NewSimulatedArduino()
+	sensors.GlobalManager = sensors.NewManager(source)
+	go sensors.GlobalManager.StartBackgroundListening()
 	// ─────────────────────────────────────────────────────────────────
 
 	// Inicializar servidor Echo
