@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'arduino_status.dart';
 import 'live_clock.dart';
 import 'theme_toggle.dart';
+import '../../providers/usuario_provider.dart';
 
 /// Encabezado estático superior de la aplicación.
-/// Muestra título, widget del estado de Arduino y controles de tema/reloj.
-class AppHeader extends StatelessWidget {
+/// Muestra título, widget del estado de Arduino, chip del usuario activo y controles de tema/reloj.
+class AppHeader extends ConsumerWidget {
   final VoidCallback? onMenuClick;
   final bool mostrarBotonMenu;
 
@@ -16,13 +18,30 @@ class AppHeader extends StatelessWidget {
     this.mostrarBotonMenu = false,
   });
 
+  Color _obtenerColorAvatar(String nombre) {
+    final colores = [
+      const Color(0xFF3B82F6), // Azul
+      const Color(0xFF10B981), // Verde
+      const Color(0xFFEC4899), // Rosa
+      const Color(0xFF8B5CF6), // Violeta
+      const Color(0xFFF59E0B), // Ámbar
+      const Color(0xFFEF4444), // Rojo
+      const Color(0xFF06B6D4), // Cian
+    ];
+    final hash = nombre.hashCode.abs();
+    return colores[hash % colores.length];
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
     final anchoPantalla = MediaQuery.of(context).size.width;
     final esMobileChico = anchoPantalla < 500;
+
+    final estadoUsuarios = ref.watch(notificadorUsuariosProvider);
+    final usuarioActivo = estadoUsuarios.usuarioActivo;
 
     return Container(
       height: 80,
@@ -40,7 +59,7 @@ class AppHeader extends StatelessWidget {
       ),
       padding: EdgeInsets.symmetric(horizontal: esMobileChico ? 12 : 24),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Enums fijos
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Sección izquierda: Hamburguesa (mobile) + Título + Arduino
           Expanded(
@@ -63,7 +82,7 @@ class AppHeader extends StatelessWidget {
                 Text(
                   'DataVital',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800, // Reemplazado extrabold por w800
+                    fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -85,7 +104,7 @@ class AppHeader extends StatelessWidget {
             ),
           ),
           
-          // Sección derecha: Reloj (si no es pantalla ultra chica) + ThemeToggle
+          // Sección derecha: Reloj, Chip de Usuario, ThemeToggle
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -93,6 +112,108 @@ class AppHeader extends StatelessWidget {
                 const LiveClock(),
                 const SizedBox(width: 16),
               ],
+              
+              // Chip de Usuario Activo con menú desplegable
+              if (usuarioActivo != null) ...[
+                PopupMenuButton<String>(
+                  offset: const Offset(0, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: esOscuro ? const Color(0xFF333333) : const Color(0x1A000000),
+                    ),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'cambiar') {
+                      ref.read(notificadorUsuariosProvider.notifier).cambiarUsuario();
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    PopupMenuItem<String>(
+                      enabled: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            usuarioActivo.nombre,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${usuarioActivo.edad} años',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const Divider(),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'cambiar',
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.users, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Cambiar Usuario',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: esOscuro
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: _obtenerColorAvatar(usuarioActivo.nombre),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            usuarioActivo.iniciales,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (anchoPantalla > 500) ...[
+                          Text(
+                            usuarioActivo.nombre.split(' ')[0],
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            LucideIcons.chevronDown,
+                            size: 14,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+              
               const ThemeToggle(),
             ],
           ),

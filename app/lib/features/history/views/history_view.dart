@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/breakpoints.dart';
 import '../../../shared/utils/report_pdf_helper.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
+import '../../../shared/providers/usuario_provider.dart';
 
 /// Vista de Historial Biométrico con formulario de paciente y generador de reporte.
 class HistoryView extends ConsumerStatefulWidget {
@@ -20,6 +21,16 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
   final _nombreController = TextEditingController();
   final _edadController = TextEditingController();
   final _notasController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final usuario = ref.read(notificadorUsuariosProvider).usuarioActivo;
+    if (usuario != null) {
+      _nombreController.text = usuario.nombre;
+      _edadController.text = usuario.edad.toString();
+    }
+  }
 
   @override
   void dispose() {
