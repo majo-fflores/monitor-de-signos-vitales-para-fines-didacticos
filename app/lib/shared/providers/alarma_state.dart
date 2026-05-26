@@ -50,6 +50,7 @@ class EstadoAlarma {
   final int segundosRestantes;
   final String? metricaCritica;
   final int? valorCritico;
+  final bool habilitada;
 
   const EstadoAlarma({
     required this.umbrales,
@@ -57,6 +58,7 @@ class EstadoAlarma {
     required this.segundosRestantes,
     this.metricaCritica,
     this.valorCritico,
+    this.habilitada = true,
   });
 
   factory EstadoAlarma.inicial() {
@@ -64,6 +66,7 @@ class EstadoAlarma {
       umbrales: UmbralesAlerta.defecto(),
       alarmaActiva: false,
       segundosRestantes: 0,
+      habilitada: true,
     );
   }
 
@@ -73,6 +76,7 @@ class EstadoAlarma {
     int? segundosRestantes,
     String? metricaCritica,
     int? valorCritico,
+    bool? habilitada,
   }) {
     return EstadoAlarma(
       umbrales: umbrales ?? this.umbrales,
@@ -80,6 +84,7 @@ class EstadoAlarma {
       segundosRestantes: segundosRestantes ?? this.segundosRestantes,
       metricaCritica: metricaCritica ?? this.metricaCritica,
       valorCritico: valorCritico ?? this.valorCritico,
+      habilitada: habilitada ?? this.habilitada,
     );
   }
 }
@@ -105,8 +110,10 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       final fcMax = _prefs?.getInt('umbral_fc_max') ?? 100;
       final spo2Min = _prefs?.getInt('umbral_spo2_min') ?? 95;
       final co2Max = _prefs?.getInt('umbral_co2_max') ?? 800;
+      final habilitada = _prefs?.getBool('alarma_habilitada') ?? true;
 
       state = state.copiarCon(
+        habilitada: habilitada,
         umbrales: UmbralesAlerta(
           fcMin: fcMin,
           fcMax: fcMax,
@@ -119,26 +126,50 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     }
   }
 
+  Future<void> cambiarHabilitacion(bool valor) async {
+    state = state.copiarCon(habilitada: valor);
+    if (!valor) {
+      silenciarAlarma();
+    }
+    await _prefs?.setBool('alarma_habilitada', valor);
+  }
+
   Future<void> actualizarUmbrales({
     int? fcMin,
     int? fcMax,
     int? spo2Min,
     int? co2Max,
   }) async {
+    actualizarUmbralesMemoria(
+      fcMin: fcMin,
+      fcMax: fcMax,
+      spo2Min: spo2Min,
+      co2Max: co2Max,
+    );
+    await guardarUmbralesEnDisco();
+  }
+
+  void actualizarUmbralesMemoria({
+    int? fcMin,
+    int? fcMax,
+    int? spo2Min,
+    int? co2Max,
+  }) {
     final nuevosUmbrales = state.umbrales.copiarCon(
       fcMin: fcMin,
       fcMax: fcMax,
       spo2Min: spo2Min,
       co2Max: co2Max,
     );
-
     state = state.copiarCon(umbrales: nuevosUmbrales);
+  }
 
-    // Persistencia local (con vista a sincronizar vía HTTP/REST en Go en el futuro)
-    if (fcMin != null) await _prefs?.setInt('umbral_fc_min', fcMin);
-    if (fcMax != null) await _prefs?.setInt('umbral_fc_max', fcMax);
-    if (spo2Min != null) await _prefs?.setInt('umbral_spo2_min', spo2Min);
-    if (co2Max != null) await _prefs?.setInt('umbral_co2_max', co2Max);
+  Future<void> guardarUmbralesEnDisco() async {
+    final u = state.umbrales;
+    await _prefs?.setInt('umbral_fc_min', u.fcMin);
+    await _prefs?.setInt('umbral_fc_max', u.fcMax);
+    await _prefs?.setInt('umbral_spo2_min', u.spo2Min);
+    await _prefs?.setInt('umbral_co2_max', u.co2Max);
   }
 
   /// Evalúa si los valores actuales están fuera de los umbrales.
@@ -148,6 +179,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     required int spo2,
     required int co2,
   }) {
+    // Si el sistema de alarma está deshabilitado, no monitoreamos
+    if (!state.habilitada) return;
+
     // Si la alarma ya está corriendo el ciclo de 30 segundos, no volvemos a disparar
     if (state.alarmaActiva && state.segundosRestantes > 0) return;
 

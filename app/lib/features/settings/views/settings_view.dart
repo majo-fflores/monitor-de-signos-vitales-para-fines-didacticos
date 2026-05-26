@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/alarma_state.dart';
+import '../widgets/threshold_range_slider.dart';
+import '../widgets/threshold_single_slider.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -12,9 +14,8 @@ class SettingsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    // Obtenemos el estado de la alarma y los umbrales
-    final estadoAlarma = ref.watch(notificadorAlarmaProvider);
-    final umbrales = estadoAlarma.umbrales;
+    // Obtenemos los umbrales actuales (usando select para evitar rebuilds si cambian otros campos del estado)
+    final umbrales = ref.watch(notificadorAlarmaProvider.select((s) => s.umbrales));
 
     final titleColor = isDark ? ColoresOscuros.foreground : ColoresClaros.foreground;
     final subtitleColor = isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground;
@@ -37,6 +38,53 @@ class SettingsView extends ConsumerWidget {
             'Ajustes de umbrales médicos, configuración de puertos y calibración de sensores.',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: subtitleColor,
+            ),
+          ),
+          // TARJETA DE ACTIVACIÓN DE ALARMA
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: theme.cardTheme.color,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.security,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const Gap(10),
+                    Text(
+                      'Monitoreo del Paciente',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const Gap(8),
+                Text(
+                  'Habilite o deshabilite el sistema de alarmas de bioseñales de forma global.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: subtitleColor,
+                  ),
+                ),
+                const Gap(16),
+                SwitchListTile(
+                  title: const Text('Alarmas de Bioseñales Activas'),
+                  subtitle: const Text('Dispara alertas visuales ante anomalías fisiológicas'),
+                  value: ref.watch(notificadorAlarmaProvider.select((s) => s.habilitada)),
+                  onChanged: (val) {
+                    ref.read(notificadorAlarmaProvider.notifier).cambiarHabilitacion(val);
+                  },
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
             ),
           ),
           const Gap(24),
@@ -78,56 +126,52 @@ class SettingsView extends ConsumerWidget {
                 const Gap(24),
 
                 // 1. FRECUENCIA CARDÍACA (BPM)
-                _buildSliderRango(
-                  context: context,
+                const ThresholdRangeSlider(
                   titulo: 'Frecuencia Cardíaca',
                   unidad: 'BPM',
                   icono: Icons.favorite,
                   colorAcento: ColoresSensores.ecgVerde,
                   min: 40.0,
                   max: 180.0,
-                  rangoActual: RangeValues(umbrales.fcMin.toDouble(), umbrales.fcMax.toDouble()),
-                  onChanged: (values) {
-                    ref.read(notificadorAlarmaProvider.notifier).actualizarUmbrales(
-                      fcMin: values.start.round(),
-                      fcMax: values.end.round(),
-                    );
-                  },
                 ),
                 const Divider(height: 32, thickness: 1),
 
                 // 2. SATURACIÓN DE OXÍGENO (SpO2)
-                _buildSliderUnico(
-                  context: context,
+                ThresholdSingleSlider(
                   titulo: 'Saturación de Oxígeno (Mínimo)',
                   unidad: '%',
                   icono: Icons.opacity,
                   colorAcento: ColoresSensores.spo2Azul,
                   min: 80.0,
                   max: 100.0,
-                  valorActual: umbrales.spo2Min.toDouble(),
+                  valorInicial: umbrales.spo2Min.toDouble(),
                   onChanged: (value) {
-                    ref.read(notificadorAlarmaProvider.notifier).actualizarUmbrales(
+                    ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
                       spo2Min: value.round(),
                     );
+                  },
+                  onChangeEnd: (_) {
+                    ref.read(notificadorAlarmaProvider.notifier).guardarUmbralesEnDisco();
                   },
                 ),
                 const Divider(height: 32, thickness: 1),
 
                 // 3. DIÓXIDO DE CARBONO (CO2)
-                _buildSliderUnico(
-                  context: context,
+                ThresholdSingleSlider(
                   titulo: 'Dióxido de Carbono (Máximo)',
                   unidad: 'ppm',
                   icono: Icons.cloud,
                   colorAcento: ColoresSensores.co2Amarillo,
                   min: 300.0,
                   max: 1200.0,
-                  valorActual: umbrales.co2Max.toDouble(),
+                  valorInicial: umbrales.co2Max.toDouble(),
                   onChanged: (value) {
-                    ref.read(notificadorAlarmaProvider.notifier).actualizarUmbrales(
+                    ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
                       co2Max: value.round(),
                     );
+                  },
+                  onChangeEnd: (_) {
+                    ref.read(notificadorAlarmaProvider.notifier).guardarUmbralesEnDisco();
                   },
                 ),
               ],
@@ -135,118 +179,6 @@ class SettingsView extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSliderRango({
-    required BuildContext context,
-    required String titulo,
-    required String unidad,
-    required IconData icono,
-    required Color colorAcento,
-    required double min,
-    required double max,
-    required RangeValues rangoActual,
-    required ValueChanged<RangeValues> onChanged,
-  }) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Icon(icono, color: colorAcento, size: 20),
-                  const Gap(8),
-                  Expanded(
-                    child: Text(
-                      titulo,
-                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Gap(16),
-            Text(
-              '${rangoActual.start.round()} - ${rangoActual.end.round()} $unidad',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorAcento,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        const Gap(8),
-        RangeSlider(
-          values: rangoActual,
-          min: min,
-          max: max,
-          activeColor: colorAcento,
-          inactiveColor: colorAcento.withValues(alpha: 0.2),
-          labels: RangeLabels('${rangoActual.start.round()}', '${rangoActual.end.round()}'),
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSliderUnico({
-    required BuildContext context,
-    required String titulo,
-    required String unidad,
-    required IconData icono,
-    required Color colorAcento,
-    required double min,
-    required double max,
-    required double valorActual,
-    required ValueChanged<double> onChanged,
-  }) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Icon(icono, color: colorAcento, size: 20),
-                  const Gap(8),
-                  Expanded(
-                    child: Text(
-                      titulo,
-                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Gap(16),
-            Text(
-              '${valorActual.round()} $unidad',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorAcento,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        const Gap(8),
-        Slider(
-          value: valorActual,
-          min: min,
-          max: max,
-          activeColor: colorAcento,
-          inactiveColor: colorAcento.withValues(alpha: 0.2),
-          label: '${valorActual.round()}',
-          onChanged: onChanged,
-        ),
-      ],
     );
   }
 }

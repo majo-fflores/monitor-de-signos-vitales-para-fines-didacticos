@@ -4,8 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/breakpoints.dart';
+import '../../../core/models/registro_medicion.dart';
 import '../../../shared/utils/report_pdf_helper.dart';
-import '../../../shared/providers/vital_signs_provider.dart';
+import '../../../shared/providers/usuario_provider.dart';
+import '../../../shared/providers/historial_provider.dart';
+import '../widgets/patient_report_form.dart';
+import '../widgets/report_export_details.dart';
 
 /// Vista de Historial Biométrico con formulario de paciente y generador de reporte.
 class HistoryView extends ConsumerStatefulWidget {
@@ -20,6 +24,20 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
   final _nombreController = TextEditingController();
   final _edadController = TextEditingController();
   final _notasController = TextEditingController();
+  RegistroMedicion? _sesionSeleccionada;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final usuario = ref.read(notificadorUsuariosProvider).usuarioActivo;
+      if (usuario != null) {
+        _nombreController.text = usuario.nombre;
+        _edadController.text = usuario.edad.toString();
+        ref.read(notificadorHistorialProvider.notifier).cargarHistorial(usuario.id);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -31,18 +49,17 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
 
   void _generarReporte() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Obtenemos los últimos valores en tiempo real del NotificadorSignosVitales
-      final signos = ref.read(notificadorSignosVitalesProvider);
+      if (_sesionSeleccionada == null) return;
 
       final datosReporte = ReporteDatos(
         nombrePaciente: _nombreController.text.trim(),
         edadPaciente: _edadController.text.trim(),
         notasClinicas: _notasController.text.trim(),
-        frecuenciaCardiaca: signos.frecuenciaCardiaca,
-        nivelSpo2: signos.nivelSpo2,
-        nivelCo2: signos.nivelCo2,
-        amplitudAcustica: signos.amplitudAcustica,
-        fechaReporte: DateTime.now(),
+        frecuenciaCardiaca: _sesionSeleccionada!.frecuenciaCardiaca,
+        nivelSpo2: _sesionSeleccionada!.nivelSpo2,
+        nivelCo2: _sesionSeleccionada!.nivelCo2,
+        amplitudAcustica: _sesionSeleccionada!.amplitudAcustica,
+        fechaReporte: _sesionSeleccionada!.fechaRegistro,
       );
 
       // Navegamos a la previsualización del PDF pasando los datos por el parámetro extra
@@ -54,147 +71,19 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    
+    // Escuchar el historial del usuario activo
+    final estadoHistorial = ref.watch(notificadorHistorialProvider);
+    final sesiones = estadoHistorial.registros;
 
-    Widget buildForm() {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: theme.cardTheme.color,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? ColoresOscuros.border : ColoresClaros.border,
-          ),
-        ),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Información de la Sesión',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Gap(16),
-              TextFormField(
-                controller: _nombreController,
-                decoration: InputDecoration(
-                  labelText: 'Nombre Completo del Paciente',
-                  hintText: 'Ej. Juan Pérez',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Por favor ingrese el nombre del paciente';
-                  }
-                  return null;
-                },
-              ),
-              const Gap(16),
-              TextFormField(
-                controller: _edadController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Edad (Años)',
-                  hintText: 'Ej. 45',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'Por favor ingrese la edad';
-                  }
-                  if (int.tryParse(val.trim()) == null) {
-                    return 'Por favor ingrese un número válido';
-                  }
-                  return null;
-                },
-              ),
-              const Gap(16),
-              TextFormField(
-                controller: _notasController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Notas y Observaciones Clínicas',
-                  hintText: 'Describa cualquier síntoma, anomalía o indicación del monitoreo...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-              const Gap(24),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: theme.colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: _generarReporte,
-                  icon: const Icon(Icons.picture_as_pdf, size: 20),
-                  label: const Text(
-                    'GENERAR REPORTE EN PDF',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Widget buildInfo() {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: isDark 
-              ? Colors.white.withValues(alpha: 0.02) 
-              : Colors.black.withValues(alpha: 0.02),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? ColoresOscuros.border : ColoresClaros.border,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Detalles de Exportación',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Gap(12),
-            Text(
-              'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG, SpO2 y CO2) y creará un archivo PDF formalizado.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
-                height: 1.5,
-              ),
-            ),
-            const Gap(16),
-            const Divider(),
-            const Gap(16),
-            _buildInfoRow(Icons.check_circle_outline, 'Formato Médico A4/Letter'),
-            const Gap(12),
-            _buildInfoRow(Icons.print_outlined, 'Listo para Impresión Física'),
-            const Gap(12),
-            _buildInfoRow(Icons.lock_outline, 'Datos locales privados'),
-          ],
-        ),
-      );
+    // Inicializar o ajustar la selección de sesión en cada reconstrucción de la lista
+    if (sesiones.isNotEmpty) {
+      if (_sesionSeleccionada == null || !sesiones.any((s) => s.id == _sesionSeleccionada!.id)) {
+        _sesionSeleccionada = sesiones.first;
+        _notasController.text = _sesionSeleccionada!.notasClinicas;
+      }
+    } else {
+      _sesionSeleccionada = null;
     }
 
     return LayoutBuilder(
@@ -213,7 +102,7 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Genera, previsualiza y descarga informes biométricos del paciente en tiempo real.',
+              'Genera, previsualiza y descarga informes biométricos basados en las sesiones del paciente.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
               ),
@@ -224,17 +113,55 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                 child: esMobile
                     ? Column(
                         children: [
-                          buildForm(),
+                          PatientReportForm(
+                            formKey: _formKey,
+                            nombreController: _nombreController,
+                            edadController: _edadController,
+                            notasController: _notasController,
+                            sesiones: sesiones,
+                            sesionSeleccionada: _sesionSeleccionada,
+                            onSesionChanged: (nuevaSesion) {
+                              setState(() {
+                                _sesionSeleccionada = nuevaSesion;
+                                if (nuevaSesion != null) {
+                                  _notasController.text = nuevaSesion.notasClinicas;
+                                }
+                              });
+                            },
+                            onGenerarReporte: _generarReporte,
+                          ),
                           const Gap(24),
-                          buildInfo(),
+                          const ReportExportDetails(),
                         ],
                       )
                     : Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(flex: 3, child: buildForm()),
+                          Expanded(
+                            flex: 3,
+                            child: PatientReportForm(
+                              formKey: _formKey,
+                              nombreController: _nombreController,
+                              edadController: _edadController,
+                              notasController: _notasController,
+                              sesiones: sesiones,
+                              sesionSeleccionada: _sesionSeleccionada,
+                              onSesionChanged: (nuevaSesion) {
+                                setState(() {
+                                  _sesionSeleccionada = nuevaSesion;
+                                  if (nuevaSesion != null) {
+                                    _notasController.text = nuevaSesion.notasClinicas;
+                                  }
+                                });
+                              },
+                              onGenerarReporte: _generarReporte,
+                            ),
+                          ),
                           const Gap(24),
-                          Expanded(flex: 2, child: buildInfo()),
+                          const Expanded(
+                            flex: 2,
+                            child: ReportExportDetails(),
+                          ),
                         ],
                       ),
               ),
@@ -242,29 +169,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-    return Row(
-      children: [
-        Icon(
-          icon, 
-          size: 16, 
-          color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
-        ),
-        const Gap(8),
-        Expanded(
-          child: Text(
-            text,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
