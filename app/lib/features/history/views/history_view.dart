@@ -56,6 +56,7 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
         edadPaciente: _edadController.text.trim(),
         notasClinicas: _notasController.text.trim(),
         frecuenciaCardiaca: _sesionSeleccionada!.frecuenciaCardiaca,
+        ppgFrecuenciaCardiaca: _sesionSeleccionada!.ppgFrecuenciaCardiaca,
         nivelSpo2: _sesionSeleccionada!.nivelSpo2,
         nivelCo2: _sesionSeleccionada!.nivelCo2,
         amplitudAcustica: _sesionSeleccionada!.amplitudAcustica,

@@ -23,6 +23,7 @@ class EstadoSignosVitales {
   final List<PuntoBiometrico> spo2Datos;
   final List<PuntoBiometrico> pcgDatos;
   final int frecuenciaCardiaca;
+  final int ppgFrecuenciaCardiaca;
   final int nivelSpo2;
   final int nivelCo2;
   final int amplitudAcustica;
@@ -32,6 +33,7 @@ class EstadoSignosVitales {
     required this.spo2Datos,
     required this.pcgDatos,
     required this.frecuenciaCardiaca,
+    required this.ppgFrecuenciaCardiaca,
     required this.nivelSpo2,
     required this.nivelCo2,
     required this.amplitudAcustica,
@@ -43,6 +45,7 @@ class EstadoSignosVitales {
       spo2Datos: [],
       pcgDatos: [],
       frecuenciaCardiaca: 72,
+      ppgFrecuenciaCardiaca: 72,
       nivelSpo2: 98,
       nivelCo2: 35,
       amplitudAcustica: 12,
@@ -54,6 +57,7 @@ class EstadoSignosVitales {
     List<PuntoBiometrico>? spo2Datos,
     List<PuntoBiometrico>? pcgDatos,
     int? frecuenciaCardiaca,
+    int? ppgFrecuenciaCardiaca,
     int? nivelSpo2,
     int? nivelCo2,
     int? amplitudAcustica,
@@ -63,6 +67,7 @@ class EstadoSignosVitales {
       spo2Datos: spo2Datos ?? this.spo2Datos,
       pcgDatos: pcgDatos ?? this.pcgDatos,
       frecuenciaCardiaca: frecuenciaCardiaca ?? this.frecuenciaCardiaca,
+      ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca ?? this.ppgFrecuenciaCardiaca,
       nivelSpo2: nivelSpo2 ?? this.nivelSpo2,
       nivelCo2: nivelCo2 ?? this.nivelCo2,
       amplitudAcustica: amplitudAcustica ?? this.amplitudAcustica,
@@ -141,6 +146,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
 
       // Fluctuaciones leves de los KPIs
       final nuevaFrecuencia = 70 + _random.nextInt(5); // 70-74 lpm
+      final nuevaPpgFrecuencia = nuevaFrecuencia + _random.nextInt(3) - 1; // ±1 LPM del ECG
       final nuevoSpo2 = 97 + _random.nextInt(4); // 97-100%
       final nuevoCo2 = _random.nextDouble() > 0.99 
           ? 850 + _random.nextInt(100) 
@@ -171,6 +177,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
           spo2Datos: nuevosSpo2,
           pcgDatos: nuevosPcg,
           frecuenciaCardiaca: nuevaFrecuencia,
+          ppgFrecuenciaCardiaca: nuevaPpgFrecuencia,
           nivelSpo2: nuevoSpo2,
           nivelCo2: nuevoCo2,
           amplitudAcustica: nuevaAmplitud,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ecg_chart.dart';
 import 'spo2_chart.dart';
 import 'pcg_chart.dart';
+import 'co2_chart.dart';
 
 class WaveCharts extends StatelessWidget {
   const WaveCharts({super.key});
@@ -23,6 +24,11 @@ class WaveCharts extends StatelessWidget {
         Card(
           clipBehavior: Clip.antiAlias,
           child: GraficoPcg(),
+        ),
+        SizedBox(height: 16),
+        Card(
+          clipBehavior: Clip.antiAlias,
+          child: GraficoCo2(),
         ),
       ],
     );

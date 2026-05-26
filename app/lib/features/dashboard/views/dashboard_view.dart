@@ -27,6 +27,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   int _segundosGrabacion = 0;
   Timer? _timerGrabacion;
   final List<int> _frecuenciasGrabadas = [];
+  final List<int> _ppgFrecuenciasGrabadas = [];
   final List<int> _spo2Grabados = [];
   final List<int> _co2Grabados = [];
   final List<int> _amplitudesGrabadas = [];
@@ -52,6 +53,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       _grabando = true;
       _segundosGrabacion = 0;
       _frecuenciasGrabadas.clear();
+      _ppgFrecuenciasGrabadas.clear();
       _spo2Grabados.clear();
       _co2Grabados.clear();
       _amplitudesGrabadas.clear();
@@ -62,6 +64,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final signos = ref.read(notificadorSignosVitalesProvider);
       
       _frecuenciasGrabadas.add(signos.frecuenciaCardiaca);
+      _ppgFrecuenciasGrabadas.add(signos.ppgFrecuenciaCardiaca);
       _spo2Grabados.add(signos.nivelSpo2);
       _co2Grabados.add(signos.nivelCo2);
       _amplitudesGrabadas.add(signos.amplitudAcustica);
@@ -90,6 +93,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final fcProm = _frecuenciasGrabadas.isEmpty
         ? 70
         : (_frecuenciasGrabadas.reduce((a, b) => a + b) ~/ _frecuenciasGrabadas.length);
+    final ppgProm = _ppgFrecuenciasGrabadas.isEmpty
+        ? 72
+        : (_ppgFrecuenciasGrabadas.reduce((a, b) => a + b) ~/ _ppgFrecuenciasGrabadas.length);
     final spo2Prom = _spo2Grabados.isEmpty
         ? 98
         : (_spo2Grabados.reduce((a, b) => a + b) ~/ _spo2Grabados.length);
@@ -129,7 +135,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               ),
               const Gap(8),
               Text('• Duración: $_segundosGrabacion segundos'),
-              Text('• Prom. Cardíaco: $fcProm LPM'),
+              Text('• Prom. Cardíaco (ECG): $fcProm LPM'),
+              Text('• Prom. Pulso (PPG): $ppgProm LPM'),
               Text('• Prom. SpO2: $spo2Prom%'),
               Text('• Prom. CO2: $co2Prom ppm'),
               const Gap(16),
@@ -160,6 +167,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   usuarioId: usuarioActivo.id,
                   duracionSegundos: _segundosGrabacion,
                   frecuenciaCardiaca: fcProm,
+                  ppgFrecuenciaCardiaca: ppgProm,
                   nivelSpo2: spo2Prom,
                   nivelCo2: co2Prom,
                   amplitudAcustica: ampProm,

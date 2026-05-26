@@ -9,6 +9,7 @@ class ReporteDatos {
   final String edadPaciente;
   final String notasClinicas;
   final int frecuenciaCardiaca;
+  final int ppgFrecuenciaCardiaca;
   final int nivelSpo2;
   final int nivelCo2;
   final int amplitudAcustica;
@@ -19,6 +20,7 @@ class ReporteDatos {
     required this.edadPaciente,
     required this.notasClinicas,
     required this.frecuenciaCardiaca,
+    required this.ppgFrecuenciaCardiaca,
     required this.nivelSpo2,
     required this.nivelCo2,
     required this.amplitudAcustica,
@@ -56,6 +58,7 @@ class ReportPdfHelper {
           
           final isSpo2Critico = datos.nivelSpo2 < 95;
           final isFcCritica = datos.frecuenciaCardiaca < 50 || datos.frecuenciaCardiaca > 120;
+          final isPpgFcCritica = datos.ppgFrecuenciaCardiaca < 50 || datos.ppgFrecuenciaCardiaca > 120;
           final isCo2Critico = datos.nivelCo2 > 800;
 
           final formatoFecha = '${datos.fechaReporte.day.toString().padLeft(2, '0')}/${datos.fechaReporte.month.toString().padLeft(2, '0')}/${datos.fechaReporte.year} ${datos.fechaReporte.hour.toString().padLeft(2, '0')}:${datos.fechaReporte.minute.toString().padLeft(2, '0')}';
@@ -203,7 +206,7 @@ class ReportPdfHelper {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('AD8232 (Frecuencia Cardíaca)', style: const pw.TextStyle(fontSize: 10)),
+                          child: pw.Text('AD8232 (Frecuencia Cardíaca ECG)', style: const pw.TextStyle(fontSize: 10)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -226,9 +229,37 @@ class ReportPdfHelper {
                         ),
                       ],
                     ),
-                    // Fila SpO2
+                    // Fila PPG
                     pw.TableRow(
                       decoration: const pw.BoxDecoration(color: PdfColors.grey50),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('MAX30100 (Frecuencia Cardíaca PPG)', style: const pw.TextStyle(fontSize: 10)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('${datos.ppgFrecuenciaCardiaca}', style: const pw.TextStyle(fontSize: 10)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('LPM', style: const pw.TextStyle(fontSize: 10)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                            isPpgFcCritica ? 'CRÍTICO / ALTA PRIORIDAD' : 'NORMAL',
+                            style: pw.TextStyle(
+                              color: isPpgFcCritica ? alertRed : successGreen,
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Fila SpO2
+                    pw.TableRow(
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -257,6 +288,7 @@ class ReportPdfHelper {
                     ),
                     // Fila CO2
                     pw.TableRow(
+                      decoration: const pw.BoxDecoration(color: PdfColors.grey50),
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -285,7 +317,6 @@ class ReportPdfHelper {
                     ),
                     // Fila LM386 PCG
                     pw.TableRow(
-                      decoration: const pw.BoxDecoration(color: PdfColors.grey50),
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),

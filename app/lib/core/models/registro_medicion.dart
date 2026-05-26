@@ -9,6 +9,7 @@ class RegistroMedicion {
   final DateTime fechaRegistro;
   final int duracionSegundos;
   final int frecuenciaCardiaca;
+  final int ppgFrecuenciaCardiaca;
   final int nivelSpo2;
   final int nivelCo2;
   final int amplitudAcustica;
@@ -21,6 +22,7 @@ class RegistroMedicion {
     required this.fechaRegistro,
     required this.duracionSegundos,
     required this.frecuenciaCardiaca,
+    required this.ppgFrecuenciaCardiaca,
     required this.nivelSpo2,
     required this.nivelCo2,
     required this.amplitudAcustica,
@@ -33,6 +35,7 @@ class RegistroMedicion {
     required String usuarioId,
     required int duracionSegundos,
     required int frecuenciaCardiaca,
+    required int ppgFrecuenciaCardiaca,
     required int nivelSpo2,
     required int nivelCo2,
     required int amplitudAcustica,
@@ -47,6 +50,7 @@ class RegistroMedicion {
       fechaRegistro: ahora,
       duracionSegundos: duracionSegundos,
       frecuenciaCardiaca: frecuenciaCardiaca,
+      ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca,
       nivelSpo2: nivelSpo2,
       nivelCo2: nivelCo2,
       amplitudAcustica: amplitudAcustica,
@@ -63,6 +67,7 @@ class RegistroMedicion {
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
       duracionSegundos: json['duracionSegundos'] as int,
       frecuenciaCardiaca: json['frecuenciaCardiaca'] as int,
+      ppgFrecuenciaCardiaca: json['ppgFrecuenciaCardiaca'] as int? ?? (json['frecuenciaCardiaca'] as int? ?? 72),
       nivelSpo2: json['nivelSpo2'] as int,
       nivelCo2: json['nivelCo2'] as int,
       amplitudAcustica: json['amplitudAcustica'] as int,
@@ -79,6 +84,7 @@ class RegistroMedicion {
       'fechaRegistro': fechaRegistro.toIso8601String(),
       'duracionSegundos': duracionSegundos,
       'frecuenciaCardiaca': frecuenciaCardiaca,
+      'ppgFrecuenciaCardiaca': ppgFrecuenciaCardiaca,
       'nivelSpo2': nivelSpo2,
       'nivelCo2': nivelCo2,
       'amplitudAcustica': amplitudAcustica,

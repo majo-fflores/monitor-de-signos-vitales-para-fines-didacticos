@@ -171,9 +171,16 @@ class SessionHistoryRow extends ConsumerWidget {
                   runSpacing: 8,
                   children: [
                     MetricaInline(
-                      label: 'Frecuencia Cardíaca',
+                      label: 'Frecuencia Cardíaca (ECG)',
                       value: '${registro.frecuenciaCardiaca} LPM',
                       color: ColoresSensores.ecgVerde,
+                      theme: theme,
+                      esOscuro: esOscuro,
+                    ),
+                    MetricaInline(
+                      label: 'Pulso (PPG)',
+                      value: '${registro.ppgFrecuenciaCardiaca} LPM',
+                      color: ColoresSensores.spo2Azul,
                       theme: theme,
                       esOscuro: esOscuro,
                     ),

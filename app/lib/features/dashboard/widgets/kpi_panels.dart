@@ -11,6 +11,7 @@ class KpiPanels extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
+    final ppgFrecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
     final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
     final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
     final amplitudAcustica = ref.watch(notificadorSignosVitalesProvider.select((s) => s.amplitudAcustica));
@@ -24,10 +25,13 @@ class KpiPanels extends ConsumerWidget {
       ),
       const SizedBox(height: 16),
       TarjetaKpiVital(
-        titulo: 'MAX30100 (Saturación SpO2)',
+        titulo: 'MAX30100 (SpO2)',
         valor: '$nivelSpo2',
         unidad: '%',
         colorAcento: ColoresSensores.spo2Azul,
+        tituloSecundario: 'Pulsaciones (PPG)',
+        valorSecundario: '$ppgFrecuenciaCardiaca',
+        unidadSecundaria: 'LPM',
       ),
       const SizedBox(height: 16),
       TarjetaKpiVital(
