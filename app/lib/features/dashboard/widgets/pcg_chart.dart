@@ -5,7 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
 class GraficoPcg extends ConsumerWidget {
-  const GraficoPcg({super.key});
+  final bool esCompacto;
+  final bool expandir;
+  const GraficoPcg({super.key, this.esCompacto = false, this.expandir = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,9 +27,13 @@ class GraficoPcg extends ConsumerWidget {
       return FlSpot(entry.key.toDouble(), entry.value.y);
     }).toList();
 
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.only(top: 16, bottom: 8, right: 16, left: 16),
+    final mainContent = Container(
+      padding: EdgeInsets.only(
+        top: esCompacto ? 10 : 16,
+        bottom: esCompacto ? 4 : 8,
+        right: 16,
+        left: 16,
+      ),
       color: colorFondo,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,6 +48,7 @@ class GraficoPcg extends ConsumerWidget {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorTexto,
                     fontWeight: FontWeight.w800,
+                    fontSize: esCompacto ? 10 : null,
                     letterSpacing: 1.1,
                   ),
                 ),
@@ -64,7 +71,7 @@ class GraficoPcg extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: esCompacto ? 4 : 12),
           Expanded(
             child: RepaintBoundary(
               child: LineChart(
@@ -104,5 +111,11 @@ class GraficoPcg extends ConsumerWidget {
         ],
       ),
     );
+
+    if (expandir) {
+      return mainContent;
+    } else {
+      return SizedBox(height: esCompacto ? 110 : 140, child: mainContent);
+    }
   }
 }
