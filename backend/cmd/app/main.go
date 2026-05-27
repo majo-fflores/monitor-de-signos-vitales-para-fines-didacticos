@@ -54,6 +54,9 @@ func main() {
 	// Rutas de API para Usuarios usando la función limpia
 	users.RegisterUserRoutes(e)
 
+	// Rutas de API para Sensores (WebSockets y otros)
+	sensors.RegisterSensorRoutes(e)
+
 	// Iniciar servidor en el puerto configurado
 	port := os.Getenv("PORT")
 	if port == "" {

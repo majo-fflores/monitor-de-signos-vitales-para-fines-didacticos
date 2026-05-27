@@ -6,25 +6,23 @@ import (
 	"time"
 )
 
-// Manager handles the data source reading and the active session
 type Manager struct {
 	source        DataSource
 	activeSession *SessionData
 	isRecording   bool
 	mu            sync.Mutex
+	subscribers   map[chan WsPacket]bool
 }
 
-// GlobalManager is a global instance to be accessed from routes
 var GlobalManager *Manager
 
-// NewManager creates a new Manager instance
 func NewManager(source DataSource) *Manager {
 	return &Manager{
-		source: source,
+		source:      source,
+		subscribers: make(map[chan WsPacket]bool),
 	}
 }
 
-// StartBackgroundListening starts an infinite loop reading from the DataSource
 func (m *Manager) StartBackgroundListening() {
 	log.Println("Iniciando escucha en segundo plano del sensor...")
 	for {
@@ -38,8 +36,22 @@ func (m *Manager) StartBackgroundListening() {
 		// Calculate timestamp at reception time
 		ts := time.Now().UnixMilli()
 
-		// Store in session if recording
 		m.mu.Lock()
+		
+		// Broadcast to all websocket subscribers
+		wsPacket := WsPacket{
+			Type:      packet.Type,
+			Value:     packet.Value,
+			Timestamp: ts,
+		}
+		for ch := range m.subscribers {
+			select {
+			case ch <- wsPacket:
+			default: // Prevent blocking if the channel is full
+			}
+		}
+
+		// Store in session if recording
 		if m.isRecording && m.activeSession != nil {
 			sample := Sample{
 				Timestamp: ts,
@@ -79,4 +91,21 @@ func (m *Manager) StopSession() *SessionData {
 	m.activeSession = nil
 	log.Println("Sesión detenida.")
 	return session
+}
+
+// Subscribe adds a new channel to receive real-time data
+func (m *Manager) Subscribe(ch chan WsPacket) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.subscribers[ch] = true
+}
+
+// Unsubscribe removes a channel from receiving real-time data
+func (m *Manager) Unsubscribe(ch chan WsPacket) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.subscribers[ch]; ok {
+		delete(m.subscribers, ch)
+		close(ch)
+	}
 }

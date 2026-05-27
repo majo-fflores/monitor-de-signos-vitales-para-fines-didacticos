@@ -14,7 +14,6 @@ type mockDataSource struct {
 
 func (m *mockDataSource) ReadPacket() (ArduinoPacket, error) {
 	if m.index >= len(m.packets) {
-		// Al terminarse los paquetes simulamos un EOF
 		time.Sleep(100 * time.Millisecond)
 		return ArduinoPacket{}, fmt.Errorf("no hay mas datos")
 	}
