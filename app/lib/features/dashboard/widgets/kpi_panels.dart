@@ -14,7 +14,6 @@ class KpiPanels extends ConsumerWidget {
     final ppgFrecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
     final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
     final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
-    final amplitudAcustica = ref.watch(notificadorSignosVitalesProvider.select((s) => s.amplitudAcustica));
 
     final listaKpis = [
       TarjetaKpiVital(
@@ -40,13 +39,6 @@ class KpiPanels extends ConsumerWidget {
         unidad: 'ppm',
         colorAcento: ColoresSensores.co2Amarillo,
       ),
-      const SizedBox(height: 16),
-      TarjetaKpiVital(
-        titulo: 'LM386 (Amplitud de Audio)',
-        valor: '$amplitudAcustica',
-        unidad: '%',
-        colorAcento: Colors.cyanAccent.shade400,
-      ),
     ];
 
     if (esMobile) {
@@ -57,8 +49,6 @@ class KpiPanels extends ConsumerWidget {
           listaKpis[2],
           const SizedBox(height: 12),
           listaKpis[4],
-          const SizedBox(height: 12),
-          listaKpis[6],
         ],
       );
     } else {

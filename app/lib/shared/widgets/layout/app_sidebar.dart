@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
 import 'sidebar_logo.dart';
 import 'sidebar_nav.dart';
 
@@ -18,13 +19,13 @@ class AppSidebar extends StatelessWidget {
       height: double.infinity,
       decoration: BoxDecoration(
         color: esOscuro 
-            ? const Color(0xFF2D2D2D) // ColoresOscuros.sidebar
-            : const Color(0xFFFCFCFC), // ColoresClaros.sidebar
+            ? ColoresOscuros.sidebar
+            : ColoresClaros.sidebar,
         border: Border(
           right: BorderSide(
             color: esOscuro 
-                ? const Color(0xFF333333) // ColoresOscuros.sidebarBorder
-                : const Color(0xFFECECF0), // ColoresClaros.sidebarBorder
+                ? ColoresOscuros.sidebarBorder
+                : ColoresClaros.sidebarBorder,
             width: 1,
           ),
         ),

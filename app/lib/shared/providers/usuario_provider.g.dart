@@ -7,7 +7,7 @@ part of 'usuario_provider.dart';
 // **************************************************************************
 
 String _$notificadorUsuariosHash() =>
-    r'2f14dbe937cc7d8ea95f8984807d87639b6732d5';
+    r'971fb9a2941867149afd6f1bac0de97b8f44f20c';
 
 /// Notifier reactivo para la gestión de usuarios.
 /// Persiste automáticamente cada cambio en SharedPreferences.

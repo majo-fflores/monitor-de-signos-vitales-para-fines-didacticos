@@ -14,8 +14,9 @@ class GraficoEcg extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final datos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgDatos));
-    // Convertimos los PuntoBiometrico a FlSpot de fl_chart
-    final spots = datos.map((d) => FlSpot(d.x, d.y)).toList();
+    final ecgActivo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgActivo));
+    // Convertimos los PuntoBiometrico a FlSpot de fl_chart usando el índice como X para evitar cruces diagonales
+    final spots = datos.asMap().entries.map((entry) => FlSpot(entry.key.toDouble(), entry.value.y)).toList();
 
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
@@ -29,42 +30,78 @@ class GraficoEcg extends ConsumerWidget {
       width: double.infinity,
       color: colorFondoGrafico,
       padding: EdgeInsets.all(esCompacto ? 6 : 12),
-      child: RepaintBoundary(
-        child: LineChart(
-          LineChartData(
-            minY: -30,
-            maxY: 100,
-            gridData: FlGridData(
-              show: true,
-              drawVerticalLine: true,
-              drawHorizontalLine: true,
-              getDrawingHorizontalLine: (value) => FlLine(
-                color: colorRejilla,
-                strokeWidth: 1,
-                dashArray: const [4, 4],
+      child: Stack(
+        children: [
+          RepaintBoundary(
+            child: LineChart(
+              LineChartData(
+                minY: -30,
+                maxY: 100,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  drawHorizontalLine: true,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: colorRejilla,
+                    strokeWidth: 1,
+                    dashArray: const [4, 4],
+                  ),
+                  getDrawingVerticalLine: (value) => FlLine(
+                    color: colorRejilla,
+                    strokeWidth: 1,
+                    dashArray: const [4, 4],
+                  ),
+                ),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: false,
+                    color: colorLinea,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
               ),
-              getDrawingVerticalLine: (value) => FlLine(
-                color: colorRejilla,
-                strokeWidth: 1,
-                dashArray: const [4, 4],
+              duration: Duration.zero,
+            ),
+          ),
+          if (!ecgActivo)
+            Positioned.fill(
+              child: Container(
+                color: esOscuro ? Colors.black87.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.9),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          'SENSOR DESCONECTADO',
+                          style: TextStyle(
+                            fontSize: esCompacto ? 10 : 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            titlesData: const FlTitlesData(show: false),
-            borderData: FlBorderData(show: false),
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: false,
-                color: colorLinea,
-                barWidth: 2,
-                isStrokeCapRound: true,
-                dotData: const FlDotData(show: false),
-                belowBarData: BarAreaData(show: false),
-              ),
-            ],
-          ),
-          duration: Duration.zero,
-        ),
+        ],
       ),
     );
 

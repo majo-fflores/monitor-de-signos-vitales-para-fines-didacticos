@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../../core/theme/app_colors.dart';
 
 class ElementoNav {
   final IconData icono;
@@ -70,7 +71,7 @@ class SidebarNav extends StatelessWidget {
                   boxShadow: esActivo && !esOscuro
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF00D4FF).withValues(alpha: 0.15), // Reemplazado withOpacity
+                            color: ColoresComponentes.sidebarShadowGlow.withValues(alpha: 0.15), // Reemplazado withOpacity
                             blurRadius: 20,
                             offset: const Offset(0, 0),
                           )

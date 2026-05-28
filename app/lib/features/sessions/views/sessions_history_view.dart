@@ -6,8 +6,8 @@ import '../../../../core/constants/breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/historial_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
-import '../widgets/kpi_chip.dart';
 import '../widgets/session_history_row.dart';
+import '../widgets/history_statistics_summary.dart';
 
 /// Vista del historial de mediciones.
 /// Usa filas expandibles compactas para no ocupar demasiado espacio vertical.
@@ -49,28 +49,6 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
 
     final registros = estadoHistorial.registros;
 
-    // ── KPIs ──
-    final total = registros.length;
-    double promFC = 0, promSpo2 = 0;
-    int durTotal = 0;
-    if (total > 0) {
-      double sFC = 0, sSpo2 = 0;
-      for (final r in registros) {
-        sFC += r.frecuenciaCardiaca;
-        sSpo2 += r.nivelSpo2;
-        durTotal += r.duracionSegundos;
-      }
-      promFC = sFC / total;
-      promSpo2 = sSpo2 / total;
-    }
-
-    String fmtDur(int s) {
-      if (s < 60) return '${s}s';
-      final m = s ~/ 60;
-      if (m < 60) return '${m}m';
-      return '${m ~/ 60}h ${m % 60}m';
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final esMobile = constraints.maxWidth < Breakpoints.tablet;
@@ -95,49 +73,11 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
             ),
             const Gap(24),
 
-            // ── KPI strip ──
-            SizedBox(
-              height: 76,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  KpiChip(
-                    titulo: 'Sesiones',
-                    valor: '$total',
-                    icono: LucideIcons.checkSquare,
-                    color: const Color(0xFF8B5CF6),
-                    theme: theme,
-                    esOscuro: esOscuro,
-                  ),
-                  const SizedBox(width: 12),
-                  KpiChip(
-                    titulo: 'Prom. FC',
-                    valor: '${promFC.round()} LPM',
-                    icono: LucideIcons.heart,
-                    color: ColoresSensores.ecgVerde,
-                    theme: theme,
-                    esOscuro: esOscuro,
-                  ),
-                  const SizedBox(width: 12),
-                  KpiChip(
-                    titulo: 'Prom. SpO2',
-                    valor: '${promSpo2.round()}%',
-                    icono: LucideIcons.droplets,
-                    color: ColoresSensores.spo2Azul,
-                    theme: theme,
-                    esOscuro: esOscuro,
-                  ),
-                  const SizedBox(width: 12),
-                  KpiChip(
-                    titulo: 'Tiempo Total',
-                    valor: fmtDur(durTotal),
-                    icono: LucideIcons.clock,
-                    color: const Color(0xFFF59E0B),
-                    theme: theme,
-                    esOscuro: esOscuro,
-                  ),
-                ],
-              ),
+            // ── KPI strip componentizado ──
+            HistoryStatisticsSummary(
+              registros: registros,
+              theme: theme,
+              esOscuro: esOscuro,
             ),
             const Gap(24),
 

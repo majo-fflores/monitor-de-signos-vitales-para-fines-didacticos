@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/usuario_provider.dart';
 import '../../../../shared/utils/almacenamiento_local.dart';
 import '../widgets/create_user_form.dart';
 import '../widgets/segmented_toggle.dart';
 import '../widgets/user_selection_tab.dart';
+import '../widgets/user_gateway_header.dart';
 
 /// Pantalla de selección de usuario (Gateway obligatorio).
 /// Usa IndexedStack para cambio de pestaña instantáneo sin jank.
@@ -146,46 +145,8 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Header principal ──
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              LucideIcons.heartPulse,
-                              color: theme.colorScheme.primary,
-                              size: 32,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'DataVital',
-                                style: theme.textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -1,
-                                ),
-                              ),
-                              Text(
-                                'Monitoreo Médico Inteligente',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: esOscuro
-                                      ? ColoresOscuros.mutedForeground
-                                      : ColoresClaros.mutedForeground,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      // ── Header principal componentizado ──
+                      UserGatewayHeader(esOscuro: esOscuro),
                       const Gap(32),
 
                       // ── Segmented Control (sin TabBar) ──

@@ -7,10 +7,13 @@ part of 'vital_signs_provider.dart';
 // **************************************************************************
 
 String _$notificadorSignosVitalesHash() =>
-    r'491d20064dc4a2ee35ab5d6df8d3e4074353b5da';
+    r'31e7e4a6d636d928eacf409ae1fd6ab4b4c2496b';
 
-/// Notifier reactivo que simula los sensores en tiempo real de forma matemática.
-/// Reemplazo directo con Riverpod del store de Zustand (useVitalSignsStore).
+/// Notifier reactivo para signos vitales de alto rendimiento.
+///
+/// Características STR avanzadas:
+/// - Throttling adaptativo a nivel de frame sincronizado con SchedulerBinding.
+/// - Reducción de jank y micro-allocations de memoria.
 ///
 /// Copied from [NotificadorSignosVitales].
 @ProviderFor(NotificadorSignosVitales)

@@ -59,7 +59,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
         ppgFrecuenciaCardiaca: _sesionSeleccionada!.ppgFrecuenciaCardiaca,
         nivelSpo2: _sesionSeleccionada!.nivelSpo2,
         nivelCo2: _sesionSeleccionada!.nivelCo2,
-        amplitudAcustica: _sesionSeleccionada!.amplitudAcustica,
         fechaReporte: _sesionSeleccionada!.fechaRegistro,
       );
 

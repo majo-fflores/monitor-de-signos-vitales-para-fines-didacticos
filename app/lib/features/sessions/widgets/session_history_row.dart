@@ -199,13 +199,6 @@ class SessionHistoryRow extends ConsumerWidget {
                       esOscuro: esOscuro,
                     ),
                     MetricaInline(
-                      label: 'Amplitud Acústica',
-                      value: '${registro.amplitudAcustica}%',
-                      color: const Color(0xFF06B6D4),
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
-                    MetricaInline(
                       label: 'Duración',
                       value: registro.duracionFormateada,
                       color: const Color(0xFFF59E0B),

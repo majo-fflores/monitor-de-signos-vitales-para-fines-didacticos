@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/breakpoints.dart';
 import '../../../core/models/registro_medicion.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 import '../../../shared/providers/usuario_provider.dart';
 import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/connection_provider.dart';
 import '../widgets/kpi_panels.dart';
 import '../widgets/wave_charts.dart';
+import '../widgets/dashboard_header.dart';
+import '../widgets/save_session_dialog.dart';
 
 /// Vista principal de monitoreo en tiempo real.
 /// Se suscribe de manera selectiva a los flujos del NotificadorSignosVitales.
@@ -31,15 +32,23 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   final List<int> _ppgFrecuenciasGrabadas = [];
   final List<int> _spo2Grabados = [];
   final List<int> _co2Grabados = [];
-  final List<int> _amplitudesGrabadas = [];
   int _alertasDisparadas = 0;
 
   @override
   void initState() {
     super.initState();
-    // Ejecutamos la simulación al montar el componente
+    // Si la configuración ya terminó de cargar al entrar (ej: navegación posterior), inicializamos de inmediato.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificadorSignosVitalesProvider.notifier).iniciarSimulacion();
+      final configConexion = ref.read(notificadorConexionProvider);
+      if (!configConexion.cargando) {
+        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
+        if (configConexion.modo == ModoFuente.websocket) {
+          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+          notifier.iniciarConWebSocket(ws.packetStream);
+        } else {
+          notifier.iniciarSimulacion();
+        }
+      }
     });
   }
 
@@ -57,7 +66,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       _ppgFrecuenciasGrabadas.clear();
       _spo2Grabados.clear();
       _co2Grabados.clear();
-      _amplitudesGrabadas.clear();
       _alertasDisparadas = 0;
     });
 
@@ -68,7 +76,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       _ppgFrecuenciasGrabadas.add(signos.ppgFrecuenciaCardiaca);
       _spo2Grabados.add(signos.nivelSpo2);
       _co2Grabados.add(signos.nivelCo2);
-      _amplitudesGrabadas.add(signos.amplitudAcustica);
 
       // Verificación simple de alertas/anomalías
       if (signos.frecuenciaCardiaca < 60 || signos.frecuenciaCardiaca > 100 ||
@@ -103,99 +110,47 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final co2Prom = _co2Grabados.isEmpty
         ? 400
         : (_co2Grabados.reduce((a, b) => a + b) ~/ _co2Grabados.length);
-    final ampProm = _amplitudesGrabadas.isEmpty
-        ? 15
-        : (_amplitudesGrabadas.reduce((a, b) => a + b) ~/ _amplitudesGrabadas.length);
 
-    final notasController = TextEditingController();
-
-    // Mostrar diálogo premium para agregar notas clínicas antes de guardar
+    // Mostrar diálogo premium componentizado
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(LucideIcons.save, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              const Text('Guardar Medición'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Resumen de la sesión:',
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const Gap(8),
-              Text('• Duración: $_segundosGrabacion segundos'),
-              Text('• Prom. Cardíaco (ECG): $fcProm LPM'),
-              Text('• Prom. Pulso (PPG): $ppgProm LPM'),
-              Text('• Prom. SpO2: $spo2Prom%'),
-              Text('• Prom. CO2: $co2Prom ppm'),
-              const Gap(16),
-              TextField(
-                controller: notasController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Notas y Observaciones Clínicas',
-                  hintText: 'Ej. Paciente estable durante la prueba...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() => _grabando = false);
-              },
-              child: const Text('Descartar'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final registro = RegistroMedicion.crear(
-                  usuarioId: usuarioActivo.id,
-                  duracionSegundos: _segundosGrabacion,
-                  frecuenciaCardiaca: fcProm,
-                  ppgFrecuenciaCardiaca: ppgProm,
-                  nivelSpo2: spo2Prom,
-                  nivelCo2: co2Prom,
-                  amplitudAcustica: ampProm,
-                  alertasDisparadas: _alertasDisparadas,
-                  notasClinicas: notasController.text.trim(),
-                );
+        return SaveSessionDialog(
+          segundosGrabacion: _segundosGrabacion,
+          fcProm: fcProm,
+          ppgProm: ppgProm,
+          spo2Prom: spo2Prom,
+          co2Prom: co2Prom,
+          onCancel: () {
+            Navigator.pop(context);
+            setState(() => _grabando = false);
+          },
+          onSave: (notas) async {
+            final registro = RegistroMedicion.crear(
+              usuarioId: usuarioActivo.id,
+              duracionSegundos: _segundosGrabacion,
+              frecuenciaCardiaca: fcProm,
+              ppgFrecuenciaCardiaca: ppgProm,
+              nivelSpo2: spo2Prom,
+              nivelCo2: co2Prom,
+              alertasDisparadas: _alertasDisparadas,
+              notasClinicas: notas,
+            );
 
-                await ref.read(notificadorHistorialProvider.notifier).guardarRegistro(registro);
-                
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sesión de medición guardada con éxito'),
-                      backgroundColor: ColoresSensores.statusConectado,
-                    ),
-                  );
-                }
-                setState(() => _grabando = false);
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-              ),
-              child: const Text('Guardar'),
-            ),
-          ],
+            await ref.read(notificadorHistorialProvider.notifier).guardarRegistro(registro);
+            
+            if (context.mounted) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Sesión de medición guardada con éxito'),
+                  backgroundColor: ColoresSensores.statusConectado,
+                ),
+              );
+            }
+            setState(() => _grabando = false);
+          },
         );
       },
     );
@@ -212,6 +167,30 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
     final usuarioActivo = ref.watch(notificadorUsuariosProvider).usuarioActivo;
+    final estadoConexion = ref.watch(notificadorConexionProvider);
+
+    // Escuchamos reactivamente los cambios de conexión para inicializar el origen de datos adecuado
+    ref.listen<EstadoConexionBackend>(notificadorConexionProvider, (prev, next) {
+      if ((prev == null || prev.cargando) && !next.cargando) {
+        // Al terminar de cargar la configuración inicial de persistencia
+        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
+        if (next.modo == ModoFuente.websocket) {
+          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+          notifier.iniciarConWebSocket(ws.packetStream);
+        } else {
+          notifier.iniciarSimulacion();
+        }
+      } else if (prev != null && prev.modo != next.modo) {
+        // Al cambiar de modo manualmente
+        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
+        if (next.modo == ModoFuente.websocket) {
+          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+          notifier.iniciarConWebSocket(ws.packetStream);
+        } else {
+          notifier.iniciarSimulacion();
+        }
+      }
+    });
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -220,70 +199,21 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header de la sección
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Dashboard de Bioseñales',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Visualización en tiempo real de sensores.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Botón de control de grabación
-                if (usuarioActivo != null) ...[
-                  IconButton(
-                    tooltip: _vistaCompacta ? 'Vista Extendida (Lista)' : 'Vista Compacta (Cuadrícula)',
-                    icon: Icon(
-                      _vistaCompacta ? LucideIcons.layoutList : LucideIcons.layoutGrid,
-                      color: _vistaCompacta ? theme.colorScheme.primary : (esOscuro ? Colors.white70 : Colors.black54),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _vistaCompacta = !_vistaCompacta;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _grabando
-                      ? OutlinedButton.icon(
-                          onPressed: _detenerYGuardar,
-                          icon: const Icon(LucideIcons.square, size: 16, color: Colors.red),
-                          label: Text(
-                            'DETENER (${_formatearTiempo(_segundosGrabacion)})',
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.red),
-                          ),
-                        )
-                      : FilledButton.icon(
-                          onPressed: _iniciarGrabacion,
-                          icon: const Icon(LucideIcons.play, size: 16),
-                          label: const Text('GRABAR SESIÓN'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                          ),
-                        ),
-                ],
-              ],
+            // Header componentizado
+            DashboardHeader(
+              esOscuro: esOscuro,
+              tieneUsuarioActivo: usuarioActivo != null,
+              grabando: _grabando,
+              vistaCompacta: _vistaCompacta,
+              tiempoFormateado: _formatearTiempo(_segundosGrabacion),
+              estadoConexion: estadoConexion,
+              onToggleVista: () {
+                setState(() {
+                  _vistaCompacta = !_vistaCompacta;
+                });
+              },
+              onStartRecording: _iniciarGrabacion,
+              onStopRecording: _detenerYGuardar,
             ),
             const SizedBox(height: 24),
 

@@ -12,7 +12,6 @@ class ReporteDatos {
   final int ppgFrecuenciaCardiaca;
   final int nivelSpo2;
   final int nivelCo2;
-  final int amplitudAcustica;
   final DateTime fechaReporte;
 
   ReporteDatos({
@@ -23,7 +22,6 @@ class ReporteDatos {
     required this.ppgFrecuenciaCardiaca,
     required this.nivelSpo2,
     required this.nivelCo2,
-    required this.amplitudAcustica,
     required this.fechaReporte,
   });
 }
@@ -312,27 +310,6 @@ class ReportPdfHelper {
                               fontSize: 9,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    // Fila LM386 PCG
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('LM386 (Amplitud Acústica PCG)', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('${datos.amplitudAcustica}', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('%', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('ESTABLE', style: pw.TextStyle(color: successGreen, fontWeight: pw.FontWeight.bold, fontSize: 9)),
                         ),
                       ],
                     ),

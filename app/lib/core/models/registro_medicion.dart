@@ -12,7 +12,6 @@ class RegistroMedicion {
   final int ppgFrecuenciaCardiaca;
   final int nivelSpo2;
   final int nivelCo2;
-  final int amplitudAcustica;
   final int alertasDisparadas;
   final String notasClinicas;
 
@@ -25,7 +24,6 @@ class RegistroMedicion {
     required this.ppgFrecuenciaCardiaca,
     required this.nivelSpo2,
     required this.nivelCo2,
-    required this.amplitudAcustica,
     required this.alertasDisparadas,
     required this.notasClinicas,
   });
@@ -38,7 +36,6 @@ class RegistroMedicion {
     required int ppgFrecuenciaCardiaca,
     required int nivelSpo2,
     required int nivelCo2,
-    required int amplitudAcustica,
     int alertasDisparadas = 0,
     String notasClinicas = '',
   }) {
@@ -53,7 +50,6 @@ class RegistroMedicion {
       ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca,
       nivelSpo2: nivelSpo2,
       nivelCo2: nivelCo2,
-      amplitudAcustica: amplitudAcustica,
       alertasDisparadas: alertasDisparadas,
       notasClinicas: notasClinicas,
     );
@@ -70,7 +66,6 @@ class RegistroMedicion {
       ppgFrecuenciaCardiaca: json['ppgFrecuenciaCardiaca'] as int? ?? (json['frecuenciaCardiaca'] as int? ?? 72),
       nivelSpo2: json['nivelSpo2'] as int,
       nivelCo2: json['nivelCo2'] as int,
-      amplitudAcustica: json['amplitudAcustica'] as int,
       alertasDisparadas: json['alertasDisparadas'] as int? ?? 0,
       notasClinicas: json['notasClinicas'] as String? ?? '',
     );
@@ -87,7 +82,6 @@ class RegistroMedicion {
       'ppgFrecuenciaCardiaca': ppgFrecuenciaCardiaca,
       'nivelSpo2': nivelSpo2,
       'nivelCo2': nivelCo2,
-      'amplitudAcustica': amplitudAcustica,
       'alertasDisparadas': alertasDisparadas,
       'notasClinicas': notasClinicas,
     };

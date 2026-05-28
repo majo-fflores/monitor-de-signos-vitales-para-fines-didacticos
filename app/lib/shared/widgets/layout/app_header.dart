@@ -5,6 +5,7 @@ import 'arduino_status.dart';
 import 'live_clock.dart';
 import 'theme_toggle.dart';
 import '../../providers/usuario_provider.dart';
+import '../../../core/theme/app_colors.dart';
 
 /// Encabezado estático superior de la aplicación.
 /// Muestra título, widget del estado de Arduino, chip del usuario activo y controles de tema/reloj.
@@ -19,15 +20,7 @@ class AppHeader extends ConsumerWidget {
   });
 
   Color _obtenerColorAvatar(String nombre) {
-    final colores = [
-      const Color(0xFF3B82F6), // Azul
-      const Color(0xFF10B981), // Verde
-      const Color(0xFFEC4899), // Rosa
-      const Color(0xFF8B5CF6), // Violeta
-      const Color(0xFFF59E0B), // Ámbar
-      const Color(0xFFEF4444), // Rojo
-      const Color(0xFF06B6D4), // Cian
-    ];
+    final colores = ColoresComponentes.avatarColores;
     final hash = nombre.hashCode.abs();
     return colores[hash % colores.length];
   }
@@ -51,8 +44,8 @@ class AppHeader extends ConsumerWidget {
         border: Border(
           bottom: BorderSide(
             color: esOscuro 
-                ? const Color(0xFF333333) // ColoresOscuros.border
-                : const Color(0xFFECECF0), // ColoresClaros.border
+                ? ColoresOscuros.border
+                : ColoresClaros.border,
             width: 1,
           ),
         ),
@@ -95,7 +88,7 @@ class AppHeader extends ConsumerWidget {
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF10B981), // Emerald green hex value
+                      color: ColoresSensores.statusConectado, // Emerald green hex value
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -120,7 +113,7 @@ class AppHeader extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color: esOscuro ? const Color(0xFF333333) : const Color(0x1A000000),
+                      color: esOscuro ? ColoresComponentes.popupBorderOscuro : ColoresComponentes.popupBorderClaro,
                     ),
                   ),
                   onSelected: (value) {
