@@ -1,8 +1,10 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/models/usuario.dart';
+
 import '../../core/models/registro_medicion.dart';
+import '../../core/models/usuario.dart';
 
 /// Utilidad de persistencia local para usuarios y registros de medición.
 /// Abstrae las operaciones de lectura/escritura sobre SharedPreferences

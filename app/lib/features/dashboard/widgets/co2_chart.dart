@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
+import 'co2_compact_indicator.dart';
 import 'co2_gauge.dart';
 import 'co2_threshold_badge.dart';
-import 'co2_compact_indicator.dart';
 
 /// Widget premium de calidad de aire (MQ-135) adaptado a un diseño ancho y componentizado.
 /// Distribuye el Gauge a la izquierda y un panel clínico explicativo legible a la derecha.

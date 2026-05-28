@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../shared/providers/usuario_provider.dart';
 import '../../../../shared/utils/almacenamiento_local.dart';
 import '../widgets/create_user_form.dart';
 import '../widgets/segmented_toggle.dart';
-import '../widgets/user_selection_tab.dart';
 import '../widgets/user_gateway_header.dart';
+import '../widgets/user_selection_tab.dart';
 
 /// Pantalla de selección de usuario (Gateway obligatorio).
 /// Usa IndexedStack para cambio de pestaña instantáneo sin jank.

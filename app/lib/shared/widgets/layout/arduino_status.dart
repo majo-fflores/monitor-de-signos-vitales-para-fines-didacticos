@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/services/websocket_service.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../providers/connection_provider.dart';
 
 /// Indicador dinámico de estado de conexión del Arduino.

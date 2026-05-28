@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'alarma_state.dart';
+
 import '../../core/models/ws_packet.dart';
+import 'alarma_state.dart';
 
 part 'vital_signs_provider.g.dart';
 

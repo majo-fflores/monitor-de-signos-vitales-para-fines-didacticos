@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/breakpoints.dart';
 import '../../../core/models/registro_medicion.dart';
-import '../../../shared/utils/report_pdf_helper.dart';
-import '../../../shared/providers/usuario_provider.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/usuario_provider.dart';
+import '../../../shared/utils/report_pdf_helper.dart';
 import '../widgets/patient_report_form.dart';
 import '../widgets/report_export_details.dart';
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+
 import '../../../core/theme/app_colors.dart';
-import '../widgets/backend_connection_card.dart';
 import '../widgets/alarm_monitoring_card.dart';
+import '../widgets/backend_connection_card.dart';
 import '../widgets/biometric_thresholds_card.dart';
 
 class SettingsView extends ConsumerWidget {

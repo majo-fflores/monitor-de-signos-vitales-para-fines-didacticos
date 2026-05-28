@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../providers/usuario_provider.dart';
 import 'arduino_status.dart';
 import 'live_clock.dart';
 import 'theme_toggle.dart';
-import '../../providers/usuario_provider.dart';
-import '../../../core/theme/app_colors.dart';
 
 /// Encabezado estático superior de la aplicación.
 /// Muestra título, widget del estado de Arduino, chip del usuario activo y controles de tema/reloj.

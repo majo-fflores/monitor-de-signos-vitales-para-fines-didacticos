@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+
 import '../../../core/constants/breakpoints.dart';
 import '../../providers/alarma_state.dart';
-import 'app_sidebar.dart';
 import 'app_header.dart';
+import 'app_sidebar.dart';
 
 class MainLayout extends ConsumerStatefulWidget {
   final Widget child;

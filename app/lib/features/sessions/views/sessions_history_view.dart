@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
 import '../../../../core/constants/breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/historial_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
-import '../widgets/session_history_row.dart';
 import '../widgets/history_statistics_summary.dart';
+import '../widgets/session_history_row.dart';
 
 /// Vista del historial de mediciones.
 /// Usa filas expandibles compactas para no ocupar demasiado espacio vertical.

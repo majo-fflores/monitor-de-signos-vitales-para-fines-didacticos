@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
+import 'co2_chart.dart';
 import 'ecg_chart.dart';
 import 'spo2_chart.dart';
-import 'co2_chart.dart';
 
 class WaveCharts extends StatelessWidget {
   final bool esCompacto;

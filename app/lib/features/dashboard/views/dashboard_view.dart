@@ -1,17 +1,19 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/constants/breakpoints.dart';
 import '../../../core/models/registro_medicion.dart';
-import '../../../shared/providers/vital_signs_provider.dart';
-import '../../../shared/providers/usuario_provider.dart';
-import '../../../shared/providers/historial_provider.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/connection_provider.dart';
-import '../widgets/kpi_panels.dart';
-import '../widgets/wave_charts.dart';
+import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/usuario_provider.dart';
+import '../../../shared/providers/vital_signs_provider.dart';
 import '../widgets/dashboard_header.dart';
+import '../widgets/kpi_panels.dart';
 import '../widgets/save_session_dialog.dart';
+import '../widgets/wave_charts.dart';
 
 /// Vista principal de monitoreo en tiempo real.
 /// Se suscribe de manera selectiva a los flujos del NotificadorSignosVitales.

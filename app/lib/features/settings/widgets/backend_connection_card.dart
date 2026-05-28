@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/theme/app_colors.dart';
+
 import '../../../../core/services/websocket_service.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/connection_provider.dart';
 import '../../../../shared/providers/vital_signs_provider.dart';
 
