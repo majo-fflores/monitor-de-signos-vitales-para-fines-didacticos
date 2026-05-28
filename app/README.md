@@ -43,6 +43,16 @@ lib/
 | `just front-clean` | Limpia la cache de Flutter y reinstala dependencias |
 | `just front-test` | Ejecuta las pruebas unitarias y de widgets |
 | `just front-build-linux` | Compila ejecutable nativo para Linux |
-| `just front-build-windows` | Compila ejecutable nativo para Windows |
+| `just front-build-windows` | Compila ejecutable nativo para Windows (ofuscado) |
 | `just front-build-apk` | Compila la APK para Android |
 | `just front-build-web` | Compila el bundle de produccion Web |
+
+## Generación del Instalador (Inno Setup)
+
+Para compilar el instalador `.exe` independiente en Windows:
+
+1. Compila la app ejecutando `just front-build-windows`.
+2. Abre la aplicación **Inno Setup Compiler** en Windows, carga el archivo installer.iss y presiona **Compile** (Ctrl+F9).
+   * *O por consola con:* `ISCC app/windows/installer.iss` (si tienes el compilador de Inno Setup en el PATH).
+
+El instalador `DataVital-Installer.exe` se generará en la carpeta `build/windows/x64/runner/Release/`.

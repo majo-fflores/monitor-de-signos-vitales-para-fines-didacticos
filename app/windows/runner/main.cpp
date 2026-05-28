@@ -7,6 +7,21 @@
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  // Create a named mutex to ensure only one instance of the app is running.
+  HANDLE mutex = ::CreateMutex(nullptr, TRUE, L"Local\\DataVitalSingleInstanceMutex");
+  if (mutex == nullptr || ::GetLastError() == ERROR_ALREADY_EXISTS) {
+    // If it already exists, find the existing window and bring it to the foreground
+    HWND existing_window = ::FindWindow(L"FLUTTER_RUNNER_WIN32_WINDOW", L"DataVital");
+    if (existing_window) {
+      ::ShowWindow(existing_window, SW_SHOWNORMAL);
+      ::SetForegroundWindow(existing_window);
+    }
+    if (mutex) {
+      ::CloseHandle(mutex);
+    }
+    return EXIT_SUCCESS;
+  }
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -27,7 +42,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"datavital_flutter", origin, size)) {
+  if (!window.Create(L"DataVital", origin, size)) {
+    ::CloseHandle(mutex);
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);
@@ -39,5 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
 
   ::CoUninitialize();
+  ::ReleaseMutex(mutex);
+  ::CloseHandle(mutex);
   return EXIT_SUCCESS;
 }

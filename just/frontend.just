@@ -66,9 +66,9 @@ front-test:
 front-build-linux:
     cd app && flutter build linux --release
 
-# Compilar ejecutable binario nativo para Windows (Desktop release)
+# Compilar ejecutable binario nativo para Windows (Desktop release, ofuscado)
 front-build-windows:
-    cd app && flutter build windows --release
+    cd app && flutter build windows --release --obfuscate --split-debug-info=build/windows/symbols
 
 # Compilar ejecutable binario para Android (APK release)
 front-build-apk:

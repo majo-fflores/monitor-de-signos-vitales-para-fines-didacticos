@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../core/theme/app_colors.dart';
 
 class UserGatewayHeader extends StatelessWidget {
@@ -17,17 +18,13 @@ class UserGatewayHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(
-            LucideIcons.heartPulse,
-            color: theme.colorScheme.primary,
-            size: 32,
-          ),
+        SvgPicture.asset(
+          esOscuro 
+              ? 'assets/svg/isotipo-dark.svg' 
+              : 'assets/svg/isotipo-light.svg',
+          width: 40,
+          height: 40,
+          fit: BoxFit.contain,
         ),
         const SizedBox(width: 16),
         Column(
