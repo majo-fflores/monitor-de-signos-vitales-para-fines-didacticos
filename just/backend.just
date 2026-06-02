@@ -1,8 +1,8 @@
 # Recetas de just para el backend
 
-# Ejecuta el backend en modo desarrollo
+# Ejecuta el backend en modo desarrollo (con recarga en caliente usando Air)
 run-backend:
-    cd backend && go run cmd/app/main.go
+    cd backend && $(go env GOPATH)/bin/air
 
 # Compila el backend
 build:
