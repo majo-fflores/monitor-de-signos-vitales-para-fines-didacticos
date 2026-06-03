@@ -50,6 +50,7 @@ app.*.map.json
 # Backend
 # Binarios
 backend/server
+backend/tmp/
 backend/.env
 
 # Base de datos local (SQLite)
