@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import '../../../core/theme/app_colors.dart';
 import '../widgets/alarm_monitoring_card.dart';
 import '../widgets/backend_connection_card.dart';
-import '../widgets/biometric_thresholds_card.dart';
+import '../widgets/display_preferences_card.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -54,12 +54,12 @@ class SettingsView extends ConsumerWidget {
           ),
           const Gap(24),
 
-          // ═══ TARJETA DE UMBRALES BIOMÉTRICOS ══════════════════════════
-          BiometricThresholdsCard(
+          // ═══ TARJETA DE PREFERENCIAS DE VISUALIZACIÓN ════════════════
+          DisplayPreferencesCard(
             subtitleColor: subtitleColor,
             borderColor: borderColor,
-            isDark: isDark,
           ),
+          const Gap(40),
         ],
       ),
     );

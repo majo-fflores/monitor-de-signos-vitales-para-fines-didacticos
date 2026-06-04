@@ -7,10 +7,8 @@ class DashboardHeader extends StatelessWidget {
   final bool esOscuro;
   final bool tieneUsuarioActivo;
   final bool grabando;
-  final bool vistaCompacta;
   final String tiempoFormateado;
   final EstadoConexionBackend estadoConexion;
-  final VoidCallback onToggleVista;
   final VoidCallback onStartRecording;
   final VoidCallback onStopRecording;
 
@@ -19,10 +17,8 @@ class DashboardHeader extends StatelessWidget {
     required this.esOscuro,
     required this.tieneUsuarioActivo,
     required this.grabando,
-    required this.vistaCompacta,
     required this.tiempoFormateado,
     required this.estadoConexion,
-    required this.onToggleVista,
     required this.onStartRecording,
     required this.onStopRecording,
   });
@@ -31,6 +27,18 @@ class DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final anchoPantalla = MediaQuery.of(context).size.width;
+    final esMobile = anchoPantalla < 600;
+
+    final titleStyle = esMobile
+        ? theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+          )
+        : theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+          );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,16 +47,9 @@ class DashboardHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Dashboard de Bioseñales',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
-                    ),
-                  ),
-                ],
+              Text(
+                'Dashboard de Bioseñales',
+                style: titleStyle,
               ),
               const SizedBox(height: 4),
               Text(
@@ -63,15 +64,6 @@ class DashboardHeader extends StatelessWidget {
         
         // Botón de control de grabación
         if (tieneUsuarioActivo) ...[
-          IconButton(
-            tooltip: vistaCompacta ? 'Vista Extendida (Lista)' : 'Vista Compacta (Cuadrícula)',
-            icon: Icon(
-              vistaCompacta ? LucideIcons.layoutList : LucideIcons.layoutGrid,
-              color: vistaCompacta ? theme.colorScheme.primary : (esOscuro ? Colors.white70 : Colors.black54),
-            ),
-            onPressed: onToggleVista,
-          ),
-          const SizedBox(width: 8),
           grabando
               ? OutlinedButton.icon(
                   onPressed: onStopRecording,

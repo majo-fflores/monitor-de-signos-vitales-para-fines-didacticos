@@ -36,7 +36,7 @@ static void my_application_activate(GApplication *application) {
     char *dir = dirname(path);
     char icon_path[PATH_MAX];
     snprintf(icon_path, sizeof(icon_path),
-             "%s/data/flutter_assets/assets/svg/isotipo-dark.png", dir);
+             "%s/data/flutter_assets/assets/svg/isotipo-dark.svg", dir);
     gtk_window_set_icon_from_file(window, icon_path, nullptr);
   }
 

@@ -5,12 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
-/// Widget de gráfico de ECG (AD8232) en tiempo real blando.
-/// Implementación con fl_chart con cero delay de refresco para simulación de alta frecuencia.
+/// Widget de gráfico de Frecuencia Cardíaca (ECG) en tiempo real.
 class GraficoEcg extends ConsumerWidget {
-  final bool esCompacto;
   final bool expandir;
-  const GraficoEcg({super.key, this.esCompacto = false, this.expandir = false});
+  const GraficoEcg({super.key, this.expandir = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,15 +20,15 @@ class GraficoEcg extends ConsumerWidget {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
-    final colorFondoHeader = esOscuro ? Colors.black : const Color(0xFFF3F4F6);
-    final colorFondoGrafico = esOscuro ? const Color(0xFF0F0F12) : Colors.white;
-    final colorRejilla = esOscuro ? const Color(0xFF222222) : const Color(0xFFE5E7EB);
-    final colorLinea = esOscuro ? ColoresSensores.ecgVerde : const Color(0xFF16A34A);
+    final colorFondoHeader = esOscuro ? ColoresComponentes.graficoHeaderOscuro : ColoresComponentes.graficoHeaderClaro;
+    final colorFondoGrafico = esOscuro ? ColoresComponentes.graficoCuerpoOscuro : ColoresComponentes.graficoCuerpoClaro;
+    final colorRejilla = esOscuro ? ColoresComponentes.graficoRejillaOscuro : ColoresComponentes.graficoRejillaClaro;
+    final colorLinea = esOscuro ? ColoresSensores.ecgVerde : ColoresComponentes.sensorEcgClaro;
 
     final chartWidget = Container(
       width: double.infinity,
       color: colorFondoGrafico,
-      padding: EdgeInsets.all(esCompacto ? 6 : 12),
+      padding: const EdgeInsets.all(6),
       child: Stack(
         children: [
           RepaintBoundary(
@@ -82,15 +80,15 @@ class GraficoEcg extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 16),
-                        const SizedBox(width: 8),
+                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 16),
+                        SizedBox(width: 8),
                         Text(
                           'SENSOR DESCONECTADO',
                           style: TextStyle(
-                            fontSize: esCompacto ? 10 : 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.redAccent,
                             letterSpacing: 1.1,
@@ -109,9 +107,8 @@ class GraficoEcg extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Cabecera idéntica al original
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: esCompacto ? 6 : 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
             color: colorFondoHeader,
             borderRadius: const BorderRadius.only(
@@ -120,25 +117,18 @@ class GraficoEcg extends ConsumerWidget {
             ),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'AD8232 (Frecuencia Cardíaca - ECG)',
-                style: TextStyle(
-                  fontSize: esCompacto ? 10 : 12,
-                  fontWeight: FontWeight.bold,
-                  color: colorLinea,
-                ),
-              ),
-              if (!esCompacto)
-                Text(
-                  '100mm/s',
+              Expanded(
+                child: Text(
+                  'Frecuencia Cardíaca (ECG)',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12.0,
                     fontWeight: FontWeight.bold,
-                    color: esOscuro ? const Color(0xFF717182) : Colors.grey.shade600,
+                    color: colorLinea,
                   ),
                 ),
+              ),
             ],
           ),
         ),
@@ -147,7 +137,7 @@ class GraficoEcg extends ConsumerWidget {
         expandir
             ? Expanded(child: chartWidget)
             : SizedBox(
-                height: esCompacto ? 110 : 256,
+                height: 110,
                 child: chartWidget,
               ),
       ],

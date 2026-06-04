@@ -7,10 +7,9 @@ part of 'connection_provider.dart';
 // **************************************************************************
 
 String _$notificadorConexionHash() =>
-    r'981fe5220e4b6b8eb7fa3828fe16c570af1adb54';
+    r'099901f330b176beb2d7beef402e7d78455dd3ea';
 
-/// Notifier que administra la conexión WebSocket con el backend.
-/// Persiste únicamente la preferencia del Toggle (modo fuente) en SharedPreferences.
+/// Notifier que administra la conexión WebSocket con el backend o la simulación de pruebas.
 ///
 /// Copied from [NotificadorConexion].
 @ProviderFor(NotificadorConexion)

@@ -121,7 +121,7 @@ class _PremiumGaugePainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: text,
         style: TextStyle(
-          fontSize: 10.0,
+          fontSize: 12.0,
           fontFamily: 'monospace',
           fontWeight: FontWeight.bold,
           color: esOscuro ? Colors.grey.shade500 : Colors.grey.shade700,
@@ -167,7 +167,7 @@ class _PremiumGaugePainter extends CustomPainter {
 }
 
 /// Widget premium de visualización de indicador instrumental para calidad de aire.
-/// Soporta renderizado de diales proporcionales y estáticos en modos estándar y compacto.
+/// Soporta renderizado de diales proporcionales y estáticos de manera responsiva.
 class Co2Gauge extends StatelessWidget {
   final double value;
   final double minValue;
@@ -175,7 +175,6 @@ class Co2Gauge extends StatelessWidget {
   final Color accentColor;
   final double size;
   final bool esOscuro;
-  final bool esCompacto;
 
   const Co2Gauge({
     super.key,
@@ -185,70 +184,20 @@ class Co2Gauge extends StatelessWidget {
     required this.accentColor,
     required this.size,
     required this.esOscuro,
-    required this.esCompacto,
   });
 
   @override
   Widget build(BuildContext context) {
     final sizeInner = size - 2;
 
-    if (esCompacto) {
-      return SizedBox(
-        width: size,
-        height: size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            CustomPaint(
-              size: Size(sizeInner, sizeInner),
-              painter: _PremiumGaugePainter(
-                value: value,
-                minValue: minValue,
-                maxValue: maxValue,
-                accentColor: accentColor,
-                esOscuro: esOscuro,
-              ),
-            ),
-            Positioned(
-              top: sizeInner * 0.28,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${value.toInt()}',
-                    style: TextStyle(
-                      fontSize: sizeInner * 0.20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
-                      color: esOscuro ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    'ppm',
-                    style: TextStyle(
-                      fontSize: sizeInner * 0.08,
-                      color: esOscuro ? Colors.grey.shade400 : Colors.grey.shade600,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Estilo estándar (más grande con efectos de sombreado adicionales)
     return SizedBox(
       width: size,
-      height: size * 0.8, // 160 de alto para un ancho de 200
+      height: size,
       child: Stack(
         alignment: Alignment.center,
         children: [
           CustomPaint(
-            size: Size(sizeInner * 0.9, sizeInner * 0.9), // 180 para un tamaño de 200
+            size: Size(sizeInner, sizeInner),
             painter: _PremiumGaugePainter(
               value: value,
               minValue: minValue,
@@ -258,14 +207,15 @@ class Co2Gauge extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: sizeInner * 0.20,
+            top: sizeInner * 0.28,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   '${value.toInt()}',
+                  textScaler: TextScaler.noScaling,
                   style: TextStyle(
-                    fontSize: 36,
+                    fontSize: sizeInner * 0.20,
                     fontWeight: FontWeight.w900,
                     fontFamily: 'monospace',
                     color: esOscuro ? Colors.white : Colors.black87,
@@ -279,11 +229,12 @@ class Co2Gauge extends StatelessWidget {
                 ),
                 Text(
                   'ppm CO₂',
+                  textScaler: TextScaler.noScaling,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: sizeInner * 0.07,
                     color: esOscuro ? Colors.grey.shade400 : Colors.grey.shade600,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],

@@ -45,6 +45,7 @@ class Co2CompactIndicator extends StatelessWidget {
           children: [
             Text(
               label.toUpperCase(),
+              textScaler: TextScaler.noScaling,
               style: TextStyle(
                 fontSize: 12 * fontSizeMultiplier,
                 fontWeight: FontWeight.w900,
@@ -55,6 +56,7 @@ class Co2CompactIndicator extends StatelessWidget {
             Gap(2 * fontSizeMultiplier),
             Text(
               range,
+              textScaler: TextScaler.noScaling,
               style: TextStyle(
                 fontSize: 13 * fontSizeMultiplier,
                 fontWeight: FontWeight.w600,

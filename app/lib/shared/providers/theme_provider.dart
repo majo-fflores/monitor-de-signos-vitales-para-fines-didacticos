@@ -7,6 +7,7 @@ part 'theme_provider.g.dart';
 @riverpod
 class ThemeNotifier extends _$ThemeNotifier {
   static const _themeKey = 'tema_oscuro';
+  static const _themeModeKey = 'tema_modo_str';
   SharedPreferences? _prefs;
 
   @override
@@ -17,18 +18,44 @@ class ThemeNotifier extends _$ThemeNotifier {
 
   Future<void> _initPrefs() async {
     _prefs = await SharedPreferences.getInstance();
-    final esOscuro = _prefs?.getBool(_themeKey);
-    if (esOscuro != null) {
-      state = esOscuro ? ThemeMode.dark : ThemeMode.light;
+    final modoStr = _prefs?.getString(_themeModeKey);
+    if (modoStr != null) {
+      if (modoStr == 'light') {
+        state = ThemeMode.light;
+      } else if (modoStr == 'dark') {
+        state = ThemeMode.dark;
+      } else {
+        state = ThemeMode.system;
+      }
+    } else {
+      // Compatibilidad con la clave booleana anterior
+      final esOscuro = _prefs?.getBool(_themeKey);
+      if (esOscuro != null) {
+        state = esOscuro ? ThemeMode.dark : ThemeMode.light;
+      }
     }
+  }
+
+  Future<void> cambiarTema(ThemeMode modo) async {
+    state = modo;
+    _prefs ??= await SharedPreferences.getInstance();
+    String modoStr;
+    switch (modo) {
+      case ThemeMode.light:
+        modoStr = 'light';
+        break;
+      case ThemeMode.dark:
+        modoStr = 'dark';
+        break;
+      case ThemeMode.system:
+        modoStr = 'system';
+        break;
+    }
+    await _prefs?.setString(_themeModeKey, modoStr);
   }
 
   Future<void> alternarTema() async {
     final nuevoModo = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    
-    state = nuevoModo;
-    
-    _prefs ??= await SharedPreferences.getInstance();
-    await _prefs?.setBool(_themeKey, nuevoModo == ThemeMode.dark);
+    await cambiarTema(nuevoModo);
   }
 }

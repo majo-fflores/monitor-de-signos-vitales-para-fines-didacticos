@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/vital_signs_provider.dart';
 import 'vital_kpi_card.dart';
@@ -17,43 +18,66 @@ class KpiPanels extends ConsumerWidget {
 
     final listaKpis = [
       TarjetaKpiVital(
-        titulo: 'AD8232 (Frecuencia Cardíaca)',
+        titulo: 'Frecuencia Cardíaca',
         valor: '$frecuenciaCardiaca',
         unidad: 'LPM',
         colorAcento: ColoresSensores.ecgVerde,
       ),
-      const SizedBox(height: 16),
       TarjetaKpiVital(
-        titulo: 'MAX30100 (SpO2)',
+        titulo: 'Saturación de Oxígeno',
         valor: '$nivelSpo2',
         unidad: '%',
         colorAcento: ColoresSensores.spo2Azul,
-        tituloSecundario: 'Pulsaciones (PPG)',
-        valorSecundario: '$ppgFrecuenciaCardiaca',
-        unidadSecundaria: 'LPM',
       ),
-      const SizedBox(height: 16),
       TarjetaKpiVital(
-        titulo: 'MQ-135 (Dióxido de Carbono)',
+        titulo: 'Pulsaciones (PPG)',
+        valor: '$ppgFrecuenciaCardiaca',
+        unidad: 'LPM',
+        colorAcento: ColoresSensores.spo2Azul,
+      ),
+      TarjetaKpiVital(
+        titulo: 'Dióxido de Carbono',
         valor: '$nivelCo2',
         unidad: 'ppm',
         colorAcento: ColoresSensores.co2Amarillo,
       ),
     ];
 
-    if (esMobile) {
+    final anchoPantalla = MediaQuery.of(context).size.width;
+    final usarCuadricula = anchoPantalla < Breakpoints.tablet;
+
+    if (usarCuadricula) {
       return Column(
         children: [
-          listaKpis[0],
+          Row(
+            children: [
+              Expanded(child: listaKpis[0]),
+              const SizedBox(width: 12),
+              Expanded(child: listaKpis[1]),
+            ],
+          ),
           const SizedBox(height: 12),
-          listaKpis[2],
-          const SizedBox(height: 12),
-          listaKpis[4],
+          Row(
+            children: [
+              Expanded(child: listaKpis[2]),
+              const SizedBox(width: 12),
+              Expanded(child: listaKpis[3]),
+            ],
+          ),
         ],
       );
     } else {
-      return Column(
-        children: listaKpis,
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: listaKpis[0]),
+          const SizedBox(width: 16),
+          Expanded(child: listaKpis[1]),
+          const SizedBox(width: 16),
+          Expanded(child: listaKpis[2]),
+          const SizedBox(width: 16),
+          Expanded(child: listaKpis[3]),
+        ],
       );
     }
   }

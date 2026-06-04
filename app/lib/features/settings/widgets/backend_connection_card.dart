@@ -112,7 +112,22 @@ class BackendConnectionCard extends ConsumerWidget {
               color: subtitleColor,
             ),
           ),
-          const Gap(16),
+          const Divider(height: 32),
+
+          // Switch para simulación local de prueba
+          Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              title: const Text('Simular Datos de Prueba'),
+              subtitle: const Text('Genera datos locales y ondas en tiempo real para probar alarmas y vistas'),
+              value: estadoConexion.modoSimulacion,
+              onChanged: (val) {
+                ref.read(notificadorConexionProvider.notifier).cambiarModoSimulacion(val);
+              },
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          const Divider(height: 32),
 
           // Información de conexión y botón de reconexión manual
           Row(
@@ -139,9 +154,11 @@ class BackendConnectionCard extends ConsumerWidget {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  ref.read(notificadorConexionProvider.notifier).reconectar();
-                },
+                onPressed: estadoConexion.modoSimulacion
+                    ? null
+                    : () {
+                        ref.read(notificadorConexionProvider.notifier).reconectar();
+                      },
                 icon: const Icon(LucideIcons.refreshCw, size: 16),
                 label: const Text('Reconectar'),
                 style: ElevatedButton.styleFrom(

@@ -26,7 +26,7 @@ class SidebarNav extends StatelessWidget {
     ElementoNav(icono: LucideIcons.layoutDashboard, etiqueta: 'Dashboard', ruta: '/'),
     ElementoNav(icono: LucideIcons.history, etiqueta: 'Historial', ruta: '/historial'),
     ElementoNav(icono: LucideIcons.clipboardList, etiqueta: 'Sesiones', ruta: '/sesiones'),
-    ElementoNav(icono: LucideIcons.bell, etiqueta: 'Alertas', ruta: '/alertas'),
+    ElementoNav(icono: LucideIcons.bellRing, etiqueta: 'Alertas', ruta: '/alertas'),
     ElementoNav(icono: LucideIcons.settings, etiqueta: 'Configuración', ruta: '/configuracion'),
   ];
 

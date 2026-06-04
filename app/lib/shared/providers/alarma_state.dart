@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'historial_alarmas_provider.dart';
+import 'vital_signs_provider.dart';
+
 part 'alarma_state.g.dart';
 
 @immutable
@@ -44,21 +47,33 @@ class UmbralesAlerta {
 }
 
 @immutable
+class AlertaCritica {
+  final String metrica;
+  final int valor;
+
+  const AlertaCritica(this.metrica, this.valor);
+}
+
+@immutable
 class EstadoAlarma {
   final UmbralesAlerta umbrales;
   final bool alarmaActiva;
   final int segundosRestantes;
-  final String? metricaCritica;
-  final int? valorCritico;
+  final List<AlertaCritica> alertasActivas;
   final bool habilitada;
+  final bool sonidoHabilitado;
+  final String sonidoSeleccionado;
+  final bool sonidoSilenciadoTemporalmente;
 
   const EstadoAlarma({
     required this.umbrales,
     required this.alarmaActiva,
     required this.segundosRestantes,
-    this.metricaCritica,
-    this.valorCritico,
+    required this.alertasActivas,
     this.habilitada = true,
+    this.sonidoHabilitado = true,
+    this.sonidoSeleccionado = 'alarma_clasica',
+    this.sonidoSilenciadoTemporalmente = false,
   });
 
   factory EstadoAlarma.inicial() {
@@ -66,7 +81,11 @@ class EstadoAlarma {
       umbrales: UmbralesAlerta.defecto(),
       alarmaActiva: false,
       segundosRestantes: 0,
+      alertasActivas: const [],
       habilitada: true,
+      sonidoHabilitado: true,
+      sonidoSeleccionado: 'alarma_clasica',
+      sonidoSilenciadoTemporalmente: false,
     );
   }
 
@@ -74,17 +93,21 @@ class EstadoAlarma {
     UmbralesAlerta? umbrales,
     bool? alarmaActiva,
     int? segundosRestantes,
-    String? metricaCritica,
-    int? valorCritico,
+    List<AlertaCritica>? alertasActivas,
     bool? habilitada,
+    bool? sonidoHabilitado,
+    String? sonidoSeleccionado,
+    bool? sonidoSilenciadoTemporalmente,
   }) {
     return EstadoAlarma(
       umbrales: umbrales ?? this.umbrales,
       alarmaActiva: alarmaActiva ?? this.alarmaActiva,
       segundosRestantes: segundosRestantes ?? this.segundosRestantes,
-      metricaCritica: metricaCritica ?? this.metricaCritica,
-      valorCritico: valorCritico ?? this.valorCritico,
+      alertasActivas: alertasActivas ?? this.alertasActivas,
       habilitada: habilitada ?? this.habilitada,
+      sonidoHabilitado: sonidoHabilitado ?? this.sonidoHabilitado,
+      sonidoSeleccionado: sonidoSeleccionado ?? this.sonidoSeleccionado,
+      sonidoSilenciadoTemporalmente: sonidoSilenciadoTemporalmente ?? this.sonidoSilenciadoTemporalmente,
     );
   }
 }
@@ -111,9 +134,13 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       final spo2Min = _prefs?.getInt('umbral_spo2_min') ?? 95;
       final co2Max = _prefs?.getInt('umbral_co2_max') ?? 800;
       final habilitada = _prefs?.getBool('alarma_habilitada') ?? true;
+      final sonidoHabilitado = _prefs?.getBool('alarma_sonido_habilitado') ?? true;
+      final sonidoSeleccionado = _prefs?.getString('alarma_sonido_seleccionado') ?? 'alarma_clasica';
 
       state = state.copiarCon(
         habilitada: habilitada,
+        sonidoHabilitado: sonidoHabilitado,
+        sonidoSeleccionado: sonidoSeleccionado,
         umbrales: UmbralesAlerta(
           fcMin: fcMin,
           fcMax: fcMax,
@@ -129,9 +156,19 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   Future<void> cambiarHabilitacion(bool valor) async {
     state = state.copiarCon(habilitada: valor);
     if (!valor) {
-      silenciarAlarma();
+      _limpiarAlarma();
     }
     await _prefs?.setBool('alarma_habilitada', valor);
+  }
+
+  Future<void> cambiarHabilitacionSonido(bool valor) async {
+    state = state.copiarCon(sonidoHabilitado: valor);
+    await _prefs?.setBool('alarma_sonido_habilitado', valor);
+  }
+
+  Future<void> cambiarSonidoSeleccionado(String sonido) async {
+    state = state.copiarCon(sonidoSeleccionado: sonido);
+    await _prefs?.setString('alarma_sonido_seleccionado', sonido);
   }
 
   Future<void> actualizarUmbrales({
@@ -162,6 +199,23 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       co2Max: co2Max,
     );
     state = state.copiarCon(umbrales: nuevosUmbrales);
+    
+    // Verificar si con los nuevos umbrales, los valores fisiológicos actuales ya son normales
+    _verificarValoresActuales();
+  }
+
+  void _verificarValoresActuales() {
+    if (!state.habilitada) return;
+    try {
+      final signos = ref.read(notificadorSignosVitalesProvider);
+      monitorearValores(
+        fc: signos.frecuenciaCardiaca,
+        spo2: signos.nivelSpo2,
+        co2: signos.nivelCo2,
+      );
+    } catch (_) {
+      // Ignorar si el proveedor de signos vitales no está inicializado
+    }
   }
 
   Future<void> guardarUmbralesEnDisco() async {
@@ -173,46 +227,65 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   }
 
   /// Evalúa si los valores actuales están fuera de los umbrales.
-  /// Se ejecuta cada vez que el simulador actualiza los datos.
+  /// Se ejecuta cada vez que el simulador o WS actualiza los datos.
   void monitorearValores({
     required int fc,
     required int spo2,
     required int co2,
   }) {
-    // Si el sistema de alarma está deshabilitado, no monitoreamos
     if (!state.habilitada) return;
 
-    // Si la alarma ya está corriendo el ciclo de 30 segundos, no volvemos a disparar
-    if (state.alarmaActiva && state.segundosRestantes > 0) return;
-
     final u = state.umbrales;
-    String? metrica;
-    int? valor;
+    final nuevasAlertas = <AlertaCritica>[];
 
     if (fc < u.fcMin || fc > u.fcMax) {
-      metrica = 'Frecuencia Cardíaca';
-      valor = fc;
-    } else if (spo2 < u.spo2Min) {
-      metrica = 'Saturación de Oxígeno';
-      valor = spo2;
-    } else if (co2 > u.co2Max) {
-      metrica = 'Dióxido de Carbono';
-      valor = co2;
+      nuevasAlertas.add(AlertaCritica('Frecuencia Cardíaca', fc));
+    }
+    if (spo2 < u.spo2Min) {
+      nuevasAlertas.add(AlertaCritica('Saturación de Oxígeno', spo2));
+    }
+    if (co2 > u.co2Max) {
+      nuevasAlertas.add(AlertaCritica('Dióxido de Carbono', co2));
     }
 
-    if (metrica != null) {
-      _dispararAlarma(metrica, valor!);
+    final estabaActiva = state.alarmaActiva;
+
+    if (nuevasAlertas.isEmpty) {
+      if (estabaActiva) {
+        _limpiarAlarma();
+      }
+    } else {
+      if (!estabaActiva) {
+        _dispararAlarma(nuevasAlertas);
+      } else {
+        // Si ya estaba activa, verificamos si hay alertas de sensores que se sumaron recién
+        final metricasPrevias = state.alertasActivas.map((a) => a.metrica).toSet();
+        final alertasNuevasParaLog = nuevasAlertas.where((a) => !metricasPrevias.contains(a.metrica)).toList();
+        
+        if (alertasNuevasParaLog.isNotEmpty) {
+          // Registrar en el historial persistente de la app la(s) nueva(s) alerta(s)
+          ref.read(historialAlarmasProvider.notifier).registrarAlarma(alertasNuevasParaLog);
+        }
+
+        // Actualizamos la lista de alertas (por si cambió o se agregaron más)
+        state = state.copiarCon(
+          alertasActivas: nuevasAlertas,
+        );
+      }
     }
   }
 
-  void _dispararAlarma(String metrica, int valor) {
+  void _dispararAlarma(List<AlertaCritica> alertas) {
     _timerRegresivo?.cancel();
     state = state.copiarCon(
       alarmaActiva: true,
       segundosRestantes: 30,
-      metricaCritica: metrica,
-      valorCritico: valor,
+      alertasActivas: alertas,
+      sonidoSilenciadoTemporalmente: false,
     );
+
+    // Registrar en el historial persistente de la app
+    ref.read(historialAlarmasProvider.notifier).registrarAlarma(alertas);
 
     _timerRegresivo = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.segundosRestantes > 1) {
@@ -221,24 +294,28 @@ class NotificadorAlarma extends _$NotificadorAlarma {
         );
       } else {
         _timerRegresivo?.cancel();
-        state = state.copiarCon(
-          alarmaActiva: false,
-          segundosRestantes: 0,
-          metricaCritica: null,
-          valorCritico: null,
-        );
+        _limpiarAlarma();
       }
     });
   }
 
-  /// Cancela o silencia la alarma antes de los 30 segundos si el operador lo requiere
-  void silenciarAlarma() {
+  void _limpiarAlarma() {
     _timerRegresivo?.cancel();
     state = state.copiarCon(
       alarmaActiva: false,
       segundosRestantes: 0,
-      metricaCritica: null,
-      valorCritico: null,
+      alertasActivas: const [],
+      sonidoSilenciadoTemporalmente: false,
     );
+  }
+
+  /// Silencia el sonido de la alarma actual temporalmente sin desactivar la alarma visual ni detener la cuenta regresiva.
+  void silenciarAlarma() {
+    state = state.copiarCon(sonidoSilenciadoTemporalmente: true);
+  }
+
+  /// Reactiva el sonido de la alarma silenciada temporalmente.
+  void desactivarSilencioTemporal() {
+    state = state.copiarCon(sonidoSilenciadoTemporalmente: false);
   }
 }

@@ -25,9 +25,7 @@ class DashboardView extends ConsumerStatefulWidget {
 }
 
 class _DashboardViewState extends ConsumerState<DashboardView> {
-  // Estado para la grabación de sesiones
   bool _grabando = false;
-  bool _vistaCompacta = true;
   int _segundosGrabacion = 0;
   Timer? _timerGrabacion;
   final List<int> _frecuenciasGrabadas = [];
@@ -44,8 +42,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final configConexion = ref.read(notificadorConexionProvider);
       if (!configConexion.cargando) {
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-        notifier.iniciarConWebSocket(ws.packetStream);
+        if (configConexion.modoSimulacion) {
+          notifier.iniciarSimulacion();
+        } else {
+          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+          notifier.iniciarConWebSocket(ws.packetStream);
+        }
       }
     });
   }
@@ -69,14 +71,15 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
     _timerGrabacion = Timer.periodic(const Duration(seconds: 1), (timer) {
       final signos = ref.read(notificadorSignosVitalesProvider);
-      
+
       _frecuenciasGrabadas.add(signos.frecuenciaCardiaca);
       _ppgFrecuenciasGrabadas.add(signos.ppgFrecuenciaCardiaca);
       _spo2Grabados.add(signos.nivelSpo2);
       _co2Grabados.add(signos.nivelCo2);
 
       // Verificación simple de alertas/anomalías
-      if (signos.frecuenciaCardiaca < 60 || signos.frecuenciaCardiaca > 100 ||
+      if (signos.frecuenciaCardiaca < 60 ||
+          signos.frecuenciaCardiaca > 100 ||
           signos.nivelSpo2 < 95 ||
           signos.nivelCo2 > 1000) {
         _alertasDisparadas++;
@@ -98,10 +101,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     // Calcular promedios
     final fcProm = _frecuenciasGrabadas.isEmpty
         ? 70
-        : (_frecuenciasGrabadas.reduce((a, b) => a + b) ~/ _frecuenciasGrabadas.length);
+        : (_frecuenciasGrabadas.reduce((a, b) => a + b) ~/
+              _frecuenciasGrabadas.length);
     final ppgProm = _ppgFrecuenciasGrabadas.isEmpty
         ? 72
-        : (_ppgFrecuenciasGrabadas.reduce((a, b) => a + b) ~/ _ppgFrecuenciasGrabadas.length);
+        : (_ppgFrecuenciasGrabadas.reduce((a, b) => a + b) ~/
+              _ppgFrecuenciasGrabadas.length);
     final spo2Prom = _spo2Grabados.isEmpty
         ? 98
         : (_spo2Grabados.reduce((a, b) => a + b) ~/ _spo2Grabados.length);
@@ -136,8 +141,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               notasClinicas: notas,
             );
 
-            await ref.read(notificadorHistorialProvider.notifier).guardarRegistro(registro);
-            
+            await ref
+                .read(notificadorHistorialProvider.notifier)
+                .guardarRegistro(registro);
+
             if (context.mounted) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -168,12 +175,21 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final estadoConexion = ref.watch(notificadorConexionProvider);
 
     // Escuchamos reactivamente los cambios de conexión para inicializar el origen de datos adecuado
-    ref.listen<EstadoConexionBackend>(notificadorConexionProvider, (prev, next) {
-      if ((prev == null || prev.cargando) && !next.cargando) {
-        // Al terminar de cargar la configuración inicial de persistencia
+    ref.listen<EstadoConexionBackend>(notificadorConexionProvider, (
+      prev,
+      next,
+    ) {
+      if ((prev == null ||
+              prev.cargando ||
+              prev.modoSimulacion != next.modoSimulacion) &&
+          !next.cargando) {
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-        notifier.iniciarConWebSocket(ws.packetStream);
+        if (next.modoSimulacion) {
+          notifier.iniciarSimulacion();
+        } else {
+          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+          notifier.iniciarConWebSocket(ws.packetStream);
+        }
       }
     });
 
@@ -189,14 +205,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               esOscuro: esOscuro,
               tieneUsuarioActivo: usuarioActivo != null,
               grabando: _grabando,
-              vistaCompacta: _vistaCompacta,
               tiempoFormateado: _formatearTiempo(_segundosGrabacion),
               estadoConexion: estadoConexion,
-              onToggleVista: () {
-                setState(() {
-                  _vistaCompacta = !_vistaCompacta;
-                });
-              },
               onStartRecording: _iniciarGrabacion,
               onStopRecording: _detenerYGuardar,
             ),
@@ -206,25 +216,19 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             Expanded(
               child: SingleChildScrollView(
                 child: esMobile
-                    ? Column(
+                    ? const Column(
                         children: [
-                          const KpiPanels(esMobile: true),
-                          const SizedBox(height: 24),
-                          WaveCharts(esCompacto: _vistaCompacta),
+                          KpiPanels(esMobile: true),
+                          SizedBox(height: 24),
+                          WaveCharts(),
                         ],
                       )
-                    : Row(
+                    : const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            flex: 3,
-                            child: WaveCharts(esCompacto: _vistaCompacta),
-                          ),
-                          const SizedBox(width: 24),
-                          const Expanded(
-                            flex: 1,
-                            child: KpiPanels(esMobile: false),
-                          ),
+                          KpiPanels(esMobile: false),
+                          SizedBox(height: 24),
+                          WaveCharts(),
                         ],
                       ),
               ),

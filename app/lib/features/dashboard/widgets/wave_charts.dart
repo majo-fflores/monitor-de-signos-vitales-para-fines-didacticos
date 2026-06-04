@@ -1,59 +1,96 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/breakpoints.dart';
 import 'co2_chart.dart';
 import 'ecg_chart.dart';
 import 'spo2_chart.dart';
 
 class WaveCharts extends StatelessWidget {
-  final bool esCompacto;
-  const WaveCharts({super.key, this.esCompacto = false});
+  const WaveCharts({super.key});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final esAncho = constraints.maxWidth > 550;
+        final esAncho = constraints.maxWidth >= 1050.0; // 1050px para consola ancha
 
-        if (esCompacto && esAncho) {
-          return GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.8,
-            children: const [
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: GraficoEcg(esCompacto: true, expandir: true),
+        if (esAncho) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Columna izquierda: ECG y SpO₂ en formato vertical
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 280,
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: const GraficoEcg(
+                          expandir: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 280,
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: const GraficoSpo2(
+                          expandir: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: GraficoSpo2(esCompacto: true, expandir: true),
-              ),
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: GraficoCo2(esCompacto: true, expandir: true),
+              const SizedBox(width: 16),
+              // Columna derecha: MQ-135 CO₂ con alto completo
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  height: 576, // 280 + 16 + 280
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: const GraficoCo2(
+                      expandir: true,
+                    ),
+                  ),
+                ),
               ),
             ],
           );
         }
 
+        // Diseño en columna vertical para tablet y mobile
+        final double alturaGrafico = constraints.maxWidth < Breakpoints.mobile ? 150.0 : 220.0;
+        final double alturaCo2 = constraints.maxWidth < Breakpoints.mobile ? 180.0 : 190.0;
+
         return Column(
           children: [
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: GraficoEcg(esCompacto: esCompacto, expandir: false),
+            SizedBox(
+              height: alturaGrafico,
+              child: Card(
+                clipBehavior: Clip.antiAlias,
+                child: const GraficoEcg(expandir: true),
+              ),
             ),
             const SizedBox(height: 16),
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: GraficoSpo2(esCompacto: esCompacto, expandir: false),
+            SizedBox(
+              height: alturaGrafico,
+              child: Card(
+                clipBehavior: Clip.antiAlias,
+                child: const GraficoSpo2(expandir: true),
+              ),
             ),
             const SizedBox(height: 16),
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: GraficoCo2(esCompacto: esCompacto, expandir: false),
+            SizedBox(
+              height: alturaCo2,
+              child: Card(
+                clipBehavior: Clip.antiAlias,
+                child: const GraficoCo2(expandir: true),
+              ),
             ),
           ],
         );

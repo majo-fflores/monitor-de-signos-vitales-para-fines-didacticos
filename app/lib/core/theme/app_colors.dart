@@ -45,7 +45,7 @@ class ColoresClaros {
 class ColoresOscuros {
   static const background = Color(0xFF1E1E24); // oklch(0.145 0 0)
   static const foreground = Color(0xFFFCFCFC); // oklch(0.985 0 0)
-  static const card = Color(0xFF1E1E24);
+  static const card = Color(0xFF282830);
   static const cardForeground = Color(0xFFFCFCFC);
   static const primary = Color(0xFFFCFCFC);
   static const primaryForeground = Color(0xFF2D2D2D); // oklch(0.205 0 0)
@@ -74,6 +74,16 @@ class ColoresSensores {
   static const spo2Azul = Color(0xFF3B82F6);
   static const co2Amarillo = Color(0xFFEAB308);
   static const statusConectado = Color(0xFF10B981);
+
+  // Alertas por estado (Semáforo clínico)
+  static const excelenteOscuro = Color(0xFF00E676); // GreenAccent
+  static const excelenteClaro = Color(0xFF16A34A);
+
+  static const moderadoOscuro = Color(0xFFEAB308); // co2Amarillo
+  static const moderadoClaro = Color(0xFFD97706);
+
+  static const criticoOscuro = Color(0xFFFF5252); // RedAccent
+  static const criticoClaro = Color(0xFFDC2626);
 }
 
 /// Colores centralizados para componentes específicos para garantizar cero hardcoding.
@@ -88,6 +98,20 @@ class ColoresComponentes {
   // Medidor Gauge Instrumental de CO2
   static const co2GaugeTrackClaro = Color(0xFFE5E7EB);
   static const co2GaugeTrackOscuro = Color(0xFF1E1E26);
+
+  // Fondos de gráficos de ondas y consola
+  static const graficoHeaderOscuro = Colors.black;
+  static const graficoHeaderClaro = Color(0xFFF3F4F6);
+  static const graficoCuerpoOscuro = Color(0xFF0F0F12);
+  static const graficoCuerpoClaro = Colors.white;
+
+  // Rejillas de gráficos
+  static const graficoRejillaOscuro = Color(0xFF222222);
+  static const graficoRejillaClaro = Color(0xFFE5E7EB);
+
+  // Contraste para temas claros de sensores
+  static const sensorEcgClaro = Color(0xFF16A34A);
+  static const sensorSpo2Claro = Color(0xFF2563EB);
 
   // Colores para avatares aleatorios de usuarios
   static const avatarColores = [

@@ -94,6 +94,8 @@ const int _kVentanaPuntos = 100;
 @Riverpod(keepAlive: true)
 class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   Timer? _silenceTimer;
+  Timer? _timerSimulacion;
+  int _simIndex = 0;
   bool _estaActivo = false;
   final math.Random _random = math.Random();
 
@@ -135,6 +137,8 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _estaActivo = false;
     _silenceTimer?.cancel();
     _silenceTimer = null;
+    _timerSimulacion?.cancel();
+    _timerSimulacion = null;
     _suscripcionWs?.cancel();
     _suscripcionWs = null;
     _pendingPackets = [];
@@ -142,6 +146,89 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _lastEcgTime = null;
     _lastSpo2Time = null;
     _lastCo2Time = null;
+  }
+
+  /// Inicia la simulación local de signos vitales para pruebas.
+  void iniciarSimulacion() {
+    _detenerTodo();
+    _estaActivo = true;
+    _inicializarVentana();
+
+    // Marcamos los sensores simulados como activos
+    state = state.copiarCon(
+      ecgActivo: true,
+      spo2Activo: true,
+      co2Activo: true,
+    );
+
+    // Plantillas de ondas sinusoidales/fisiológicas para ECG y SpO2 (Plethysmogram)
+    const ecgTemplate = [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.05, 0.0,
+      0.0, -0.05, 0.8, -0.2, 0.0, 0.05, 0.1, 0.15, 0.2, 0.15,
+      0.1, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+    ];
+
+    const spo2Template = [
+      50.0, 50.5, 51.5, 53.0, 55.0, 57.5, 60.0, 62.0, 63.5, 64.0,
+      63.5, 62.5, 61.0, 59.5, 58.5, 58.0, 58.5, 59.0, 58.5, 57.0,
+      55.0, 53.0, 51.5, 50.5, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0
+    ];
+
+    int tick = 0;
+    _timerSimulacion = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      if (!_estaActivo) {
+        timer.cancel();
+        return;
+      }
+
+      final ahora = DateTime.now().millisecondsSinceEpoch.toDouble();
+      
+      // Añadir puntos a los gráficos
+      final nuevosEcg = List<PuntoBiometrico>.of(state.ecgDatos);
+      final nuevosSpo2 = List<PuntoBiometrico>.of(state.spo2Datos);
+
+      if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
+      double rawEcg = ecgTemplate[_simIndex % ecgTemplate.length];
+      double valEcg = -10.0 + rawEcg * 90.0;
+      nuevosEcg.add(PuntoBiometrico(ahora, valEcg));
+
+      if (nuevosSpo2.length >= _kVentanaPuntos) nuevosSpo2.removeAt(0);
+      double valSpo2 = spo2Template[_simIndex % spo2Template.length];
+      nuevosSpo2.add(PuntoBiometrico(ahora, valSpo2));
+
+      _simIndex++;
+
+      // Cada 1 segundo (50 ticks @ 20ms) actualizamos las métricas de texto y monitoreamos alarmas
+      tick++;
+      if (tick >= 50) {
+        tick = 0;
+        
+        // Generar valores fisiológicos realistas
+        final fc = 72 + _random.nextInt(5) - 2; // 70-74 BPM
+        final spo2 = 98 - _random.nextInt(2); // 97-98%
+        final co2 = 380 + _random.nextInt(40) - 20; // 360-400 ppm
+
+        state = state.copiarCon(
+          ecgDatos: nuevosEcg,
+          spo2Datos: nuevosSpo2,
+          frecuenciaCardiaca: fc,
+          ppgFrecuenciaCardiaca: fc + 1,
+          nivelSpo2: spo2,
+          nivelCo2: co2,
+        );
+
+        ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
+          fc: fc,
+          spo2: spo2,
+          co2: co2,
+        );
+      } else {
+        state = state.copiarCon(
+          ecgDatos: nuevosEcg,
+          spo2Datos: nuevosSpo2,
+        );
+      }
+    });
   }
 
 
