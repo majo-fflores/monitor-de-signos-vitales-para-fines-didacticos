@@ -113,6 +113,9 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                 child: esMobile
                     ? Column(
                         children: [
+                          // En mobile, detalles primero como contexto
+                          const ReportExportDetails(esMobile: true),
+                          const Gap(16),
                           PatientReportForm(
                             formKey: _formKey,
                             nombreController: _nombreController,
@@ -130,39 +133,39 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                             },
                             onGenerarReporte: _generarReporte,
                           ),
-                          const Gap(24),
-                          const ReportExportDetails(),
                         ],
                       )
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: PatientReportForm(
-                              formKey: _formKey,
-                              nombreController: _nombreController,
-                              edadController: _edadController,
-                              notasController: _notasController,
-                              sesiones: sesiones,
-                              sesionSeleccionada: _sesionSeleccionada,
-                              onSesionChanged: (nuevaSesion) {
-                                setState(() {
-                                  _sesionSeleccionada = nuevaSesion;
-                                  if (nuevaSesion != null) {
-                                    _notasController.text = nuevaSesion.notasClinicas;
-                                  }
-                                });
-                              },
-                              onGenerarReporte: _generarReporte,
+                    : IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: PatientReportForm(
+                                formKey: _formKey,
+                                nombreController: _nombreController,
+                                edadController: _edadController,
+                                notasController: _notasController,
+                                sesiones: sesiones,
+                                sesionSeleccionada: _sesionSeleccionada,
+                                onSesionChanged: (nuevaSesion) {
+                                  setState(() {
+                                    _sesionSeleccionada = nuevaSesion;
+                                    if (nuevaSesion != null) {
+                                      _notasController.text = nuevaSesion.notasClinicas;
+                                    }
+                                  });
+                                },
+                                onGenerarReporte: _generarReporte,
+                              ),
                             ),
-                          ),
-                          const Gap(24),
-                          const Expanded(
-                            flex: 2,
-                            child: ReportExportDetails(),
-                          ),
-                        ],
+                            const Gap(24),
+                            const Expanded(
+                              flex: 2,
+                              child: ReportExportDetails(esMobile: false),
+                            ),
+                          ],
+                        ),
                       ),
               ),
             ),

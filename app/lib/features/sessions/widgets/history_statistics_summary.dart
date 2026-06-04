@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../../../core/constants/breakpoints.dart';
 import '../../../../core/models/registro_medicion.dart';
 import 'kpi_chip.dart';
 
@@ -41,48 +42,93 @@ class HistoryStatisticsSummary extends StatelessWidget {
       promSpo2 = sSpo2 / total;
     }
 
-    return SizedBox(
-      height: 76,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          KpiChip(
-            titulo: 'Sesiones',
-            valor: '$total',
-            icono: LucideIcons.checkSquare,
-            color: const Color(0xFF8B5CF6),
-            theme: theme,
-            esOscuro: esOscuro,
-          ),
-          const SizedBox(width: 12),
-          KpiChip(
-            titulo: 'Prom. FC',
-            valor: '${promFC.round()} LPM',
-            icono: LucideIcons.heart,
-            color: const Color(0xFF10B981), // Color ECG verde equivalente
-            theme: theme,
-            esOscuro: esOscuro,
-          ),
-          const SizedBox(width: 12),
-          KpiChip(
-            titulo: 'Prom. SpO2',
-            valor: '${promSpo2.round()}%',
-            icono: LucideIcons.droplets,
-            color: const Color(0xFF3B82F6), // Color SpO2 azul equivalente
-            theme: theme,
-            esOscuro: esOscuro,
-          ),
-          const SizedBox(width: 12),
-          KpiChip(
-            titulo: 'Tiempo Total',
-            valor: _fmtDur(durTotal),
-            icono: LucideIcons.clock,
-            color: const Color(0xFFF59E0B),
-            theme: theme,
-            esOscuro: esOscuro,
-          ),
-        ],
+    final chips = [
+      _KpiData(
+        titulo: 'Sesiones',
+        valor: '$total',
+        icono: LucideIcons.checkSquare,
+        color: const Color(0xFF8B5CF6),
       ),
+      _KpiData(
+        titulo: 'Prom. FC',
+        valor: '${promFC.round()} LPM',
+        icono: LucideIcons.heart,
+        color: const Color(0xFF10B981),
+      ),
+      _KpiData(
+        titulo: 'Prom. SpO2',
+        valor: '${promSpo2.round()}%',
+        icono: LucideIcons.droplets,
+        color: const Color(0xFF3B82F6),
+      ),
+      _KpiData(
+        titulo: 'Tiempo Total',
+        valor: _fmtDur(durTotal),
+        icono: LucideIcons.clock,
+        color: const Color(0xFFF59E0B),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final esMobile = constraints.maxWidth < Breakpoints.tablet;
+
+        if (esMobile) {
+          // Mobile: grilla 2x2
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: chips.map((c) {
+              return SizedBox(
+                width: (constraints.maxWidth - 12) / 2,
+                child: KpiChip(
+                  titulo: c.titulo,
+                  valor: c.valor,
+                  icono: c.icono,
+                  color: c.color,
+                  theme: theme,
+                  esOscuro: esOscuro,
+                  expanded: true,
+                ),
+              );
+            }).toList(),
+          );
+        }
+
+        // Desktop/Tablet: fila que ocupa todo el ancho
+        return Row(
+          children: [
+            for (int i = 0; i < chips.length; i++) ...[
+              if (i > 0) const SizedBox(width: 12),
+              Expanded(
+                child: KpiChip(
+                  titulo: chips[i].titulo,
+                  valor: chips[i].valor,
+                  icono: chips[i].icono,
+                  color: chips[i].color,
+                  theme: theme,
+                  esOscuro: esOscuro,
+                  expanded: true,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
+}
+
+class _KpiData {
+  final String titulo;
+  final String valor;
+  final IconData icono;
+  final Color color;
+
+  const _KpiData({
+    required this.titulo,
+    required this.valor,
+    required this.icono,
+    required this.color,
+  });
 }

@@ -54,146 +54,171 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
       builder: (context, constraints) {
         final esMobile = constraints.maxWidth < Breakpoints.tablet;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Título ──
-            Text(
-              'Historial de Sesiones',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Título ──
+              Text(
+                'Historial de Sesiones',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Historial clínico de ${usuarioActivo.nombre}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+              const SizedBox(height: 4),
+              Text(
+                'Historial clínico de ${usuarioActivo.nombre}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                ),
               ),
-            ),
-            const Gap(24),
+              const Gap(24),
 
-            // ── KPI strip componentizado ──
-            HistoryStatisticsSummary(
-              registros: registros,
-              theme: theme,
-              esOscuro: esOscuro,
-            ),
-            const Gap(24),
+              // ── KPI strip componentizado ──
+              HistoryStatisticsSummary(
+                registros: registros,
+                theme: theme,
+                esOscuro: esOscuro,
+              ),
+              const Gap(24),
 
-            // ── Tabla compacta con filas expandibles ──
-            Expanded(
-              child: registros.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            LucideIcons.fileClock,
-                            size: 48,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                          ),
-                          const Gap(16),
-                          Text(
-                            'No hay sesiones registradas',
-                            style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const Gap(8),
-                          Text(
-                            'Inicie el monitoreo en el Dashboard para registrar mediciones.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: esOscuro
-                                  ? ColoresOscuros.mutedForeground
-                                  : ColoresClaros.mutedForeground,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: theme.cardTheme.color,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          // Encabezado de tabla
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: esOscuro
-                                  ? Colors.white.withValues(alpha: 0.02)
-                                  : Colors.black.withValues(alpha: 0.02),
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16)),
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 32), // espacio para chevron
-                                Expanded(
-                                  flex: 3,
-                                  child: Text('Fecha',
-                                      style: _headerStyle(theme, esOscuro)),
-                                ),
-                                if (!esMobile) ...[
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text('Duración',
-                                        style: _headerStyle(theme, esOscuro)),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text('FC',
-                                        style: _headerStyle(theme, esOscuro)),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text('SpO2',
-                                        style: _headerStyle(theme, esOscuro)),
-                                  ),
-                                ],
-                                const SizedBox(width: 40),
-                              ],
-                            ),
-                          ),
-                          const Divider(height: 1),
-
-                          // Filas
-                          Expanded(
-                            child: ListView.separated(
-                              itemCount: registros.length,
-                              separatorBuilder: (_, __) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (context, index) {
-                                final r = registros[index];
-                                final expandida = _filaExpandida == index;
-
-                                return SessionHistoryRow(
-                                  registro: r,
-                                  esMobile: esMobile,
-                                  expandida: expandida,
-                                  onTap: () {
-                                    setState(() {
-                                      _filaExpandida = expandida ? null : index;
-                                    });
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
-          ],
+              // ── Tabla compacta con filas expandibles ──
+              registros.isEmpty
+                  ? _buildEmptyState(theme, esOscuro)
+                  : _buildTable(theme, esOscuro, esMobile, registros),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(ThemeData theme, bool esOscuro) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 64),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            LucideIcons.fileClock,
+            size: 48,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+          ),
+          const Gap(16),
+          Text(
+            'No hay sesiones registradas',
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const Gap(8),
+          Text(
+            'Inicie el monitoreo en el Dashboard para registrar mediciones.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: esOscuro
+                  ? ColoresOscuros.mutedForeground
+                  : ColoresClaros.mutedForeground,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTable(
+    ThemeData theme,
+    bool esOscuro,
+    bool esMobile,
+    List registros,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Encabezado de tabla — usa los mismos spacings que SessionHistoryRow
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: esOscuro
+                  ? Colors.white.withValues(alpha: 0.02)
+                  : Colors.black.withValues(alpha: 0.02),
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16)),
+            ),
+            child: Row(
+              children: [
+                // Mismo layout que el chevron en la fila: icon(16) + gap(12) = 28px
+                const SizedBox(width: 28),
+                Expanded(
+                  flex: 2,
+                  child: Text('Fecha',
+                      style: _headerStyle(theme, esOscuro)),
+                ),
+                if (!esMobile) ...[
+                  Expanded(
+                    flex: 2,
+                    child: Text('Duración',
+                        style: _headerStyle(theme, esOscuro)),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text('FC',
+                        style: _headerStyle(theme, esOscuro)),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text('SpO2',
+                        style: _headerStyle(theme, esOscuro)),
+                  ),
+                ],
+                // Mismo ancho que el botón eliminar en la fila: SizedBox(32)
+                const SizedBox(width: 32),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          // Filas — shrinkWrap para que la tabla se ajuste al contenido
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: registros.length,
+            separatorBuilder: (_, __) =>
+                const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final r = registros[index];
+              final expandida = _filaExpandida == index;
+
+              return SessionHistoryRow(
+                registro: r,
+                esMobile: esMobile,
+                expandida: expandida,
+                onTap: () {
+                  setState(() {
+                    _filaExpandida = expandida ? null : index;
+                  });
+                },
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

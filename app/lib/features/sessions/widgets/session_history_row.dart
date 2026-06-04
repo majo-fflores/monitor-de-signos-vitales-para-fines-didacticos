@@ -50,7 +50,7 @@ class SessionHistoryRow extends ConsumerWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Text(
                     registro.fechaFormateada,
                     style: theme.textTheme.bodyMedium?.copyWith(
