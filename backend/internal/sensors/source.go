@@ -23,7 +23,7 @@ type SimulatedArduino struct {
 
 func NewSimulatedArduino() DataSource {
 	return &SimulatedArduino{
-		types: []string{"bpm", "spo2", "ecg"},
+		types: []string{"bpm", "spo2", "ecg", "air"},
 	}
 }
 
@@ -41,6 +41,8 @@ func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
 		val = 94 + rand.Float64()*(100-94)
 	case "ecg":
 		val = 0.2 + rand.Float64()*(1.2-0.2)
+	case "air":
+		val = 350 + rand.Float64()*(500-350)
 	}
 
 	return ArduinoPacket{

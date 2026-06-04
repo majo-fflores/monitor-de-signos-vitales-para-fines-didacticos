@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"fmt"
+
 	"log"
 	"sync"
 	"time"
@@ -34,7 +34,7 @@ func (m *Manager) StartBackgroundListening() {
 			continue
 		}
 
-		fmt.Println("Paquete recibido del sensor: ", packet)
+		// fmt.Println("Paquete recibido del sensor: ", packet)
 		// Calculate timestamp at reception time
 		ts := time.Now().UnixMilli()
 

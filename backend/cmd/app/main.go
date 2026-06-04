@@ -31,10 +31,10 @@ func main() {
 	// Inicializar la capa de servicio de usuarios (fuera del bloque de error)
 	users.ServiceInstance = users.NewService(database.DB)
 
-	// Inicializar sensores en segundo plano
 	source, err := sensors.NewSerialArduino("/dev/ttyUSB0")
 	if err != nil {
-		log.Fatalf("Error al inicializar sensores: %v", err)
+		log.Printf("Aviso: No se pudo inicializar puerto serial Arduino (%v). Iniciando simulador de Arduino de fondo...", err)
+		source = sensors.NewSimulatedArduino()
 	}
 	sensors.GlobalManager = sensors.NewManager(source)
 	go sensors.GlobalManager.StartBackgroundListening()

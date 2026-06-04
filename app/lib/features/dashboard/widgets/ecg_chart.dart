@@ -77,7 +77,17 @@ class GraficoEcg extends ConsumerWidget {
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          colorLinea.withValues(alpha: 0.35),
+                          colorLinea.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
