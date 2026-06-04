@@ -32,7 +32,10 @@ func main() {
 	users.ServiceInstance = users.NewService(database.DB)
 
 	// Inicializar sensores en segundo plano
-	source := sensors.NewSimulatedArduino()
+	source, err := sensors.NewSerialArduino("/dev/ttyUSB0")
+	if err != nil {
+		log.Fatalf("Error al inicializar sensores: %v", err)
+	}
 	sensors.GlobalManager = sensors.NewManager(source)
 	go sensors.GlobalManager.StartBackgroundListening()
 	// ─────────────────────────────────────────────────────────────────

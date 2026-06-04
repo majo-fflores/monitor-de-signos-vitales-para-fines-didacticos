@@ -17,15 +17,15 @@ type WsPacket struct {
 }
 
 type SessionData struct {
-	BPM  []Sample `json:"bpm"`
-	SpO2 []Sample `json:"spo2"`
-	ECG  []Sample `json:"ecg"`
+	BPM []Sample `json:"BPM"`
+	AIR []Sample `json:"AIR"`
+	ECG []Sample `json:"ECG"`
 }
 
 func NewSessionData() *SessionData {
 	return &SessionData{
-		BPM:  make([]Sample, 0),
-		SpO2: make([]Sample, 0),
-		ECG:  make([]Sample, 0),
+		BPM: make([]Sample, 0),
+		AIR: make([]Sample, 0),
+		ECG: make([]Sample, 0),
 	}
 }

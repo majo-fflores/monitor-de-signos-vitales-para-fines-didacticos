@@ -44,12 +44,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final configConexion = ref.read(notificadorConexionProvider);
       if (!configConexion.cargando) {
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        if (configConexion.modo == ModoFuente.websocket) {
-          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-          notifier.iniciarConWebSocket(ws.packetStream);
-        } else {
-          notifier.iniciarSimulacion();
-        }
+        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+        notifier.iniciarConWebSocket(ws.packetStream);
       }
     });
   }
@@ -176,21 +172,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       if ((prev == null || prev.cargando) && !next.cargando) {
         // Al terminar de cargar la configuración inicial de persistencia
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        if (next.modo == ModoFuente.websocket) {
-          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-          notifier.iniciarConWebSocket(ws.packetStream);
-        } else {
-          notifier.iniciarSimulacion();
-        }
-      } else if (prev != null && prev.modo != next.modo) {
-        // Al cambiar de modo manualmente
-        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        if (next.modo == ModoFuente.websocket) {
-          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-          notifier.iniciarConWebSocket(ws.packetStream);
-        } else {
-          notifier.iniciarSimulacion();
-        }
+        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+        notifier.iniciarConWebSocket(ws.packetStream);
       }
     });
 

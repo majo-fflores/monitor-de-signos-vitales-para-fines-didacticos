@@ -93,13 +93,9 @@ const int _kVentanaPuntos = 100;
 /// - Reducción de jank y micro-allocations de memoria.
 @Riverpod(keepAlive: true)
 class NotificadorSignosVitales extends _$NotificadorSignosVitales {
-  Timer? _timer;
   Timer? _silenceTimer;
   bool _estaActivo = false;
   final math.Random _random = math.Random();
-
-  double _anguloEcg = 0.0;
-  double _anguloSpo2 = 0.0;
 
   DateTime? _lastEcgTime;
   DateTime? _lastSpo2Time;
@@ -137,8 +133,6 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   /// Detiene cualquier fuente de datos activa de forma limpia.
   void _detenerTodo() {
     _estaActivo = false;
-    _timer?.cancel();
-    _timer = null;
     _silenceTimer?.cancel();
     _silenceTimer = null;
     _suscripcionWs?.cancel();
@@ -150,76 +144,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _lastCo2Time = null;
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  //  MODO SIMULACIÓN LOCAL
-  // ═══════════════════════════════════════════════════════════════
 
-  void iniciarSimulacion() {
-    _detenerTodo();
-    _estaActivo = true;
-    _inicializarVentana();
-
-    state = state.copiarCon(
-      ecgActivo: true,
-      spo2Activo: true,
-      co2Activo: true,
-    );
-
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (_timer != timer || !_estaActivo) {
-        timer.cancel();
-        return;
-      }
-      final tActual = DateTime.now().millisecondsSinceEpoch.toDouble();
-
-      _anguloEcg += 0.5;
-      final baseEcg = math.sin(_anguloEcg) * 10;
-      final qrs = _random.nextDouble() > 0.92 ? 80.0 : 0.0;
-      final valorEcg = baseEcg + qrs;
-
-      _anguloSpo2 += 0.25;
-      final valorSpo2 = (math.sin(_anguloSpo2) * 30) + (math.cos(_anguloSpo2 * 2) * 10) + 50;
-
-      final nuevaFrecuencia = 70 + _random.nextInt(5);
-      final nuevaPpgFrecuencia = nuevaFrecuencia + _random.nextInt(3) - 1;
-      final nuevoSpo2 = 97 + _random.nextInt(4);
-      final nuevoCo2 = _random.nextDouble() > 0.99
-          ? 850 + _random.nextInt(100)
-          : 350 + _random.nextInt(50);
-
-      final nuevosEcg = List<PuntoBiometrico>.of(state.ecgDatos);
-      if (nuevosEcg.isNotEmpty) nuevosEcg.removeAt(0);
-      nuevosEcg.add(PuntoBiometrico(tActual, valorEcg));
-
-      final nuevosSpo2 = List<PuntoBiometrico>.of(state.spo2Datos);
-      if (nuevosSpo2.isNotEmpty) nuevosSpo2.removeAt(0);
-      nuevosSpo2.add(PuntoBiometrico(tActual, valorSpo2));
-
-      try {
-        if (_timer != timer || !_estaActivo) {
-          timer.cancel();
-          return;
-        }
-
-        state = state.copiarCon(
-          ecgDatos: nuevosEcg,
-          spo2Datos: nuevosSpo2,
-          frecuenciaCardiaca: nuevaFrecuencia,
-          ppgFrecuenciaCardiaca: nuevaPpgFrecuencia,
-          nivelSpo2: nuevoSpo2,
-          nivelCo2: nuevoCo2,
-        );
-
-        ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
-          fc: nuevaFrecuencia,
-          spo2: nuevoSpo2,
-          co2: nuevoCo2,
-        );
-      } catch (e) {
-        timer.cancel();
-      }
-    });
-  }
 
   // ═══════════════════════════════════════════════════════════════
   //  MODO WEBSOCKET CON SCHEDULER BINDING (FRAME-RATE THROTTLING)
@@ -242,12 +167,13 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _suscripcionWs = stream.listen((packet) {
       if (!_estaActivo) return;
 
+      final pType = packet.type.toLowerCase();
       // Actualizar la marca de tiempo del último paquete recibido por tipo de sensor
-      if (packet.type == 'ecg') {
+      if (pType == 'ecg') {
         _lastEcgTime = DateTime.now();
-      } else if (packet.type == 'spo2') {
+      } else if (pType == 'spo2') {
         _lastSpo2Time = DateTime.now();
-      } else if (packet.type == 'co2') {
+      } else if (pType == 'co2' || pType == 'air') {
         _lastCo2Time = DateTime.now();
       }
 
@@ -285,6 +211,12 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
           ecgActivo: ecgOk,
           spo2Activo: spo2Ok,
           co2Activo: co2Ok,
+          ecgDatos: ecgOk ? null : [],
+          spo2Datos: spo2Ok ? null : [],
+          frecuenciaCardiaca: ecgOk ? null : 0,
+          ppgFrecuenciaCardiaca: spo2Ok ? null : 0,
+          nivelSpo2: spo2Ok ? null : 0,
+          nivelCo2: co2Ok ? null : 0,
         );
       }
     });
@@ -306,10 +238,11 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     int co2Nivel = state.nivelCo2;
 
     for (final packet in batch) {
+      final pType = packet.type.toLowerCase();
       double valor = packet.value;
       // Escalado inteligente del ECG: si los datos crudos del backend vienen en rango bajo (0.2 a 1.2),
       // los escalamos al rango visual de la gráfica (-10 a 80) para que oscilen correctamente
-      if (packet.type == 'ecg' && valor <= 3.0) {
+      if (pType == 'ecg' && valor <= 3.0) {
         valor = -10.0 + (valor - 0.2) * 90.0;
       }
 
@@ -318,7 +251,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         valor,
       );
 
-      switch (packet.type) {
+      switch (pType) {
         case 'ecg':
           if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
           nuevosEcg.add(punto);
@@ -332,6 +265,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
           fc = packet.value.round();
           ppgFc = fc + _random.nextInt(3) - 1;
           break;
+        case 'air':
         case 'co2':
           co2Nivel = packet.value.round().clamp(300, 1500);
           break;
@@ -360,7 +294,5 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     }
   }
 
-  void detenerSimulacion() {
-    _detenerTodo();
-  }
+
 }

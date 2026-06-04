@@ -34,10 +34,7 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
     super.dispose();
   }
 
-  Color _obtenerColor(ModoFuente modo, EstadoConexion estadoWs) {
-    if (modo == ModoFuente.simulacion) {
-      return Colors.blueAccent;
-    }
+  Color _obtenerColor(EstadoConexion estadoWs) {
     switch (estadoWs) {
       case EstadoConexion.conectado:
         return ColoresSensores.statusConectado;
@@ -50,10 +47,7 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
     }
   }
 
-  String _obtenerTexto(ModoFuente modo, EstadoConexion estadoWs) {
-    if (modo == ModoFuente.simulacion) {
-      return 'Simulado';
-    }
+  String _obtenerTexto(EstadoConexion estadoWs) {
     switch (estadoWs) {
       case EstadoConexion.conectado:
         return 'Conectado';
@@ -73,12 +67,11 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
 
     // Escuchamos el estado de conexión global
     final estadoConexion = ref.watch(notificadorConexionProvider);
-    final color = _obtenerColor(estadoConexion.modo, estadoConexion.estadoWs);
-    final texto = _obtenerTexto(estadoConexion.modo, estadoConexion.estadoWs);
+    final color = _obtenerColor(estadoConexion.estadoWs);
+    final texto = _obtenerTexto(estadoConexion.estadoWs);
 
-    // Solo parpadea el LED si está conectado, simulando, o conectando
-    final debeAnimar = estadoConexion.modo == ModoFuente.simulacion || 
-                       estadoConexion.estadoWs == EstadoConexion.conectado ||
+    // Solo parpadea el LED si está conectado o conectando
+    final debeAnimar = estadoConexion.estadoWs == EstadoConexion.conectado ||
                        estadoConexion.estadoWs == EstadoConexion.conectando;
 
     if (!debeAnimar && _controller.isAnimating) {

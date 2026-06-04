@@ -6,7 +6,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/services/websocket_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/connection_provider.dart';
-import '../../../../shared/providers/vital_signs_provider.dart';
 
 class BackendConnectionCard extends ConsumerWidget {
   final Color subtitleColor;
@@ -32,7 +31,6 @@ class BackendConnectionCard extends ConsumerWidget {
   }
 
   String _textoEstado(EstadoConexionBackend estado) {
-    if (estado.modo == ModoFuente.simulacion) return 'Simulación';
     switch (estado.estadoWs) {
       case EstadoConexion.conectado:
         return 'Conectado';
@@ -65,9 +63,7 @@ class BackendConnectionCard extends ConsumerWidget {
             children: [
               Icon(
                 LucideIcons.wifi,
-                color: estadoConexion.modo == ModoFuente.websocket
-                    ? _colorEstadoConexion(estadoConexion.estadoWs)
-                    : subtitleColor,
+                color: _colorEstadoConexion(estadoConexion.estadoWs),
               ),
               const Gap(10),
               Expanded(
@@ -82,9 +78,7 @@ class BackendConnectionCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: estadoConexion.modo == ModoFuente.websocket
-                      ? _colorEstadoConexion(estadoConexion.estadoWs).withValues(alpha: 0.15)
-                      : subtitleColor.withValues(alpha: 0.1),
+                  color: _colorEstadoConexion(estadoConexion.estadoWs).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -95,9 +89,7 @@ class BackendConnectionCard extends ConsumerWidget {
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: estadoConexion.modo == ModoFuente.websocket
-                            ? _colorEstadoConexion(estadoConexion.estadoWs)
-                            : subtitleColor,
+                        color: _colorEstadoConexion(estadoConexion.estadoWs),
                       ),
                     ),
                     const Gap(6),
@@ -105,9 +97,7 @@ class BackendConnectionCard extends ConsumerWidget {
                       _textoEstado(estadoConexion),
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: estadoConexion.modo == ModoFuente.websocket
-                            ? _colorEstadoConexion(estadoConexion.estadoWs)
-                            : subtitleColor,
+                        color: _colorEstadoConexion(estadoConexion.estadoWs),
                       ),
                     ),
                   ],
@@ -117,41 +107,48 @@ class BackendConnectionCard extends ConsumerWidget {
           ),
           const Gap(8),
           Text(
-            'Selecciona la fuente de datos de los sensores: simulación local o datos en tiempo real del servidor.',
+            'Visualiza el estado de la conexión en tiempo real con el servidor de sensores biométricos.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: subtitleColor,
             ),
           ),
           const Gap(16),
 
-          // Toggle Simulación / WebSocket
-          // NOTA: Se envuelve el ListTile en un widget de Material transparente
-          // para solucionar permanentemente el crash por DecoratedBox del Framework
-          Material(
-            type: MaterialType.transparency,
-            child: SwitchListTile(
-              title: const Text('Datos del Servidor (WebSocket)'),
-              subtitle: Text(
-                estadoConexion.modo == ModoFuente.websocket
-                    ? 'Conectado al backend: ${estadoConexion.wsUrl}'
-                    : 'Usando simulación local de sensores',
+          // Información de conexión y botón de reconexión manual
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Dirección del Servidor',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Gap(2),
+                    Text(
+                      estadoConexion.wsUrl,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: subtitleColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              value: estadoConexion.modo == ModoFuente.websocket,
-              onChanged: (val) {
-                final nuevoModo = val ? ModoFuente.websocket : ModoFuente.simulacion;
-                ref.read(notificadorConexionProvider.notifier).cambiarModo(nuevoModo);
-                
-                // Reiniciar fuente de datos
-                final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-                if (nuevoModo == ModoFuente.websocket) {
-                  final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-                  notifier.iniciarConWebSocket(ws.packetStream);
-                } else {
-                  notifier.iniciarSimulacion();
-                }
-              },
-              contentPadding: EdgeInsets.zero,
-            ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  ref.read(notificadorConexionProvider.notifier).reconectar();
+                },
+                icon: const Icon(LucideIcons.refreshCw, size: 16),
+                label: const Text('Reconectar'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+              ),
+            ],
           ),
         ],
       ),

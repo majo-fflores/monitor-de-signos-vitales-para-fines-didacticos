@@ -1,6 +1,7 @@
 package sensors
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -33,11 +34,12 @@ func (m *Manager) StartBackgroundListening() {
 			continue
 		}
 
+		fmt.Println("Paquete recibido del sensor: ", packet)
 		// Calculate timestamp at reception time
 		ts := time.Now().UnixMilli()
 
 		m.mu.Lock()
-		
+
 		// Broadcast to all websocket subscribers
 		wsPacket := WsPacket{
 			Type:      packet.Type,
@@ -59,11 +61,11 @@ func (m *Manager) StartBackgroundListening() {
 			}
 
 			switch packet.Type {
-			case "bpm":
+			case "BPM":
 				m.activeSession.BPM = append(m.activeSession.BPM, sample)
-			case "spo2":
-				m.activeSession.SpO2 = append(m.activeSession.SpO2, sample)
-			case "ecg":
+			case "AIR":
+				m.activeSession.AIR = append(m.activeSession.AIR, sample)
+			case "ECG":
 				m.activeSession.ECG = append(m.activeSession.ECG, sample)
 			default:
 				log.Printf("Tipo de paquete desconocido: %s", packet.Type)
