@@ -7,14 +7,12 @@ class Usuario {
   final String id;
   final String nombre;
   final String email;
-  final int edad;
   final DateTime creadoEn;
 
   const Usuario({
     required this.id,
     required this.nombre,
     required this.email,
-    required this.edad,
     required this.creadoEn,
   });
 
@@ -22,7 +20,6 @@ class Usuario {
   factory Usuario.crear({
     required String nombre,
     required String email,
-    required int edad,
   }) {
     final ahora = DateTime.now();
     final id = '${ahora.millisecondsSinceEpoch}_${nombre.hashCode.abs()}';
@@ -30,7 +27,6 @@ class Usuario {
       id: id,
       nombre: nombre,
       email: email,
-      edad: edad,
       creadoEn: ahora,
     );
   }
@@ -41,8 +37,24 @@ class Usuario {
       id: json['id'] as String,
       nombre: json['nombre'] as String,
       email: json['email'] as String? ?? '',
-      edad: json['edad'] as int,
       creadoEn: DateTime.parse(json['creadoEn'] as String),
+    );
+  }
+
+  /// Deserializa desde el formato JSON del Backend.
+  factory Usuario.fromBackendJson(Map<String, dynamic> json) {
+    final rawId = json['id'];
+    final idStr = rawId is int ? rawId.toString() : (rawId?.toString() ?? '');
+    
+    return Usuario(
+      id: idStr,
+      nombre: json['name'] as String? ?? json['nombre'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      creadoEn: json['created_at'] != null 
+          ? DateTime.parse(json['created_at'] as String)
+          : (json['creadoEn'] != null 
+              ? DateTime.parse(json['creadoEn'] as String) 
+              : DateTime.now()),
     );
   }
 
@@ -52,18 +64,27 @@ class Usuario {
       'id': id,
       'nombre': nombre,
       'email': email,
-      'edad': edad,
       'creadoEn': creadoEn.toIso8601String(),
+    };
+  }
+
+  /// Convierte a formato JSON compatible con el Backend.
+  Map<String, dynamic> toBackendJson() {
+    return {
+      'name': nombre,
+      'email': email,
     };
   }
 
   /// Obtiene las iniciales del nombre para mostrar en el avatar.
   String get iniciales {
-    final partes = nombre.trim().split(RegExp(r'\s+'));
+    final trimNombre = nombre.trim();
+    if (trimNombre.isEmpty) return '?';
+    final partes = trimNombre.split(RegExp(r'\s+'));
     if (partes.length >= 2) {
       return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
     }
-    return nombre.isNotEmpty ? nombre[0].toUpperCase() : '?';
+    return trimNombre[0].toUpperCase();
   }
 
   @override

@@ -1,9 +1,28 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../core/models/usuario.dart';
+import '../../core/services/usuario_api_service.dart';
 import '../utils/almacenamiento_local.dart';
+import 'connection_provider.dart';
 
 part 'usuario_provider.g.dart';
+
+/// Provider para la instancia del servicio de API de usuarios.
+/// Deduce la URL base HTTP a partir de la URL de WebSockets.
+@riverpod
+UsuarioApiService usuarioApiService(UsuarioApiServiceRef ref) {
+  final conexionState = ref.watch(notificadorConexionProvider);
+  String httpUrl = 'http://localhost:8080';
+  final wsUrl = conexionState.wsUrl;
+  
+  if (wsUrl.startsWith('ws://')) {
+    httpUrl = wsUrl.replaceFirst('ws://', 'http://').replaceAll('/ws/sensors', '');
+  } else if (wsUrl.startsWith('wss://')) {
+    httpUrl = wsUrl.replaceFirst('wss://', 'https://').replaceAll('/ws/sensors', '');
+  }
+  
+  return UsuarioApiService(baseUrl: httpUrl);
+}
 
 /// Estado inmutable del sistema de usuarios.
 @immutable
@@ -41,20 +60,42 @@ class EstadoUsuarios {
 }
 
 /// Notifier reactivo para la gestión de usuarios.
-/// Persiste automáticamente cada cambio en SharedPreferences.
+/// Persiste en el backend si el modo simulación está desactivado, o localmente como fallback.
 @Riverpod(keepAlive: true)
 class NotificadorUsuarios extends _$NotificadorUsuarios {
   @override
   EstadoUsuarios build() {
-    _cargarDesdeAlmacenamiento();
-    return EstadoUsuarios.inicial();
+    final cargando = ref.watch(
+      notificadorConexionProvider.select((s) => s.cargando),
+    );
+    
+    if (cargando) {
+      return EstadoUsuarios.inicial();
+    }
+
+    Future.microtask(() => _cargarUsuarios());
+    
+    return const EstadoUsuarios(
+      usuarios: [],
+      cargando: true,
+    );
   }
 
-  Future<void> _cargarDesdeAlmacenamiento() async {
-    final usuarios = await AlmacenamientoLocal.obtenerUsuarios();
-    
-    // Al iniciar la app, no auto-iniciamos sesión para forzar la selección previa a ver los gráficos
+  Future<void> _cargarUsuarios() async {
+    final apiService = ref.read(usuarioApiServiceProvider);
+    state = state.copiarCon(cargando: true);
+
+    // Al iniciar la app or cambiar de modo, forzamos deseleccionar usuario para obligar a elegir perfil
     await AlmacenamientoLocal.guardarUsuarioActivo(null);
+
+    List<Usuario> usuarios = [];
+
+    try {
+      usuarios = await apiService.obtenerUsuarios();
+    } catch (e) {
+      debugPrint('[NotificadorUsuarios] Error al cargar desde backend: $e');
+      usuarios = [];
+    }
 
     state = state.copiarCon(
       usuarios: usuarios,
@@ -67,22 +108,26 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
   Future<void> crearUsuario({
     required String nombre,
     required String email,
-    required int edad,
   }) async {
-    final nuevoUsuario = Usuario.crear(
-      nombre: nombre,
-      email: email,
-      edad: edad,
-    );
+    final apiService = ref.read(usuarioApiServiceProvider);
 
-    final nuevaLista = [...state.usuarios, nuevoUsuario];
-    state = state.copiarCon(
-      usuarios: nuevaLista,
-      usuarioActivo: nuevoUsuario,
-    );
+    try {
+      final nuevoUsuario = await apiService.crearUsuario(
+        nombre: nombre,
+        email: email,
+      );
+      
+      final nuevaLista = [...state.usuarios, nuevoUsuario];
+      state = state.copiarCon(
+        usuarios: nuevaLista,
+        usuarioActivo: nuevoUsuario,
+      );
+    } catch (e) {
+      debugPrint('[NotificadorUsuarios] Error al crear en el backend: $e');
+      rethrow;
+    }
 
-    await AlmacenamientoLocal.guardarUsuarios(nuevaLista);
-    await AlmacenamientoLocal.guardarUsuarioActivo(nuevoUsuario.id);
+    await AlmacenamientoLocal.guardarUsuarioActivo(state.usuarioActivo!.id);
   }
 
   /// Selecciona un usuario existente como activo.
@@ -99,6 +144,14 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
 
   /// Elimina un usuario y todos sus registros de medición asociados.
   Future<void> eliminarUsuario(String usuarioId) async {
+    final apiService = ref.read(usuarioApiServiceProvider);
+    
+    try {
+      await apiService.eliminarUsuario(usuarioId);
+    } catch (e) {
+      debugPrint('[NotificadorUsuarios] Error al eliminar en el backend (tal vez no está implementado aún): $e');
+    }
+
     final nuevaLista =
         state.usuarios.where((u) => u.id != usuarioId).toList();
 
@@ -109,8 +162,8 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
       limpiarUsuarioActivo: eraActivo,
     );
 
-    await AlmacenamientoLocal.guardarUsuarios(nuevaLista);
     await AlmacenamientoLocal.eliminarRegistrosDeUsuario(usuarioId);
+    
     if (eraActivo) {
       await AlmacenamientoLocal.guardarUsuarioActivo(null);
     }

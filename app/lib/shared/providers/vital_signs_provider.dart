@@ -110,6 +110,9 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   @override
   EstadoSignosVitales build() {
     _estaActivo = true;
+    ref.onDispose(() {
+      _detenerTodo();
+    });
     return EstadoSignosVitales.inicial();
   }
 
@@ -122,7 +125,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     double t = ahora;
     for (int i = 0; i < _kVentanaPuntos; i++) {
       ecgInicial.add(PuntoBiometrico(t, 0.0));
-      spo2Inicial.add(PuntoBiometrico(t, 50.0));
+      spo2Inicial.add(PuntoBiometrico(t, 98.0));
       t += 100;
     }
 
@@ -254,13 +257,13 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _suscripcionWs = stream.listen((packet) {
       if (!_estaActivo) return;
 
-      final pType = packet.type.toLowerCase();
+      final pType = packet.type.trim().toLowerCase();
       // Actualizar la marca de tiempo del último paquete recibido por tipo de sensor
       if (pType == 'ecg') {
         _lastEcgTime = DateTime.now();
       } else if (pType == 'spo2') {
         _lastSpo2Time = DateTime.now();
-      } else if (pType == 'co2' || pType == 'air') {
+      } else if (pType == 'co2' || pType == 'air' || pType == 'mq' || pType == 'mq135' || pType == 'gas') {
         _lastCo2Time = DateTime.now();
       }
 
@@ -323,9 +326,12 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     int ppgFc = state.ppgFrecuenciaCardiaca;
     int spo2Nivel = state.nivelSpo2;
     int co2Nivel = state.nivelCo2;
+    bool ecgActivo = state.ecgActivo;
+    bool spo2Activo = state.spo2Activo;
+    bool co2Activo = state.co2Activo;
 
     for (final packet in batch) {
-      final pType = packet.type.toLowerCase();
+      final pType = packet.type.trim().toLowerCase();
       double valor = packet.value;
       // Escalado inteligente del ECG: si los datos crudos del backend vienen en rango bajo (0.2 a 1.2),
       // los escalamos al rango visual de la gráfica (-10 a 80) para que oscilen correctamente
@@ -342,11 +348,13 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         case 'ecg':
           if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
           nuevosEcg.add(punto);
+          ecgActivo = true;
           break;
         case 'spo2':
           if (nuevosSpo2.length >= _kVentanaPuntos) nuevosSpo2.removeAt(0);
           nuevosSpo2.add(punto);
           spo2Nivel = packet.value.round().clamp(0, 100);
+          spo2Activo = true;
           break;
         case 'bpm':
           fc = packet.value.round();
@@ -354,7 +362,11 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
           break;
         case 'air':
         case 'co2':
+        case 'mq':
+        case 'mq135':
+        case 'gas':
           co2Nivel = packet.value.round().clamp(300, 1500);
+          co2Activo = true;
           break;
       }
     }
@@ -369,6 +381,9 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         ppgFrecuenciaCardiaca: ppgFc,
         nivelSpo2: spo2Nivel,
         nivelCo2: co2Nivel,
+        ecgActivo: ecgActivo,
+        spo2Activo: spo2Activo,
+        co2Activo: co2Activo,
       );
 
       ref.read(notificadorAlarmaProvider.notifier).monitorearValores(

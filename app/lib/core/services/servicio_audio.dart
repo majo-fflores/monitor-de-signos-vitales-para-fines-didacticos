@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 /// Servicio de Audio Singleton optimizado para alarmas STR.
 /// Controla la reproducción en bucle y las pruebas de tonos de alerta.
 class ServicioAudio {
-  static final ServicioAudio instancia = ServicioAudio._internal();
+  static ServicioAudio instancia = ServicioAudio._internal();
   ServicioAudio._internal();
 
   final AudioPlayer _player = AudioPlayer();

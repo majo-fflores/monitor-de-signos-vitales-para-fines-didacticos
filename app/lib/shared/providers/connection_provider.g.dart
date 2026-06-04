@@ -7,7 +7,7 @@ part of 'connection_provider.dart';
 // **************************************************************************
 
 String _$notificadorConexionHash() =>
-    r'099901f330b176beb2d7beef402e7d78455dd3ea';
+    r'3d912e6ad1467de3f8ab19ada5b7759af92ef005';
 
 /// Notifier que administra la conexión WebSocket con el backend o la simulación de pruebas.
 ///

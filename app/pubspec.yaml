@@ -68,10 +68,12 @@ dependencies:
   # Generación y visualización de PDF
   pdf: ^3.10.8
   printing: ^5.11.1
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.4
 
   flutter_lints: ^5.0.0
   # Code generation para Riverpod
@@ -81,6 +83,7 @@ dev_dependencies:
   riverpod_lint: ^2.6.3
   flutter_launcher_icons: ^0.13.1
 
+  fake_async: any
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true

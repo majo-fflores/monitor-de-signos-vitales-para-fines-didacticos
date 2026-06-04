@@ -4,39 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/models/registro_medicion.dart';
-import '../../core/models/usuario.dart';
 
 /// Utilidad de persistencia local para usuarios y registros de medición.
 /// Abstrae las operaciones de lectura/escritura sobre SharedPreferences
 /// siguiendo el patrón ya establecido en el proyecto (alarma_state, theme_provider).
 class AlmacenamientoLocal {
-  static const _keyUsuarios = 'datavital_usuarios';
   static const _keyUsuarioActivo = 'datavital_usuario_activo_id';
   static const _keyRegistrosPrefix = 'datavital_registros_';
-
-  // ─── Usuarios ──────────────────────────────────────────────────────
-
-  /// Guarda la lista completa de usuarios.
-  static Future<void> guardarUsuarios(List<Usuario> usuarios) async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = usuarios.map((u) => jsonEncode(u.toJson())).toList();
-    await prefs.setStringList(_keyUsuarios, jsonList);
-  }
-
-  /// Obtiene la lista completa de usuarios.
-  static Future<List<Usuario>> obtenerUsuarios() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonList = prefs.getStringList(_keyUsuarios);
-      if (jsonList == null) return [];
-      return jsonList
-          .map((s) => Usuario.fromJson(jsonDecode(s) as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      debugPrint('Error obteniendo usuarios: $e');
-      return [];
-    }
-  }
 
   // ─── Usuario Activo ────────────────────────────────────────────────
 

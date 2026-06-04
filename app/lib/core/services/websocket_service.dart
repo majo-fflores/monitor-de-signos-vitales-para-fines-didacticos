@@ -62,29 +62,31 @@ class WebSocketService {
       // Spawnear isolate de fondo
       _isolate = await Isolate.spawn(_backgroundSocketIsolate, _receivePort!.sendPort);
       
-      _receivePort!.listen((message) {
-        if (message is SendPort) {
-          _commandPort = message;
-          // Enviar comando inicial de conexión una vez establecido el canal
-          _commandPort!.send(_IsolateCommand('connect', url));
-        } else if (message is _IsolateMessage) {
-          if (message.status != null) {
-            _statusNotifier.value = message.status!;
-          }
-          if (message.packetJson != null) {
-            // El JSON ya ha sido procesado o filtrado asíncronamente, lo parseamos directo
-            try {
-              final map = jsonDecode(message.packetJson!) as Map<String, dynamic>;
-              _packetController.add(WsPacket.fromJson(map));
-            } catch (e) {
-              debugPrint('[WebSocketService] Error parseando paquete en main thread: $e');
+      if (_receivePort != null) {
+        _receivePort!.listen((message) {
+          if (message is SendPort) {
+            _commandPort = message;
+            // Enviar comando inicial de conexión una vez establecido el canal
+            _commandPort!.send(_IsolateCommand('connect', url));
+          } else if (message is _IsolateMessage) {
+            if (message.status != null) {
+              _statusNotifier.value = message.status!;
+            }
+            if (message.packetJson != null) {
+              // El JSON ya ha sido procesado o filtrado asíncronamente, lo parseamos directo
+              try {
+                final map = jsonDecode(message.packetJson!) as Map<String, dynamic>;
+                _packetController.add(WsPacket.fromJson(map));
+              } catch (e) {
+                debugPrint('[WebSocketService] Error parseando paquete en main thread: $e');
+              }
+            }
+            if (message.error != null) {
+              debugPrint('[WebSocketService] Error en Isolate de red: ${message.error}');
             }
           }
-          if (message.error != null) {
-            debugPrint('[WebSocketService] Error en Isolate de red: ${message.error}');
-          }
-        }
-      });
+        });
+      }
     } else {
       _commandPort?.send(_IsolateCommand('connect', url));
     }

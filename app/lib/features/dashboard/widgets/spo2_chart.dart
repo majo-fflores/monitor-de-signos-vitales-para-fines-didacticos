@@ -28,10 +28,31 @@ class GraficoSpo2 extends ConsumerWidget {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
-    final colorFondoHeader = esOscuro ? ColoresComponentes.graficoHeaderOscuro : ColoresComponentes.graficoHeaderClaro;
-    final colorFondoGrafico = esOscuro ? ColoresComponentes.graficoCuerpoOscuro : ColoresComponentes.graficoCuerpoClaro;
-    final colorRejilla = esOscuro ? ColoresComponentes.graficoRejillaOscuro : ColoresComponentes.graficoRejillaClaro;
-    final colorLinea = esOscuro ? ColoresSensores.spo2Azul : ColoresComponentes.sensorSpo2Claro;
+    final colorFondoHeader = esOscuro
+        ? ColoresComponentes.graficoHeaderOscuro
+        : ColoresComponentes.graficoHeaderClaro;
+    final colorFondoGrafico = esOscuro
+        ? ColoresComponentes.graficoCuerpoOscuro
+        : ColoresComponentes.graficoCuerpoClaro;
+    final colorRejilla = esOscuro
+        ? ColoresComponentes.graficoRejillaOscuro
+        : ColoresComponentes.graficoRejillaClaro;
+    final colorLinea = esOscuro
+        ? ColoresSensores.spo2Azul
+        : ColoresComponentes.sensorSpo2Claro;
+
+    double minY = 90.0;
+    double maxY = 100.0;
+    if (spots.isNotEmpty) {
+      final yValues = spots.map((s) => s.y);
+      final minVal = yValues.reduce((a, b) => a < b ? a : b);
+      final maxVal = yValues.reduce((a, b) => a > b ? a : b);
+      minY = (minVal - 1.0).clamp(0.0, 98.0);
+      maxY = (maxVal + 1.0).clamp(2.0, 102.0);
+      if (maxY <= minY) {
+        maxY = minY + 5.0;
+      }
+    }
 
     final chartWidget = Container(
       width: double.infinity,
@@ -42,8 +63,8 @@ class GraficoSpo2 extends ConsumerWidget {
           RepaintBoundary(
             child: LineChart(
               LineChartData(
-                minY: 0,
-                maxY: 100,
+                minY: minY,
+                maxY: maxY,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
@@ -152,7 +173,7 @@ class GraficoSpo2 extends ConsumerWidget {
                   'Saturación de Oxígeno (SpO2)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12.0,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: colorLinea,
                   ),
@@ -165,10 +186,7 @@ class GraficoSpo2 extends ConsumerWidget {
         // Área del gráfico
         expandir
             ? Expanded(child: chartWidget)
-            : SizedBox(
-                height: 110,
-                child: chartWidget,
-              ),
+            : SizedBox(height: 110, child: chartWidget),
       ],
     );
   }

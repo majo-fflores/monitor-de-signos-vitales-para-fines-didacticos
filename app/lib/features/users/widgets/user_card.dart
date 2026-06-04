@@ -96,7 +96,7 @@ class TarjetaUsuario extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${usuario.edad} años${usuario.email.isNotEmpty ? ' · ${usuario.email}' : ''}',
+                      usuario.email,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         fontSize: 11,

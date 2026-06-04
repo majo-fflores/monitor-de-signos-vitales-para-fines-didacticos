@@ -34,7 +34,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
       final usuario = ref.read(notificadorUsuariosProvider).usuarioActivo;
       if (usuario != null) {
         _nombreController.text = usuario.nombre;
-        _edadController.text = usuario.edad.toString();
         ref.read(notificadorHistorialProvider.notifier).cargarHistorial(usuario.id);
       }
     });

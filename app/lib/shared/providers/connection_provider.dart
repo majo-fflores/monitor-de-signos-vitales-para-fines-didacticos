@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/websocket_service.dart';
 
@@ -12,13 +11,11 @@ class EstadoConexionBackend {
   final EstadoConexion estadoWs;
   final String wsUrl;
   final bool cargando;
-  final bool modoSimulacion;
 
   const EstadoConexionBackend({
     required this.estadoWs,
     required this.wsUrl,
     required this.cargando,
-    required this.modoSimulacion,
   });
 
   factory EstadoConexionBackend.inicial() {
@@ -31,7 +28,6 @@ class EstadoConexionBackend {
       estadoWs: EstadoConexion.desconectado,
       wsUrl: defaultWsUrl,
       cargando: true,
-      modoSimulacion: false,
     );
   }
 
@@ -39,13 +35,11 @@ class EstadoConexionBackend {
     EstadoConexion? estadoWs,
     String? wsUrl,
     bool? cargando,
-    bool? modoSimulacion,
   }) {
     return EstadoConexionBackend(
       estadoWs: estadoWs ?? this.estadoWs,
       wsUrl: wsUrl ?? this.wsUrl,
       cargando: cargando ?? this.cargando,
-      modoSimulacion: modoSimulacion ?? this.modoSimulacion,
     );
   }
 }
@@ -54,6 +48,16 @@ class EstadoConexionBackend {
 @Riverpod(keepAlive: true)
 class NotificadorConexion extends _$NotificadorConexion {
   WebSocketService? _wsService;
+
+  @visibleForTesting
+  set wsServiceForTesting(WebSocketService service) {
+    _wsService = service;
+    _wsService!.status.addListener(() {
+      if (state.estadoWs != _wsService!.status.value) {
+        state = state.copiarCon(estadoWs: _wsService!.status.value);
+      }
+    });
+  }
 
   @override
   EstadoConexionBackend build() {
@@ -64,22 +68,16 @@ class NotificadorConexion extends _$NotificadorConexion {
     return EstadoConexionBackend.inicial();
   }
 
-  /// Inicia la conexión con el WebSocket o habilita el modo simulación según las preferencias.
+  /// Inicia la conexión con el WebSocket.
   Future<void> _cargarConfiguracion() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final modoSim = prefs.getBool('datavital_modo_simulacion') ?? false;
-
       state = state.copiarCon(
-        modoSimulacion: modoSim,
         cargando: false,
       );
 
-      if (!modoSim) {
-        wsService.connect(state.wsUrl);
-      }
+      wsService.connect(state.wsUrl);
     } catch (e) {
-      debugPrint('[NotificadorConexion] Error cargando config: $e');
+      debugPrint('[NotificadorConexion] Error al conectar: $e');
       state = state.copiarCon(cargando: false);
     }
   }
@@ -96,27 +94,8 @@ class NotificadorConexion extends _$NotificadorConexion {
     return _wsService!;
   }
 
-  /// Cambia el modo de simulación local y conecta/desconecta el WS correspondiente.
-  Future<void> cambiarModoSimulacion(bool valor) async {
-    state = state.copiarCon(modoSimulacion: valor);
-    
-    if (valor) {
-      wsService.disconnect();
-    } else {
-      wsService.connect(state.wsUrl);
-    }
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('datavital_modo_simulacion', valor);
-    } catch (e) {
-      debugPrint('[NotificadorConexion] Error guardando modo simulación: $e');
-    }
-  }
-
-  /// Fuerza reconexión manual (sólo si no estamos en modo simulación).
+  /// Fuerza reconexión manual.
   void reconectar() {
-    if (state.modoSimulacion) return;
     wsService.disconnect();
     wsService.connect(state.wsUrl);
   }

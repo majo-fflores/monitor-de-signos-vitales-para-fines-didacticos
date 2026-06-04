@@ -42,12 +42,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       final configConexion = ref.read(notificadorConexionProvider);
       if (!configConexion.cargando) {
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        if (configConexion.modoSimulacion) {
-          notifier.iniciarSimulacion();
-        } else {
-          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-          notifier.iniciarConWebSocket(ws.packetStream);
-        }
+        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+        notifier.iniciarConWebSocket(ws.packetStream);
       }
     });
   }
@@ -179,17 +175,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       prev,
       next,
     ) {
-      if ((prev == null ||
-              prev.cargando ||
-              prev.modoSimulacion != next.modoSimulacion) &&
-          !next.cargando) {
+      if ((prev == null || prev.cargando) && !next.cargando) {
         final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        if (next.modoSimulacion) {
-          notifier.iniciarSimulacion();
-        } else {
-          final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-          notifier.iniciarConWebSocket(ws.packetStream);
-        }
+        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
+        notifier.iniciarConWebSocket(ws.packetStream);
       }
     });
 

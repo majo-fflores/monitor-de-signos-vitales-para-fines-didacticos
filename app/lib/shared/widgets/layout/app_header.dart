@@ -134,7 +134,7 @@ class AppHeader extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '${usuarioActivo.edad} años',
+                            usuarioActivo.email,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),

@@ -1,0 +1,134 @@
+import 'package:datavital_flutter/core/models/registro_medicion.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('RegistroMedicion Model Tests', () {
+    test('RegistroMedicion.crear should generate unique ID and default fields', () {
+      final reg = RegistroMedicion.crear(
+        usuarioId: 'user_123',
+        duracionSegundos: 30,
+        frecuenciaCardiaca: 80,
+        ppgFrecuenciaCardiaca: 82,
+        nivelSpo2: 97,
+        nivelCo2: 450,
+      );
+
+      expect(reg.id, isNotEmpty);
+      expect(reg.usuarioId, equals('user_123'));
+      expect(reg.duracionSegundos, equals(30));
+      expect(reg.frecuenciaCardiaca, equals(80));
+      expect(reg.ppgFrecuenciaCardiaca, equals(82));
+      expect(reg.nivelSpo2, equals(97));
+      expect(reg.nivelCo2, equals(450));
+      expect(reg.alertasDisparadas, equals(0));
+      expect(reg.notasClinicas, isEmpty);
+    });
+
+    test('fromJson and toJson should perform a faithful roundtrip', () {
+      final original = RegistroMedicion(
+        id: 'reg_xyz',
+        usuarioId: 'user_456',
+        fechaRegistro: DateTime(2026, 6, 4, 15, 30),
+        duracionSegundos: 150,
+        frecuenciaCardiaca: 75,
+        ppgFrecuenciaCardiaca: 76,
+        nivelSpo2: 99,
+        nivelCo2: 390,
+        alertasDisparadas: 1,
+        notasClinicas: 'Patient was slightly agitated',
+      );
+
+      final json = original.toJson();
+      final deserialized = RegistroMedicion.fromJson(json);
+
+      expect(deserialized.id, equals(original.id));
+      expect(deserialized.usuarioId, equals(original.usuarioId));
+      expect(deserialized.fechaRegistro, equals(original.fechaRegistro));
+      expect(deserialized.duracionSegundos, equals(original.duracionSegundos));
+      expect(deserialized.frecuenciaCardiaca, equals(original.frecuenciaCardiaca));
+      expect(deserialized.ppgFrecuenciaCardiaca, equals(original.ppgFrecuenciaCardiaca));
+      expect(deserialized.nivelSpo2, equals(original.nivelSpo2));
+      expect(deserialized.nivelCo2, equals(original.nivelCo2));
+      expect(deserialized.alertasDisparadas, equals(original.alertasDisparadas));
+      expect(deserialized.notasClinicas, equals(original.notasClinicas));
+    });
+
+    test('fromJson with optional fields missing should use defaults', () {
+      final json = {
+        'id': 'reg_def',
+        'usuarioId': 'user_def',
+        'fechaRegistro': DateTime.now().toIso8601String(),
+        'duracionSegundos': 10,
+        'frecuenciaCardiaca': 70,
+        'nivelSpo2': 98,
+        'nivelCo2': 400,
+        // missing: ppgFrecuenciaCardiaca, alertasDisparadas, notasClinicas
+      };
+
+      final reg = RegistroMedicion.fromJson(json);
+      expect(reg.ppgFrecuenciaCardiaca, equals(70)); // falls back to frecuenciaCardiaca
+      expect(reg.alertasDisparadas, equals(0));
+      expect(reg.notasClinicas, equals(''));
+    });
+
+    group('duracionFormateada getter', () {
+      test('should format less than 60 seconds', () {
+        final reg = RegistroMedicion.crear(
+          usuarioId: '1', duracionSegundos: 45, frecuenciaCardiaca: 0,
+          ppgFrecuenciaCardiaca: 0, nivelSpo2: 0, nivelCo2: 0,
+        );
+        expect(reg.duracionFormateada, equals('45s'));
+      });
+
+      test('should format minutes and seconds', () {
+        final reg = RegistroMedicion.crear(
+          usuarioId: '1', duracionSegundos: 125, frecuenciaCardiaca: 0,
+          ppgFrecuenciaCardiaca: 0, nivelSpo2: 0, nivelCo2: 0,
+        );
+        expect(reg.duracionFormateada, equals('2m 5s'));
+      });
+
+      test('should format hours and minutes', () {
+        final reg = RegistroMedicion.crear(
+          usuarioId: '1', duracionSegundos: 3725, frecuenciaCardiaca: 0,
+          ppgFrecuenciaCardiaca: 0, nivelSpo2: 0, nivelCo2: 0,
+        );
+        // 3725 seconds = 1 hour, 2 minutes, 5 seconds
+        // get duracionFormateada returns hours and minutes for > 3600 seconds
+        expect(reg.duracionFormateada, equals('1h 2m'));
+      });
+    });
+
+    test('fechaFormateada getter should format date correctly', () {
+      final reg = RegistroMedicion(
+        id: '1',
+        usuarioId: '1',
+        fechaRegistro: DateTime(2026, 6, 4, 9, 5),
+        duracionSegundos: 0,
+        frecuenciaCardiaca: 0,
+        ppgFrecuenciaCardiaca: 0,
+        nivelSpo2: 0,
+        nivelCo2: 0,
+        alertasDisparadas: 0,
+        notasClinicas: '',
+      );
+      expect(reg.fechaFormateada, equals('04/06/2026 09:05'));
+    });
+
+    test('equality should be based on ID only', () {
+      final regA = RegistroMedicion(
+        id: 'same_reg', usuarioId: 'user1', fechaRegistro: DateTime.now(),
+        duracionSegundos: 10, frecuenciaCardiaca: 70, ppgFrecuenciaCardiaca: 70,
+        nivelSpo2: 98, nivelCo2: 400, alertasDisparadas: 0, notasClinicas: '',
+      );
+      final regB = RegistroMedicion(
+        id: 'same_reg', usuarioId: 'user2', fechaRegistro: DateTime.now(),
+        duracionSegundos: 20, frecuenciaCardiaca: 80, ppgFrecuenciaCardiaca: 80,
+        nivelSpo2: 99, nivelCo2: 500, alertasDisparadas: 2, notasClinicas: 'diff',
+      );
+
+      expect(regA, equals(regB));
+      expect(regA.hashCode, equals(regB.hashCode));
+    });
+  });
+}

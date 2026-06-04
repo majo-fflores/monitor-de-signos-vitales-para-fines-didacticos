@@ -22,9 +22,9 @@ class UserSelectionView extends ConsumerStatefulWidget {
 class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
   final TextEditingController _searchController = TextEditingController();
   Map<String, int> _sessionCounts = {};
-  bool _cargandoHistoriales = true;
   String _filtroBusqueda = '';
   int _tabActual = 0;
+  bool _estaCargandoConteos = false;
 
   @override
   void initState() {
@@ -44,6 +44,8 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
   }
 
   Future<void> _cargarConteosSesiones() async {
+    if (_estaCargandoConteos) return;
+    _estaCargandoConteos = true;
     try {
       final usuarios = ref.read(notificadorUsuariosProvider).usuarios;
       final Map<String, int> counts = {};
@@ -54,20 +56,19 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
       if (mounted) {
         setState(() {
           _sessionCounts = counts;
-          _cargandoHistoriales = false;
         });
       }
     } catch (_) {
-      if (mounted) {
-        setState(() => _cargandoHistoriales = false);
-      }
+      // Ignorar errores al cargar conteos
+    } finally {
+      _estaCargandoConteos = false;
     }
   }
 
-  void _crearUsuario(String nombre, String email, int edad) async {
+  void _crearUsuario(String nombre, String email) async {
     await ref
         .read(notificadorUsuariosProvider.notifier)
-        .crearUsuario(nombre: nombre, email: email, edad: edad);
+        .crearUsuario(nombre: nombre, email: email);
     await _cargarConteosSesiones();
     if (mounted) {
       context.go('/');
@@ -90,10 +91,11 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
     final esOscuro = theme.brightness == Brightness.dark;
     final estadoUsuarios = ref.watch(notificadorUsuariosProvider);
 
-    if (estadoUsuarios.usuarios.length != _sessionCounts.length &&
-        !_cargandoHistoriales) {
-      _cargarConteosSesiones();
-    }
+    ref.listen<EstadoUsuarios>(notificadorUsuariosProvider, (prev, next) {
+      if (prev?.usuarios.length != next.usuarios.length) {
+        _cargarConteosSesiones();
+      }
+    });
 
     if (estadoUsuarios.cargando) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));

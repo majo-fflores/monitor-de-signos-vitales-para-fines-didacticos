@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 /// Formulario para crear un nuevo usuario.
 /// Puede ser utilizado de forma inline en pantallas grandes o dentro de diálogos/hojas.
 class FormularioCrearUsuario extends StatefulWidget {
-  final Function(String nombre, String email, int edad) onSubmit;
+  final Function(String nombre, String email) onSubmit;
   final VoidCallback? onCancel;
 
   const FormularioCrearUsuario({
@@ -21,13 +21,11 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _emailController = TextEditingController();
-  final _edadController = TextEditingController();
 
   @override
   void dispose() {
     _nombreController.dispose();
     _emailController.dispose();
-    _edadController.dispose();
     super.dispose();
   }
 
@@ -36,12 +34,10 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
       widget.onSubmit(
         _nombreController.text.trim(),
         _emailController.text.trim(),
-        int.parse(_edadController.text.trim()),
       );
       // Limpiamos los controladores después de guardar
       _nombreController.clear();
       _emailController.clear();
-      _edadController.clear();
     }
   }
 
@@ -84,21 +80,8 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              labelText: 'Correo Electrónico (Opcional)',
+              labelText: 'Correo Electrónico',
               hintText: 'Ej. maria@correo.com',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          const Gap(16),
-          TextFormField(
-            controller: _edadController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Edad (Años)',
-              hintText: 'Ej. 30',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -106,11 +89,11 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
             ),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
-                return 'La edad es obligatoria';
+                return 'El correo electrónico es obligatorio';
               }
-              final edad = int.tryParse(val.trim());
-              if (edad == null || edad <= 0 || edad > 120) {
-                return 'Ingrese una edad válida (1-120)';
+              final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+              if (!emailRegex.hasMatch(val.trim())) {
+                return 'Ingrese un correo electrónico válido';
               }
               return null;
             },

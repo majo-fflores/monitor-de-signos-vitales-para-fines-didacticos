@@ -6,11 +6,32 @@ part of 'usuario_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$usuarioApiServiceHash() => r'657f510cdf99af4a2a6a79b044d560f52964f044';
+
+/// Provider para la instancia del servicio de API de usuarios.
+/// Deduce la URL base HTTP a partir de la URL de WebSockets.
+///
+/// Copied from [usuarioApiService].
+@ProviderFor(usuarioApiService)
+final usuarioApiServiceProvider =
+    AutoDisposeProvider<UsuarioApiService>.internal(
+      usuarioApiService,
+      name: r'usuarioApiServiceProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$usuarioApiServiceHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef UsuarioApiServiceRef = AutoDisposeProviderRef<UsuarioApiService>;
 String _$notificadorUsuariosHash() =>
-    r'971fb9a2941867149afd6f1bac0de97b8f44f20c';
+    r'0c3749d80154600a8fdf2b305752ce7b500a82c6';
 
 /// Notifier reactivo para la gestión de usuarios.
-/// Persiste automáticamente cada cambio en SharedPreferences.
+/// Persiste en el backend si el modo simulación está desactivado, o localmente como fallback.
 ///
 /// Copied from [NotificadorUsuarios].
 @ProviderFor(NotificadorUsuarios)

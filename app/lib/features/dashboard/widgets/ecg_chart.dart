@@ -12,18 +12,34 @@ class GraficoEcg extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final datos = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgDatos));
-    final ecgActivo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgActivo));
+    final datos = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.ecgDatos),
+    );
+    final ecgActivo = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
+    );
     // Convertimos los PuntoBiometrico a FlSpot de fl_chart usando el índice como X para evitar cruces diagonales
-    final spots = datos.asMap().entries.map((entry) => FlSpot(entry.key.toDouble(), entry.value.y)).toList();
+    final spots = datos
+        .asMap()
+        .entries
+        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.y))
+        .toList();
 
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
-    final colorFondoHeader = esOscuro ? ColoresComponentes.graficoHeaderOscuro : ColoresComponentes.graficoHeaderClaro;
-    final colorFondoGrafico = esOscuro ? ColoresComponentes.graficoCuerpoOscuro : ColoresComponentes.graficoCuerpoClaro;
-    final colorRejilla = esOscuro ? ColoresComponentes.graficoRejillaOscuro : ColoresComponentes.graficoRejillaClaro;
-    final colorLinea = esOscuro ? ColoresSensores.ecgVerde : ColoresComponentes.sensorEcgClaro;
+    final colorFondoHeader = esOscuro
+        ? ColoresComponentes.graficoHeaderOscuro
+        : ColoresComponentes.graficoHeaderClaro;
+    final colorFondoGrafico = esOscuro
+        ? ColoresComponentes.graficoCuerpoOscuro
+        : ColoresComponentes.graficoCuerpoClaro;
+    final colorRejilla = esOscuro
+        ? ColoresComponentes.graficoRejillaOscuro
+        : ColoresComponentes.graficoRejillaClaro;
+    final colorLinea = esOscuro
+        ? ColoresSensores.ecgVerde
+        : ColoresComponentes.sensorEcgClaro;
 
     final chartWidget = Container(
       width: double.infinity,
@@ -71,19 +87,30 @@ class GraficoEcg extends ConsumerWidget {
           if (!ecgActivo)
             Positioned.fill(
               child: Container(
-                color: esOscuro ? Colors.black87.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.9),
+                color: esOscuro
+                    ? Colors.black87.withValues(alpha: 0.8)
+                    : Colors.white.withValues(alpha: 0.9),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.redAccent.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: Colors.redAccent.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 16),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.redAccent,
+                          size: 16,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'SENSOR DESCONECTADO',
@@ -123,7 +150,7 @@ class GraficoEcg extends ConsumerWidget {
                   'Frecuencia Cardíaca (ECG)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 12.0,
+                    fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: colorLinea,
                   ),
@@ -132,14 +159,11 @@ class GraficoEcg extends ConsumerWidget {
             ],
           ),
         ),
-        
+
         // Área del gráfico
         expandir
             ? Expanded(child: chartWidget)
-            : SizedBox(
-                height: 110,
-                child: chartWidget,
-              ),
+            : SizedBox(height: 110, child: chartWidget),
       ],
     );
   }
