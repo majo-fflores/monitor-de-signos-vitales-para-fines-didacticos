@@ -19,6 +19,7 @@ setup:
     cp backend/.env.example backend/.env
     cd backend && go build -o server cmd/app/main.go
     cd backend && go mod tidy
+    go install github.com/air-verse/air@latest
 
 
 # Ejecuta las pruebas del backend
