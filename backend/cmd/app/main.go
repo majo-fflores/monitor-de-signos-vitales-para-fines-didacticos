@@ -33,8 +33,7 @@ func main() {
 
 	source, err := sensors.NewSerialArduino("/dev/ttyUSB0")
 	if err != nil {
-		log.Printf("Aviso: No se pudo inicializar puerto serial Arduino (%v). Iniciando simulador de Arduino de fondo...", err)
-		source = sensors.NewSimulatedArduino()
+		panic(err)
 	}
 	sensors.GlobalManager = sensors.NewManager(source)
 	go sensors.GlobalManager.StartBackgroundListening()
