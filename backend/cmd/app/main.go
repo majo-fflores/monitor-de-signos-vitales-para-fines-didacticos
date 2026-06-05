@@ -2,7 +2,12 @@ package main
 
 import (
 	"backend/cmd/database"
+	"backend/internal/air"
+	"backend/internal/bpm"
+	"backend/internal/ecg"
 	"backend/internal/sensors"
+	"backend/internal/sessions"
+	"backend/internal/spo2"
 	"backend/internal/users"
 	"log"
 	"net/http"
@@ -23,7 +28,14 @@ func main() {
 	database.InitDB()
 
 	// Migrar modelos
-	if err := database.DB.AutoMigrate(&users.User{}); err != nil {
+	if err := database.DB.AutoMigrate(
+		&users.User{},
+		&sessions.Session{},
+		&bpm.BpmMeasurement{},
+		&ecg.EcgMeasurement{},
+		&air.AirMeasurement{},
+		&spo2.Spo2Measurement{},
+	); err != nil {
 		log.Fatalf("Error al realizar la auto-migración: %v", err)
 	}
 
