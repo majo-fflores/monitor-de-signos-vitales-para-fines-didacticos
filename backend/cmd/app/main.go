@@ -42,6 +42,11 @@ func main() {
 	// ─── ¡ACÁ TIENE QUE IR! ──────────────────────────────────────────
 	// Inicializar la capa de servicio de usuarios (fuera del bloque de error)
 	users.ServiceInstance = users.NewService(database.DB)
+	spo2.ServiceInstance = spo2.NewSpo2Service(database.DB)
+	ecg.ServiceInstance = ecg.NewEcgService(database.DB)
+	bpm.ServiceInstance = bpm.NewBpmService(database.DB)
+	air.ServiceInstance = air.NewAirService(database.DB)
+	sessions.ServiceInstance = sessions.NewSessionService(database.DB)
 
 	source, err := sensors.NewSerialArduino("/dev/ttyUSB0")
 	if err != nil {
@@ -71,6 +76,14 @@ func main() {
 
 	// Rutas de API para Sensores (WebSockets y otros)
 	sensors.RegisterSensorRoutes(e)
+
+	spo2.RegisterSpo2Routes(e)
+
+	ecg.RegisterEcgRoutes(e)
+	bpm.RegisterBpmRoutes(e)
+	air.RegisterAirRoutes(e)
+
+	sessions.RegisterSessionRoutes(e)
 
 	// Iniciar servidor en el puerto configurado
 	port := os.Getenv("PORT")

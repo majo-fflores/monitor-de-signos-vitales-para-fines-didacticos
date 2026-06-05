@@ -6,5 +6,6 @@ func RegisterBpmRoutes(e *echo.Echo) {
 	e.POST("/bpm", CreateMeasurement)
 	e.GET("/bpm/:id", GetMeasurement)
 	e.GET("/sessions/:sessionId/bpm", GetSessionMeasurements)
+	e.GET("/users/:userId/bpm", GetUserMeasurements)
 	e.DELETE("/bpm/:id", DeleteMeasurement)
 }

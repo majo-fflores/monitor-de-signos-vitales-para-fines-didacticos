@@ -52,3 +52,15 @@ func DeleteMeasurement(c *echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, map[string]string{"message": "Measurement deleted successfully"})
 }
+
+func GetUserMeasurements(c *echo.Context) error {
+	userID, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid User ID format"})
+	}
+	measurements, err := ServiceInstance.GetMeasurementsByUserID(uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, measurements)
+}

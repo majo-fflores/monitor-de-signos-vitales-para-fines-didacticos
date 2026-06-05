@@ -2,8 +2,10 @@ package sessions
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
+	"backend/internal/users"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +32,9 @@ func NewSessionService(db *gorm.DB) SessionService {
 func (s *sessionService) CreateSession(session *Session) error {
 	if session.UserID == 0 {
 		return errors.New("user_id is required")
+	}
+	if _, err := users.ServiceInstance.GetUser(session.UserID); err != nil {
+		return fmt.Errorf("usuario con id %d no encontrado", session.UserID)
 	}
 	if session.StartTime.IsZero() {
 		session.StartTime = time.Now()
