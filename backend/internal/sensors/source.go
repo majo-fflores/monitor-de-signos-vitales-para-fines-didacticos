@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -56,8 +57,9 @@ func (s *SimulatedArduino) Close() error {
 }
 
 type SerialArduino struct {
-	port    serial.Port
-	scanner *bufio.Scanner
+	port   serial.Port
+	reader *bufio.Reader
+	queue  []ArduinoPacket // Cola interna de paquetes normalizados
 }
 
 func NewSerialArduino(portName string) (DataSource, error) {
@@ -69,31 +71,92 @@ func NewSerialArduino(portName string) (DataSource, error) {
 		return nil, err
 	}
 
-	scanner := bufio.NewScanner(port)
 	return &SerialArduino{
-		port:    port,
-		scanner: scanner,
+		port:   port,
+		reader: bufio.NewReader(port),
+		queue:  make([]ArduinoPacket, 0, 4),
 	}, nil
 }
 
-func (s *SerialArduino) ReadPacket() (ArduinoPacket, error) {
-	if s.scanner.Scan() {
-		line := s.scanner.Text()
+// readNextJSON lee byte a byte y extrae el siguiente objeto JSON completo
+// usando conteo de llaves, ignorando cualquier basura entre objetos.
+func (s *SerialArduino) readNextJSON() (string, error) {
+	var buf []byte
+	depth := 0
+	inside := false
 
-		var packet ArduinoPacket
-		err := json.Unmarshal([]byte(line), &packet)
+	for {
+		b, err := s.reader.ReadByte()
 		if err != nil {
-			return ArduinoPacket{}, fmt.Errorf("error unmarshaling json: %w (line: %s)", err, line)
+			return "", fmt.Errorf("error leyendo del puerto serial: %w", err)
 		}
 
-		return packet, nil
+		if b == '{' {
+			if !inside {
+				// Empezamos un nuevo objeto JSON, descartar lo anterior
+				buf = buf[:0]
+				inside = true
+			}
+			depth++
+			buf = append(buf, b)
+		} else if inside {
+			buf = append(buf, b)
+			if b == '}' {
+				depth--
+				if depth == 0 {
+					// Objeto JSON completo
+					return string(buf), nil
+				}
+			}
+		}
+		// Si no estamos inside, descartamos el byte (basura entre objetos)
+	}
+}
+
+func (s *SerialArduino) ReadPacket() (ArduinoPacket, error) {
+	// Si hay paquetes en la cola interna, devolver el primero
+	if len(s.queue) > 0 {
+		pkt := s.queue[0]
+		s.queue = s.queue[1:]
+		return pkt, nil
 	}
 
-	if err := s.scanner.Err(); err != nil {
-		return ArduinoPacket{}, err
-	}
+	// Leer el siguiente objeto JSON completo del stream serial
+	for {
+		jsonStr, err := s.readNextJSON()
+		if err != nil {
+			return ArduinoPacket{}, err
+		}
 
-	return ArduinoPacket{}, fmt.Errorf("EOF")
+		// Parsear el JSON real del Arduino: {"ecg":362,"bpm":0,"air":0,"leads_off":true}
+		var raw RawArduinoData
+		if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
+			log.Printf("JSON inválido (descartando): %v → %q", err, jsonStr)
+			continue
+		}
+
+		log.Printf("Arduino → ecg=%.0f bpm=%.0f air=%.0f leads_off=%v", raw.ECG, raw.BPM, raw.AIR, raw.LeadsOff)
+
+		// Siempre enviar BPM y AIR (son independientes del estado de los leads del ECG)
+		s.queue = append(s.queue,
+			ArduinoPacket{Type: "bpm", Value: raw.BPM},
+			ArduinoPacket{Type: "air", Value: raw.AIR},
+		)
+
+		// ECG solo es confiable cuando los leads están conectados
+		if !raw.LeadsOff {
+			s.queue = append(s.queue, ArduinoPacket{Type: "ecg", Value: raw.ECG})
+		}
+
+		if len(s.queue) == 0 {
+			continue
+		}
+
+		// Devolver el primero y dejar el resto en la cola
+		pkt := s.queue[0]
+		s.queue = s.queue[1:]
+		return pkt, nil
+	}
 }
 
 func (s *SerialArduino) Close() error {
