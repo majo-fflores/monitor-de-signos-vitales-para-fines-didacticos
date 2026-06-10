@@ -48,9 +48,15 @@ func main() {
 	air.ServiceInstance = air.NewAirService(database.DB)
 	sessions.ServiceInstance = sessions.NewSessionService(database.DB)
 
-	source, err := sensors.NewSerialArduino("/dev/ttyUSB0")
+	serialPort := os.Getenv("SERIAL_PORT")
+	if serialPort == "" {
+		serialPort = "/dev/ttyUSB0"
+	}
+
+	source, err := sensors.NewSerialArduino(serialPort)
 	if err != nil {
-		panic(err)
+		log.Printf("Aviso: No se pudo abrir el puerto serial %s: %v. Usando Arduino simulado.", serialPort, err)
+		source = sensors.NewSimulatedArduino()
 	}
 	sensors.GlobalManager = sensors.NewManager(source)
 	go sensors.GlobalManager.StartBackgroundListening()
