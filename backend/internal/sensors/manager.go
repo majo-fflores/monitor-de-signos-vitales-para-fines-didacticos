@@ -1,8 +1,8 @@
 package sensors
 
 import (
-
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -60,7 +60,7 @@ func (m *Manager) StartBackgroundListening() {
 				Value:     packet.Value,
 			}
 
-			switch packet.Type {
+			switch strings.ToUpper(packet.Type) {
 			case "BPM":
 				m.activeSession.BPM = append(m.activeSession.BPM, sample)
 			case "AIR":

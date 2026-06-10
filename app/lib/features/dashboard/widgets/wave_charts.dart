@@ -6,6 +6,8 @@ import 'ecg_chart.dart';
 import 'spo2_chart.dart';
 
 class WaveCharts extends StatelessWidget {
+  static const bool mostrarMax30100 = false;
+
   const WaveCharts({super.key});
 
   @override
@@ -18,13 +20,13 @@ class WaveCharts extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Columna izquierda: ECG y SpO₂ en formato vertical
+              // Columna izquierda: ECG y opcionalmente SpO₂ en formato vertical
               Expanded(
                 flex: 2,
                 child: Column(
                   children: [
                     SizedBox(
-                      height: 280,
+                      height: mostrarMax30100 ? 280 : 576,
                       child: Card(
                         clipBehavior: Clip.antiAlias,
                         child: const GraficoEcg(
@@ -32,16 +34,18 @@ class WaveCharts extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 280,
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: const GraficoSpo2(
-                          expandir: true,
+                    if (mostrarMax30100) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 280,
+                        child: Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: const GraficoSpo2(
+                            expandir: true,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -70,20 +74,22 @@ class WaveCharts extends StatelessWidget {
         return Column(
           children: [
             SizedBox(
-              height: alturaGrafico,
+              height: mostrarMax30100 ? alturaGrafico : (alturaGrafico * 2 + 16),
               child: Card(
                 clipBehavior: Clip.antiAlias,
                 child: const GraficoEcg(expandir: true),
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: alturaGrafico,
-              child: Card(
-                clipBehavior: Clip.antiAlias,
-                child: const GraficoSpo2(expandir: true),
+            if (mostrarMax30100) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: alturaGrafico,
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: const GraficoSpo2(expandir: true),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 16),
             SizedBox(
               height: alturaCo2,
