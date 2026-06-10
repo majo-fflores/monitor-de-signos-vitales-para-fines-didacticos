@@ -15,6 +15,7 @@ type SessionService interface {
 	GetSessionsByUserID(userID uint) ([]Session, error)
 	EndSession(id uint, notes string) error
 	DeleteSession(id uint) error
+	GetSessionSummary(sessionID uint) (*SessionSummaryResponse, error)
 }
 
 type sessionService struct {
@@ -63,4 +64,8 @@ func (s *sessionService) EndSession(id uint, notes string) error {
 
 func (s *sessionService) DeleteSession(id uint) error {
 	return s.repo.Delete(id)
+}
+
+func (s *sessionService) GetSessionSummary(sessionID uint) (*SessionSummaryResponse, error) {
+	return s.repo.GetSummary(sessionID)
 }

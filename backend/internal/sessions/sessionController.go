@@ -69,3 +69,14 @@ func DeleteSession(c *echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, map[string]string{"message": "Session deleted successfully"})
 }
+func GetSessionSummary(c *echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID format"})
+	}
+	summary, err := ServiceInstance.GetSessionSummary(uint(id))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Session not found or error fetching summary"})
+	}
+	return c.JSON(http.StatusOK, summary)
+}
