@@ -32,6 +32,7 @@ class UsuarioApiService {
   Future<Usuario> crearUsuario({
     required String nombre,
     required String email,
+    required int dni,
   }) async {
     try {
       final response = await client.post(
@@ -40,6 +41,7 @@ class UsuarioApiService {
         body: jsonEncode({
           'name': nombre,
           'email': email,
+          'dni': dni,
         }),
       );
 

@@ -58,6 +58,7 @@ void main() {
       when(() => mockApiService.crearUsuario(
             nombre: any(named: 'nombre'),
             email: any(named: 'email'),
+            dni: any(named: 'dni'),
           )).thenAnswer((_) async => user);
 
       final container = createContainer(
@@ -73,6 +74,7 @@ void main() {
       await notifier.crearUsuario(
         nombre: user.nombre,
         email: user.email,
+        dni: 12345678,
       );
 
       final state = container.read(notificadorUsuariosProvider);
@@ -82,7 +84,7 @@ void main() {
 
       final activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
       expect(activeId, equals(state.usuarios.first.id));
-      verify(() => mockApiService.crearUsuario(nombre: user.nombre, email: user.email)).called(1);
+      verify(() => mockApiService.crearUsuario(nombre: user.nombre, email: user.email, dni: 12345678)).called(1);
     });
 
     test('seleccionarUsuario should update active user', () async {

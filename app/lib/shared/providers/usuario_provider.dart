@@ -108,6 +108,7 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
   Future<void> crearUsuario({
     required String nombre,
     required String email,
+    required int dni,
   }) async {
     final apiService = ref.read(usuarioApiServiceProvider);
 
@@ -115,6 +116,7 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
       final nuevoUsuario = await apiService.crearUsuario(
         nombre: nombre,
         email: email,
+        dni: dni,
       );
       
       final nuevaLista = [...state.usuarios, nuevoUsuario];

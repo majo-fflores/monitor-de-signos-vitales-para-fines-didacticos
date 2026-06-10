@@ -7,12 +7,14 @@ class Usuario {
   final String id;
   final String nombre;
   final String email;
+  final int? dni;
   final DateTime creadoEn;
 
   const Usuario({
     required this.id,
     required this.nombre,
     required this.email,
+    this.dni,
     required this.creadoEn,
   });
 
@@ -20,6 +22,7 @@ class Usuario {
   factory Usuario.crear({
     required String nombre,
     required String email,
+    int? dni,
   }) {
     final ahora = DateTime.now();
     final id = '${ahora.millisecondsSinceEpoch}_${nombre.hashCode.abs()}';
@@ -27,6 +30,7 @@ class Usuario {
       id: id,
       nombre: nombre,
       email: email,
+      dni: dni,
       creadoEn: ahora,
     );
   }
@@ -37,6 +41,7 @@ class Usuario {
       id: json['id'] as String,
       nombre: json['nombre'] as String,
       email: json['email'] as String? ?? '',
+      dni: json['dni'] as int?,
       creadoEn: DateTime.parse(json['creadoEn'] as String),
     );
   }
@@ -50,11 +55,12 @@ class Usuario {
       id: idStr,
       nombre: json['name'] as String? ?? json['nombre'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      dni: json['dni'] as int?,
       creadoEn: json['created_at'] != null 
           ? DateTime.parse(json['created_at'] as String)
           : (json['creadoEn'] != null 
               ? DateTime.parse(json['creadoEn'] as String) 
-              : DateTime.now()),
+               : DateTime.now()),
     );
   }
 
@@ -64,6 +70,7 @@ class Usuario {
       'id': id,
       'nombre': nombre,
       'email': email,
+      if (dni != null) 'dni': dni,
       'creadoEn': creadoEn.toIso8601String(),
     };
   }
@@ -73,6 +80,7 @@ class Usuario {
     return {
       'name': nombre,
       'email': email,
+      if (dni != null) 'dni': dni,
     };
   }
 

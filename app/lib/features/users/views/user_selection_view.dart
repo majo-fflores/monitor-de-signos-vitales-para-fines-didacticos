@@ -65,10 +65,10 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
     }
   }
 
-  void _crearUsuario(String nombre, String email) async {
+  void _crearUsuario(String nombre, String email, int dni) async {
     await ref
         .read(notificadorUsuariosProvider.notifier)
-        .crearUsuario(nombre: nombre, email: email);
+        .crearUsuario(nombre: nombre, email: email, dni: dni);
     await _cargarConteosSesiones();
     if (mounted) {
       context.go('/');

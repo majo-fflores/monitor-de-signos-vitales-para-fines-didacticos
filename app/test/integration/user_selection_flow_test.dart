@@ -52,11 +52,13 @@ void main() {
         id: '123',
         nombre: 'Maria Gimenez',
         email: 'maria@correo.com',
+        dni: 12345678,
         creadoEn: DateTime.now(),
       );
       when(() => mockApi.crearUsuario(
             nombre: 'Maria Gimenez',
             email: 'maria@correo.com',
+            dni: 12345678,
           )).thenAnswer((_) async => expectedUser);
 
       await tester.pumpWidget(createRouterScope());
@@ -70,8 +72,9 @@ void main() {
       await tester.tap(find.text('Registrar Nuevo'));
       await tester.pumpAndSettle();
 
-      // Enter name, email
+      // Enter name, DNI, email
       await tester.enterText(find.widgetWithText(TextFormField, 'Nombre Completo'), 'Maria Gimenez');
+      await tester.enterText(find.widgetWithText(TextFormField, 'DNI'), '12345678');
       await tester.enterText(find.widgetWithText(TextFormField, 'Correo Electrónico'), 'maria@correo.com');
       await tester.pump();
 

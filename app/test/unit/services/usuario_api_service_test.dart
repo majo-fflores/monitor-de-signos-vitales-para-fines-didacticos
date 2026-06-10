@@ -63,6 +63,7 @@ void main() {
         'id': 3,
         'name': 'Charlie',
         'email': 'charlie@example.com',
+        'dni': 12345678,
         'created_at': '2026-06-04T14:00:00Z',
       });
 
@@ -73,11 +74,13 @@ void main() {
       final result = await service.crearUsuario(
         nombre: 'Charlie',
         email: 'charlie@example.com',
+        dni: 12345678,
       );
 
       expect(result.id, equals('3'));
       expect(result.nombre, equals('Charlie'));
       expect(result.email, equals('charlie@example.com'));
+      expect(result.dni, equals(12345678));
     });
 
     test('crearUsuario should throw exception with error message on bad request (400)', () async {
@@ -88,7 +91,7 @@ void main() {
       );
 
       expect(
-        () => service.crearUsuario(nombre: 'Charlie', email: 'charlie@example.com'),
+        () => service.crearUsuario(nombre: 'Charlie', email: 'charlie@example.com', dni: 12345678),
         throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('El email ya existe'))),
       );
     });

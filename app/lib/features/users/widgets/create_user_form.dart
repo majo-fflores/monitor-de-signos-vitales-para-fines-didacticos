@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 
 /// Formulario para crear un nuevo usuario.
 /// Puede ser utilizado de forma inline en pantallas grandes o dentro de diálogos/hojas.
 class FormularioCrearUsuario extends StatefulWidget {
-  final Function(String nombre, String email) onSubmit;
+  final Function(String nombre, String email, int dni) onSubmit;
   final VoidCallback? onCancel;
 
   const FormularioCrearUsuario({
@@ -21,23 +22,28 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
   final _emailController = TextEditingController();
+  final _dniController = TextEditingController();
 
   @override
   void dispose() {
     _nombreController.dispose();
     _emailController.dispose();
+    _dniController.dispose();
     super.dispose();
   }
 
   void _guardar() {
     if (_formKey.currentState?.validate() ?? false) {
+      final dniVal = int.parse(_dniController.text.trim());
       widget.onSubmit(
         _nombreController.text.trim(),
         _emailController.text.trim(),
+        dniVal,
       );
       // Limpiamos los controladores después de guardar
       _nombreController.clear();
       _emailController.clear();
+      _dniController.clear();
     }
   }
 
@@ -71,6 +77,35 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
                 return 'El nombre es obligatorio';
+              }
+              return null;
+            },
+          ),
+          const Gap(16),
+          TextFormField(
+            controller: _dniController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            decoration: InputDecoration(
+              labelText: 'DNI',
+              hintText: 'Ej. 12345678',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) {
+                return 'El DNI es obligatorio';
+              }
+              final dni = int.tryParse(val.trim());
+              if (dni == null) {
+                return 'Ingrese un DNI válido (solo números)';
+              }
+              if (dni <= 0) {
+                return 'El DNI debe ser mayor a 0';
               }
               return null;
             },

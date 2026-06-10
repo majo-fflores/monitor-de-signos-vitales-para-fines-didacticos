@@ -28,7 +28,7 @@ final usuarioApiServiceProvider =
 // ignore: unused_element
 typedef UsuarioApiServiceRef = AutoDisposeProviderRef<UsuarioApiService>;
 String _$notificadorUsuariosHash() =>
-    r'0c3749d80154600a8fdf2b305752ce7b500a82c6';
+    r'cbaaa8e0cbef59ffd4a9a98c4a232bd8e40f7b94';
 
 /// Notifier reactivo para la gestión de usuarios.
 /// Persiste en el backend si el modo simulación está desactivado, o localmente como fallback.

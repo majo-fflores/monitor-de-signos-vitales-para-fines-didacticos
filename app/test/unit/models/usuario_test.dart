@@ -20,6 +20,7 @@ void main() {
         id: 'user_123',
         nombre: 'Jane Smith',
         email: 'jane@example.com',
+        dni: 12345678,
         creadoEn: DateTime(2026, 6, 1, 10, 30),
       );
 
@@ -29,6 +30,7 @@ void main() {
       expect(deserialized.id, equals(original.id));
       expect(deserialized.nombre, equals(original.nombre));
       expect(deserialized.email, equals(original.email));
+      expect(deserialized.dni, equals(original.dni));
       expect(deserialized.creadoEn, equals(original.creadoEn));
     });
 
@@ -37,6 +39,7 @@ void main() {
         'id': 42,
         'name': 'Bob Ross',
         'email': 'bob@joyofpainting.com',
+        'dni': 12345678,
         'created_at': '2026-06-04T12:00:00.000Z',
       };
 
@@ -44,11 +47,13 @@ void main() {
       expect(user.id, equals('42'));
       expect(user.nombre, equals('Bob Ross'));
       expect(user.email, equals('bob@joyofpainting.com'));
+      expect(user.dni, equals(12345678));
       expect(user.creadoEn.toIso8601String(), startsWith('2026-06-04T12:00:00'));
 
       final toBackend = user.toBackendJson();
       expect(toBackend['name'], equals('Bob Ross'));
       expect(toBackend['email'], equals('bob@joyofpainting.com'));
+      expect(toBackend['dni'], equals(12345678));
       expect(toBackend.containsKey('id'), isFalse);
     });
 
