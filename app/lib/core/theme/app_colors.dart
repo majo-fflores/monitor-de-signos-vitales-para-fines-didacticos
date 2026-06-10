@@ -3,69 +3,71 @@ import 'package:flutter/material.dart';
 /// Colores de tema claro (mapeados de variables CSS en `:root` de index.css)
 class ColoresClaros {
   static const background = Color(
-    0xFFF5F4F0,
-  ); // Warm Sand / Alabaster - Highly soothing organic background
+    0xFFF1F5F9,
+  ); // Slate 100 - Cool, clean background for high contrast with white cards
   static const foreground = Color(
-    0xFF1C1917,
-  ); // Stone 900 - Deep warm charcoal for elegant readability
+    0xFF0F172A,
+  ); // Slate 900 - Deep crisp charcoal for reading comfort
   static const card = Color(
     0xFFFFFFFF,
-  ); // Pure white cards to float softly over the warm sand base
-  static const cardForeground = Color(0xFF292524); // Stone 800
-  static const primary = Color(
-    0xFF3730A3,
-  ); // Warm Deep Indigo - High-end, premium clinical contrast
+  ); // Pure white cards that stand out on slate background
+  static const cardForeground = Color(0xFF1E293B); // Slate 800
+  static const primary = Color(0xFF3730A3); // Warm Deep Indigo
   static const primaryForeground = Color(0xFFFFFFFF);
-  static const secondary = Color(
-    0xFFE7E5E4,
-  ); // Stone 200 - Soft organic neutral secondary color
-  static const secondaryForeground = Color(0xFF1C1917);
-  static const muted = Color(0xFFE7E5E4); // Stone 200
-  static const mutedForeground = Color(0xFF78716C); // Stone 500
-  static const accent = Color(0xFFFAF9F6); // Warm Off-White / Cream
+  static const secondary = Color(0xFFE2E8F0); // Slate 200
+  static const secondaryForeground = Color(0xFF0F172A);
+  static const muted = Color(0xFFE2E8F0); // Slate 200
+  static const mutedForeground = Color(0xFF64748B); // Slate 500
+  static const accent = Color(0xFFF8FAFC); // Slate 50
   static const accentForeground = Color(0xFF3730A3);
-  static const destructive = Color(0xFFDC2626); // Warm medical red
+  static const destructive = Color(0xFFDC2626);
   static const destructiveForeground = Color(0xFFFFFFFF);
   static const border = Color(
-    0xFFE7E5E4,
-  ); // Stone 200 for clean, organic borders that avoid harsh blue lines
+    0xFFCBD5E1,
+  ); // Slate 300 - Clearly defined borders to frame elements cleanly
 
   static const sidebar = Color(
     0xFFFFFFFF,
-  ); // Clean white sidebar contrasting with warm sand
-  static const sidebarForeground = Color(0xFF1C1917);
-  static const sidebarPrimary = Color(0xFF3730A3);
+  ); // Clean white sidebar contrasting with slate background
+  static const sidebarForeground = Color(
+    0xFF0F172A,
+  ); // Slate 900 for high-contrast text/icons
+  static const sidebarPrimary = Color(0xFF3730A3); // Indigo primary
   static const sidebarPrimaryForeground = Color(0xFFFFFFFF);
-  static const sidebarAccent = Color(0xFFF5F4F0);
+  static const sidebarAccent = Color(
+    0xFFF1F5F9,
+  ); // Slate 100 hover/active background
   static const sidebarAccentForeground = Color(0xFF3730A3);
-  static const sidebarBorder = Color(0xFFE7E5E4);
+  static const sidebarBorder = Color(0xFFCBD5E1); // Slate 300 border
 }
 
 /// Colores de tema oscuro (mapeados de variables CSS en `.dark` de index.css)
 class ColoresOscuros {
-  static const background = Color(0xFF1E1E24); // oklch(0.145 0 0)
-  static const foreground = Color(0xFFFCFCFC); // oklch(0.985 0 0)
-  static const card = Color(0xFF282830);
+  static const background = Color(0xFF0F0F12); // Sleek deep space black
+  static const foreground = Color(0xFFFCFCFC);
+  static const card = Color(0xFF191921);
   static const cardForeground = Color(0xFFFCFCFC);
-  static const primary = Color(0xFFFCFCFC);
-  static const primaryForeground = Color(0xFF2D2D2D); // oklch(0.205 0 0)
-  static const secondary = Color(0xFF333333); // oklch(0.269 0 0)
+  static const primary = Color(
+    0xFF4F46E5,
+  ); // Indigo 600 - High-contrast vibrant clinical indigo (meets WCAG AA contrast)
+  static const primaryForeground = Color(0xFFFFFFFF);
+  static const secondary = Color(0xFF2E2E38);
   static const secondaryForeground = Color(0xFFFCFCFC);
-  static const muted = Color(0xFF333333);
-  static const mutedForeground = Color(0xFFB5B5B5); // oklch(0.708 0 0)
-  static const accent = Color(0xFF333333);
+  static const muted = Color(0xFF2E2E38);
+  static const mutedForeground = Color(0xFF94A3B8);
+  static const accent = Color(0xFF2E2E38);
   static const accentForeground = Color(0xFFFCFCFC);
-  static const destructive = Color(0xFFD4183D);
-  static const destructiveForeground = Color(0xFFFCFCFC);
-  static const border = Color(0xFF333333);
+  static const destructive = Color(0xFFEF4444);
+  static const destructiveForeground = Color(0xFFFFFFFF);
+  static const border = Color(0xFF2E2E38);
 
-  static const sidebar = Color(0xFF2D2D2D); // oklch(0.205 0 0)
+  static const sidebar = Color(0xFF191921);
   static const sidebarForeground = Color(0xFFFCFCFC);
-  static const sidebarPrimary = Color(0xFF4A90E2); // oklch(0.488 0.243 264.376)
-  static const sidebarPrimaryForeground = Color(0xFFFCFCFC);
-  static const sidebarAccent = Color(0xFF333333);
+  static const sidebarPrimary = Color(0xFF6366F1);
+  static const sidebarPrimaryForeground = Color(0xFFFFFFFF);
+  static const sidebarAccent = Color(0xFF2E2E38);
   static const sidebarAccentForeground = Color(0xFFFCFCFC);
-  static const sidebarBorder = Color(0xFF333333);
+  static const sidebarBorder = Color(0xFF2E2E38);
 }
 
 /// Colores específicos de biosensores y visualización (ECG, SpO2, CO2, etc.)
@@ -92,7 +94,7 @@ class ColoresComponentes {
   static const sidebarShadowGlow = Color(0xFF00D4FF);
 
   // Plaqueta informativa de CO2 (Badges)
-  static const co2BadgeBgClaro = Color(0xFFF3F4F6);
+  static const co2BadgeBgClaro = Color(0xFFF0F2FA); // Soft indigo-blue tint to complement yellow and match primary theme
   static const co2BadgeBgOscuro = Color(0xFF1E1E26);
 
   // Medidor Gauge Instrumental de CO2
@@ -101,7 +103,7 @@ class ColoresComponentes {
 
   // Fondos de gráficos de ondas y consola
   static const graficoHeaderOscuro = Colors.black;
-  static const graficoHeaderClaro = Color(0xFFF3F4F6);
+  static const graficoHeaderClaro = Color(0xFFF0F2FA); // Soft indigo-blue tint to match primary theme
   static const graficoCuerpoOscuro = Color(0xFF0F0F12);
   static const graficoCuerpoClaro = Colors.white;
 

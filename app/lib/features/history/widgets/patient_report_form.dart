@@ -8,7 +8,6 @@ import '../../../../core/theme/app_colors.dart';
 class PatientReportForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController nombreController;
-  final TextEditingController edadController;
   final TextEditingController notasController;
   final List<RegistroMedicion> sesiones;
   final RegistroMedicion? sesionSeleccionada;
@@ -19,7 +18,6 @@ class PatientReportForm extends StatelessWidget {
     super.key,
     required this.formKey,
     required this.nombreController,
-    required this.edadController,
     required this.notasController,
     required this.sesiones,
     required this.sesionSeleccionada,
@@ -156,28 +154,7 @@ class PatientReportForm extends StatelessWidget {
                 return null;
               },
             ),
-            const Gap(16),
-            TextFormField(
-              controller: edadController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Edad (Años)',
-                hintText: 'Ej. 45',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) {
-                  return 'Por favor ingrese la edad';
-                }
-                if (int.tryParse(val.trim()) == null) {
-                  return 'Por favor ingrese un número válido';
-                }
-                return null;
-              },
-            ),
+
             const Gap(16),
             TextFormField(
               controller: notasController,

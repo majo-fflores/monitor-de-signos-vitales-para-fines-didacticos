@@ -13,7 +13,7 @@ type SessionService interface {
 	CreateSession(session *Session) error
 	GetSessionByID(id uint) (*Session, error)
 	GetSessionsByUserID(userID uint) ([]Session, error)
-	EndSession(id uint) error
+	EndSession(id uint, notes string) error
 	DeleteSession(id uint) error
 }
 
@@ -50,13 +50,14 @@ func (s *sessionService) GetSessionsByUserID(userID uint) ([]Session, error) {
 	return s.repo.GetByUserID(userID)
 }
 
-func (s *sessionService) EndSession(id uint) error {
+func (s *sessionService) EndSession(id uint, notes string) error {
 	session, err := s.repo.GetByID(id)
 	if err != nil {
 		return err
 	}
 	now := time.Now()
 	session.EndTime = &now
+	session.Notes = notes
 	return s.repo.Update(session)
 }
 

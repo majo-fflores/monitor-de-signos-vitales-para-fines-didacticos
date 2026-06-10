@@ -7,10 +7,10 @@ part of 'historial_provider.dart';
 // **************************************************************************
 
 String _$notificadorHistorialHash() =>
-    r'74ba4d68b36ed25f06b7fbcca5ce333f0c8cdb3a';
+    r'e3e8adb5bea6b9a0dabc44c4fb7a0e6092cc41f7';
 
 /// Notifier reactivo para el historial de mediciones.
-/// Los registros se guardan y cargan de forma separada por cada usuario.
+/// Los registros se guardan y cargan desde el backend.
 ///
 /// Copied from [NotificadorHistorial].
 @ProviderFor(NotificadorHistorial)

@@ -16,30 +16,27 @@ class HistoryStatisticsSummary extends StatelessWidget {
     required this.esOscuro,
   });
 
-  String _fmtDur(int s) {
-    if (s < 60) return '${s}s';
-    final m = s ~/ 60;
-    if (m < 60) return '${m}m';
-    return '${m ~/ 60}h ${m % 60}m';
-  }
+
 
   @override
   Widget build(BuildContext context) {
     final total = registros.length;
     double promFC = 0;
-    double promSpo2 = 0;
-    int durTotal = 0;
+    double promCO2 = 0;
+    double promPPG = 0;
 
     if (total > 0) {
       double sFC = 0;
-      double sSpo2 = 0;
+      double sCO2 = 0;
+      double sPPG = 0;
       for (final r in registros) {
         sFC += r.frecuenciaCardiaca;
-        sSpo2 += r.nivelSpo2;
-        durTotal += r.duracionSegundos;
+        sCO2 += r.nivelCo2;
+        sPPG += r.ppgFrecuenciaCardiaca;
       }
       promFC = sFC / total;
-      promSpo2 = sSpo2 / total;
+      promCO2 = sCO2 / total;
+      promPPG = sPPG / total;
     }
 
     final chips = [
@@ -56,16 +53,16 @@ class HistoryStatisticsSummary extends StatelessWidget {
         color: const Color(0xFF10B981),
       ),
       _KpiData(
-        titulo: 'Prom. SpO2',
-        valor: '${promSpo2.round()}%',
-        icono: LucideIcons.droplets,
-        color: const Color(0xFF3B82F6),
+        titulo: 'Prom. CO2',
+        valor: '${promCO2.round()} ppm',
+        icono: LucideIcons.cloud,
+        color: const Color(0xFFF59E0B),
       ),
       _KpiData(
-        titulo: 'Tiempo Total',
-        valor: _fmtDur(durTotal),
-        icono: LucideIcons.clock,
-        color: const Color(0xFFF59E0B),
+        titulo: 'Prom. Pulso (PPG)',
+        valor: '${promPPG.round()} LPM',
+        icono: LucideIcons.activity,
+        color: const Color(0xFF3B82F6),
       ),
     ];
 

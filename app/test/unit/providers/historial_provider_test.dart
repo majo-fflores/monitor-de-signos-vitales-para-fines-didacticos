@@ -1,20 +1,104 @@
+import 'package:datavital_flutter/core/models/measurement.dart';
 import 'package:datavital_flutter/core/models/registro_medicion.dart';
+import 'package:datavital_flutter/core/models/session.dart';
+import 'package:datavital_flutter/core/services/measurement_api_service.dart';
+import 'package:datavital_flutter/core/services/session_api_service.dart';
 import 'package:datavital_flutter/shared/providers/historial_provider.dart';
-import 'package:datavital_flutter/shared/utils/almacenamiento_local.dart';
+import 'package:datavital_flutter/shared/providers/session_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/test_data.dart';
 import '../../helpers/test_helpers.dart';
 
+class FakeSessionApiService implements SessionApiService {
+  @override
+  String get baseUrl => '';
+  @override
+  http.Client get client => throw UnimplementedError();
+
+  final List<Session> sessions = [];
+
+  @override
+  Future<Session> crearSesion(int userId) async {
+    final session = Session(id: sessions.length + 1, userId: userId, startTime: DateTime.now());
+    sessions.add(session);
+    return session;
+  }
+
+  @override
+  Future<Session> obtenerSesion(int id) async {
+    return sessions.firstWhere((s) => s.id == id);
+  }
+
+  @override
+  Future<List<Session>> obtenerSesionesDeUsuario(int userId) async {
+    return sessions.where((s) => s.userId == userId).toList();
+  }
+
+  @override
+  Future<void> finalizarSesion(int id, {String notes = ''}) async {
+    final idx = sessions.indexWhere((s) => s.id == id);
+    if (idx != -1) {
+      final s = sessions[idx];
+      sessions[idx] = Session(id: s.id, userId: s.userId, startTime: s.startTime, endTime: DateTime.now(), notes: notes);
+    }
+  }
+
+  @override
+  Future<void> eliminarSesion(int id) async {
+    sessions.removeWhere((s) => s.id == id);
+  }
+}
+
+class FakeMeasurementApiService implements MeasurementApiService {
+  @override
+  String get baseUrl => '';
+  @override
+  http.Client get client => throw UnimplementedError();
+
+  final List<Measurement> measurements = [];
+
+  @override
+  Future<Measurement> guardarMedicion(String tipo, int sessionId, List<Sample> datos) async {
+    final m = Measurement(id: measurements.length + 1, sessionId: sessionId, datos: datos, createdAt: DateTime.now());
+    measurements.add(m);
+    return m;
+  }
+
+  @override
+  Future<List<Measurement>> obtenerMedicionesPorSesion(String tipo, int sessionId) async {
+    return measurements.where((m) => m.sessionId == sessionId).toList();
+  }
+
+  @override
+  Future<List<Measurement>> obtenerMedicionesPorUsuario(String tipo, int userId) async {
+    return measurements;
+  }
+
+  @override
+  Future<void> eliminarMedicion(String tipo, int id) async {
+    measurements.removeWhere((m) => m.id == id);
+  }
+}
+
 void main() {
   group('HistorialProvider Tests', () {
+    late FakeSessionApiService fakeSessionApi;
+    late FakeMeasurementApiService fakeMeasurementApi;
+
     setUp(() {
       SharedPreferences.setMockInitialValues({});
+      fakeSessionApi = FakeSessionApiService();
+      fakeMeasurementApi = FakeMeasurementApiService();
     });
 
     test('initial state is initial', () {
-      final container = createContainer();
+      final container = createContainer(overrides: [
+        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
+      ]);
       final state = container.read(notificadorHistorialProvider);
 
       expect(state.registros, isEmpty);
@@ -23,49 +107,36 @@ void main() {
     });
 
     test('cargarHistorial should load and sort records by date desc', () async {
-      final regOld = RegistroMedicion(
-        id: 'old',
-        usuarioId: 'user_1',
-        fechaRegistro: DateTime(2026, 6, 1),
-        duracionSegundos: 10,
-        frecuenciaCardiaca: 70,
-        ppgFrecuenciaCardiaca: 70,
-        nivelSpo2: 98,
-        nivelCo2: 400,
-        alertasDisparadas: 0,
-        notasClinicas: '',
-      );
+      final sessOld = Session(id: 1, userId: 1, startTime: DateTime(2026, 6, 1), endTime: DateTime(2026, 6, 1, 0, 0, 10));
+      final sessNew = Session(id: 2, userId: 1, startTime: DateTime(2026, 6, 2), endTime: DateTime(2026, 6, 2, 0, 0, 10));
+      fakeSessionApi.sessions.addAll([sessOld, sessNew]);
 
-      final regNew = RegistroMedicion(
-        id: 'new',
-        usuarioId: 'user_1',
-        fechaRegistro: DateTime(2026, 6, 2),
-        duracionSegundos: 10,
-        frecuenciaCardiaca: 70,
-        ppgFrecuenciaCardiaca: 70,
-        nivelSpo2: 98,
-        nivelCo2: 400,
-        alertasDisparadas: 0,
-        notasClinicas: '',
-      );
+      fakeMeasurementApi.measurements.addAll([
+        Measurement(id: 1, sessionId: 1, datos: [const Sample(timestamp: 1, value: 70)], createdAt: DateTime.now()),
+        Measurement(id: 2, sessionId: 2, datos: [const Sample(timestamp: 1, value: 80)], createdAt: DateTime.now()),
+      ]);
 
-      await AlmacenamientoLocal.guardarRegistros('user_1', [regOld, regNew]);
-
-      final container = createContainer();
+      final container = createContainer(overrides: [
+        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
+      ]);
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
-      await notifier.cargarHistorial('user_1');
+      await notifier.cargarHistorial('1');
 
       final state = container.read(notificadorHistorialProvider);
       expect(state.cargando, isFalse);
-      expect(state.usuarioIdCargado, equals('user_1'));
+      expect(state.usuarioIdCargado, equals('1'));
       expect(state.registros, hasLength(2));
-      expect(state.registros[0].id, equals('new'));
-      expect(state.registros[1].id, equals('old'));
+      expect(state.registros[0].id, equals('2'));
+      expect(state.registros[1].id, equals('1'));
     });
 
-    test('guardarRegistro should add to state and store in local storage', () async {
-      final container = createContainer();
+    test('guardarRegistro should add to state', () async {
+      final container = createContainer(overrides: [
+        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
+      ]);
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       final reg = TestData.registro1;
@@ -74,37 +145,46 @@ void main() {
       var state = container.read(notificadorHistorialProvider);
       expect(state.registros, hasLength(1));
       expect(state.registros.first, equals(reg));
-
-      final stored = await AlmacenamientoLocal.obtenerRegistros(reg.usuarioId);
-      expect(stored, hasLength(1));
-      expect(stored.first.id, equals(reg.id));
     });
 
     test('eliminarRegistro should filter out and update storage', () async {
-      final container = createContainer();
+      final container = createContainer(overrides: [
+        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
+      ]);
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
-      final reg1 = TestData.registro1;
-      final regCritico = TestData.registroCritico;
+      final sess1 = Session(id: 10, userId: 1, startTime: DateTime.now());
+      fakeSessionApi.sessions.add(sess1);
+
+      final reg1 = RegistroMedicion(
+        id: '10',
+        usuarioId: '1',
+        fechaRegistro: DateTime.now(),
+        duracionSegundos: 10,
+        frecuenciaCardiaca: 70,
+        ppgFrecuenciaCardiaca: 70,
+        nivelSpo2: 98,
+        nivelCo2: 400,
+        alertasDisparadas: 0,
+        notasClinicas: '',
+      );
 
       await notifier.guardarRegistro(reg1);
-      await notifier.guardarRegistro(regCritico);
+      expect(container.read(notificadorHistorialProvider).registros, hasLength(1));
 
-      expect(container.read(notificadorHistorialProvider).registros, hasLength(2));
-
-      await notifier.eliminarRegistro(reg1.id, reg1.usuarioId);
+      await notifier.eliminarRegistro('10', '1');
 
       final state = container.read(notificadorHistorialProvider);
-      expect(state.registros, hasLength(1));
-      expect(state.registros.first.id, equals(regCritico.id));
-
-      final stored = await AlmacenamientoLocal.obtenerRegistros(reg1.usuarioId);
-      expect(stored, hasLength(1));
-      expect(stored.first.id, equals(regCritico.id));
+      expect(state.registros, isEmpty);
+      expect(fakeSessionApi.sessions, isEmpty);
     });
 
     test('limpiar should reset state to initial', () async {
-      final container = createContainer();
+      final container = createContainer(overrides: [
+        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
+      ]);
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       await notifier.guardarRegistro(TestData.registro1);

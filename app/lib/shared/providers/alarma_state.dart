@@ -12,13 +12,13 @@ part 'alarma_state.g.dart';
 class UmbralesAlerta {
   final int fcMin;
   final int fcMax;
-  final int spo2Min;
+  final int ppgMin;
   final int co2Max;
 
   const UmbralesAlerta({
     required this.fcMin,
     required this.fcMax,
-    required this.spo2Min,
+    required this.ppgMin,
     required this.co2Max,
   });
 
@@ -26,7 +26,7 @@ class UmbralesAlerta {
     return const UmbralesAlerta(
       fcMin: 60,
       fcMax: 100,
-      spo2Min: 95,
+      ppgMin: 60,
       co2Max: 800,
     );
   }
@@ -34,13 +34,13 @@ class UmbralesAlerta {
   UmbralesAlerta copiarCon({
     int? fcMin,
     int? fcMax,
-    int? spo2Min,
+    int? ppgMin,
     int? co2Max,
   }) {
     return UmbralesAlerta(
       fcMin: fcMin ?? this.fcMin,
       fcMax: fcMax ?? this.fcMax,
-      spo2Min: spo2Min ?? this.spo2Min,
+      ppgMin: ppgMin ?? this.ppgMin,
       co2Max: co2Max ?? this.co2Max,
     );
   }
@@ -131,7 +131,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       _prefs = await SharedPreferences.getInstance();
       final fcMin = _prefs?.getInt('umbral_fc_min') ?? 60;
       final fcMax = _prefs?.getInt('umbral_fc_max') ?? 100;
-      final spo2Min = _prefs?.getInt('umbral_spo2_min') ?? 95;
+      final ppgMin = _prefs?.getInt('umbral_ppg_min') ?? 60;
       final co2Max = _prefs?.getInt('umbral_co2_max') ?? 800;
       final habilitada = _prefs?.getBool('alarma_habilitada') ?? true;
       final sonidoHabilitado = _prefs?.getBool('alarma_sonido_habilitado') ?? true;
@@ -144,7 +144,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
         umbrales: UmbralesAlerta(
           fcMin: fcMin,
           fcMax: fcMax,
-          spo2Min: spo2Min,
+          ppgMin: ppgMin,
           co2Max: co2Max,
         ),
       );
@@ -174,13 +174,13 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   Future<void> actualizarUmbrales({
     int? fcMin,
     int? fcMax,
-    int? spo2Min,
+    int? ppgMin,
     int? co2Max,
   }) async {
     actualizarUmbralesMemoria(
       fcMin: fcMin,
       fcMax: fcMax,
-      spo2Min: spo2Min,
+      ppgMin: ppgMin,
       co2Max: co2Max,
     );
     await guardarUmbralesEnDisco();
@@ -189,13 +189,13 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   void actualizarUmbralesMemoria({
     int? fcMin,
     int? fcMax,
-    int? spo2Min,
+    int? ppgMin,
     int? co2Max,
   }) {
     final nuevosUmbrales = state.umbrales.copiarCon(
       fcMin: fcMin,
       fcMax: fcMax,
-      spo2Min: spo2Min,
+      ppgMin: ppgMin,
       co2Max: co2Max,
     );
     state = state.copiarCon(umbrales: nuevosUmbrales);
@@ -210,7 +210,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       final signos = ref.read(notificadorSignosVitalesProvider);
       monitorearValores(
         fc: signos.frecuenciaCardiaca,
-        spo2: signos.nivelSpo2,
+        ppg: signos.ppgFrecuenciaCardiaca,
         co2: signos.nivelCo2,
       );
     } catch (_) {
@@ -222,7 +222,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     final u = state.umbrales;
     await _prefs?.setInt('umbral_fc_min', u.fcMin);
     await _prefs?.setInt('umbral_fc_max', u.fcMax);
-    await _prefs?.setInt('umbral_spo2_min', u.spo2Min);
+    await _prefs?.setInt('umbral_ppg_min', u.ppgMin);
     await _prefs?.setInt('umbral_co2_max', u.co2Max);
   }
 
@@ -230,7 +230,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   /// Se ejecuta cada vez que el simulador o WS actualiza los datos.
   void monitorearValores({
     required int fc,
-    required int spo2,
+    required int ppg,
     required int co2,
   }) {
     if (!state.habilitada) return;
@@ -241,8 +241,8 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     if (fc < u.fcMin || fc > u.fcMax) {
       nuevasAlertas.add(AlertaCritica('Frecuencia Cardíaca', fc));
     }
-    if (spo2 < u.spo2Min) {
-      nuevasAlertas.add(AlertaCritica('Saturación de Oxígeno', spo2));
+    if (ppg < u.ppgMin) {
+      nuevasAlertas.add(AlertaCritica('Frecuencia de Pulso (PPG)', ppg));
     }
     if (co2 > u.co2Max) {
       nuevasAlertas.add(AlertaCritica('Dióxido de Carbono', co2));

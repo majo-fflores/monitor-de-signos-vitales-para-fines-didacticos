@@ -16,7 +16,7 @@ void main() {
       final defaults = UmbralesAlerta.defecto();
       expect(defaults.fcMin, equals(60));
       expect(defaults.fcMax, equals(100));
-      expect(defaults.spo2Min, equals(95));
+      expect(defaults.ppgMin, equals(60));
       expect(defaults.co2Max, equals(800));
     });
 
@@ -39,7 +39,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 50));
 
       final notifier = container.read(notificadorAlarmaProvider.notifier);
-      notifier.monitorearValores(fc: 75, spo2: 98, co2: 500);
+      notifier.monitorearValores(fc: 75, ppg: 98, co2: 500);
 
       final state = container.read(notificadorAlarmaProvider);
       expect(state.alarmaActiva, isFalse);
@@ -54,7 +54,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(notificadorAlarmaProvider.notifier);
-        notifier.monitorearValores(fc: 110, spo2: 98, co2: 500);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
 
         final state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
@@ -77,7 +77,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(notificadorAlarmaProvider.notifier);
-        notifier.monitorearValores(fc: 110, spo2: 90, co2: 900);
+        notifier.monitorearValores(fc: 110, ppg: 50, co2: 900);
 
         final state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
@@ -92,7 +92,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(notificadorAlarmaProvider.notifier);
-        notifier.monitorearValores(fc: 110, spo2: 98, co2: 500);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
 
         var state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
@@ -114,7 +114,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(notificadorAlarmaProvider.notifier);
-        notifier.monitorearValores(fc: 110, spo2: 98, co2: 500);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
 
         var state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
@@ -138,18 +138,18 @@ void main() {
       final notifier = container.read(notificadorAlarmaProvider.notifier);
       await Future.delayed(const Duration(milliseconds: 50));
 
-      await notifier.actualizarUmbrales(fcMin: 55, fcMax: 105, spo2Min: 94, co2Max: 850);
+      await notifier.actualizarUmbrales(fcMin: 55, fcMax: 105, ppgMin: 50, co2Max: 850);
 
       final state = container.read(notificadorAlarmaProvider);
       expect(state.umbrales.fcMin, equals(55));
       expect(state.umbrales.fcMax, equals(105));
-      expect(state.umbrales.spo2Min, equals(94));
+      expect(state.umbrales.ppgMin, equals(50));
       expect(state.umbrales.co2Max, equals(850));
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getInt('umbral_fc_min'), equals(55));
       expect(prefs.getInt('umbral_fc_max'), equals(105));
-      expect(prefs.getInt('umbral_spo2_min'), equals(94));
+      expect(prefs.getInt('umbral_ppg_min'), equals(50));
       expect(prefs.getInt('umbral_co2_max'), equals(850));
     });
 
@@ -161,7 +161,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(notificadorAlarmaProvider.notifier);
-        notifier.monitorearValores(fc: 110, spo2: 98, co2: 500);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
 
         var state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);

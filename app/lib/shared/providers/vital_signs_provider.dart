@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../core/models/measurement.dart';
 import '../../core/models/ws_packet.dart';
 import 'alarma_state.dart';
 
@@ -98,6 +99,30 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   int _simIndex = 0;
   bool _estaActivo = false;
   final math.Random _random = math.Random();
+
+  bool _isBuffering = false;
+  final List<Sample> _ecgBuffer = [];
+  final List<Sample> _bpmBuffer = [];
+  final List<Sample> _spo2Buffer = [];
+  final List<Sample> _airBuffer = [];
+
+  void startBuffering() {
+    _ecgBuffer.clear();
+    _bpmBuffer.clear();
+    _spo2Buffer.clear();
+    _airBuffer.clear();
+    _isBuffering = true;
+  }
+
+  Map<String, List<Sample>> stopBuffering() {
+    _isBuffering = false;
+    return {
+      'ecg': List<Sample>.from(_ecgBuffer),
+      'bpm': List<Sample>.from(_bpmBuffer),
+      'spo2': List<Sample>.from(_spo2Buffer),
+      'air': List<Sample>.from(_airBuffer),
+    };
+  }
 
   DateTime? _lastEcgTime;
   DateTime? _lastSpo2Time;
@@ -199,6 +224,11 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
       double valSpo2 = spo2Template[_simIndex % spo2Template.length];
       nuevosSpo2.add(PuntoBiometrico(ahora, valSpo2));
 
+      if (_isBuffering) {
+        _ecgBuffer.add(Sample(timestamp: ahora.toInt(), value: valEcg));
+        _spo2Buffer.add(Sample(timestamp: ahora.toInt(), value: valSpo2));
+      }
+
       _simIndex++;
 
       // Cada 1 segundo (50 ticks @ 20ms) actualizamos las métricas de texto y monitoreamos alarmas
@@ -211,6 +241,11 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         final spo2 = 98 - _random.nextInt(2); // 97-98%
         final co2 = 380 + _random.nextInt(40) - 20; // 360-400 ppm
 
+        if (_isBuffering) {
+          _bpmBuffer.add(Sample(timestamp: ahora.toInt(), value: fc.toDouble()));
+          _airBuffer.add(Sample(timestamp: ahora.toInt(), value: co2.toDouble()));
+        }
+
         state = state.copiarCon(
           ecgDatos: nuevosEcg,
           spo2Datos: nuevosSpo2,
@@ -222,7 +257,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
 
         ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
           fc: fc,
-          spo2: spo2,
+          ppg: fc + 1,
           co2: co2,
         );
       } else {
@@ -344,6 +379,31 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         valor,
       );
 
+      if (_isBuffering) {
+        final sample = Sample(
+          timestamp: packet.timestamp,
+          value: packet.value,
+        );
+        switch (pType) {
+          case 'ecg':
+            _ecgBuffer.add(sample);
+            break;
+          case 'spo2':
+            _spo2Buffer.add(sample);
+            break;
+          case 'bpm':
+            _bpmBuffer.add(sample);
+            break;
+          case 'air':
+          case 'co2':
+          case 'mq':
+          case 'mq135':
+          case 'gas':
+            _airBuffer.add(sample);
+            break;
+        }
+      }
+
       switch (pType) {
         case 'ecg':
           if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
@@ -388,7 +448,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
 
       ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
         fc: fc,
-        spo2: spo2Nivel,
+        ppg: ppgFc,
         co2: co2Nivel,
       );
     } catch (e) {

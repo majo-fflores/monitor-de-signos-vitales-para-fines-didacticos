@@ -19,7 +19,6 @@ class DisplayPreferencesCard extends ConsumerStatefulWidget {
 }
 
 class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard> {
-  String _unidadTemperatura = 'C';
 
   @override
   Widget build(BuildContext context) {
@@ -132,43 +131,6 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
                       ],
                     );
             },
-          ),
-          const Divider(height: 32),
-
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              labelText: 'Unidad de Temperatura',
-              labelStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: widget.subtitleColor,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.borderColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: widget.borderColor),
-              ),
-            ),
-            initialValue: _unidadTemperatura,
-            onChanged: (val) {
-              if (val != null) {
-                setState(() {
-                  _unidadTemperatura = val;
-                });
-              }
-            },
-            items: const [
-              DropdownMenuItem(
-                value: 'C',
-                child: Text('Celsius (°C)'),
-              ),
-              DropdownMenuItem(
-                value: 'F',
-                child: Text('Fahrenheit (°F)'),
-              ),
-            ],
           ),
         ],
       ),

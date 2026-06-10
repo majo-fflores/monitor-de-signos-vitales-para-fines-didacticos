@@ -181,11 +181,11 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                     child: Text('FC',
                         style: _headerStyle(theme, esOscuro)),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('SpO2',
-                        style: _headerStyle(theme, esOscuro)),
-                  ),
+                  // Expanded(
+                  //   flex: 2,
+                  //   child: Text('SpO2',
+                  //       style: _headerStyle(theme, esOscuro)),
+                  // ),
                 ],
                 // Mismo ancho que el botón eliminar en la fila: SizedBox(32)
                 const SizedBox(width: 32),

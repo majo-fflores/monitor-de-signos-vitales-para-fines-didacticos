@@ -56,7 +56,7 @@ class AlertsView extends ConsumerWidget {
                   children: [
                     Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaCardiaca)),
                     Gap(16),
-                    Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.saturacionOxigeno)),
+                    Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaPulsoPPG)),
                     Gap(16),
                     Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.dioxidoCarbono)),
                   ],
@@ -66,7 +66,7 @@ class AlertsView extends ConsumerWidget {
                   children: [
                     IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaCardiaca),
                     Gap(12),
-                    IndicadorVitalWidget(tipo: TipoMetrica.saturacionOxigeno),
+                    IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaPulsoPPG),
                     Gap(12),
                     IndicadorVitalWidget(tipo: TipoMetrica.dioxidoCarbono),
                   ],

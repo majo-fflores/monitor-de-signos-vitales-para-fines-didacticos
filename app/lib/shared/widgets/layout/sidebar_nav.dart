@@ -42,13 +42,13 @@ class SidebarNav extends StatelessWidget {
 
         // Estilos equivalentes a los condicionales de Tailwind en SidebarNav.tsx
         final colorIcono = esActivo
-            ? theme.colorScheme.primary
-            : theme.colorScheme.onSurface.withValues(alpha: 0.4); // Reemplazado withOpacity
+            ? (esOscuro ? ColoresOscuros.sidebarPrimary : ColoresClaros.sidebarPrimary)
+            : (esOscuro ? ColoresOscuros.sidebarForeground : ColoresClaros.sidebarForeground).withValues(alpha: 0.4);
 
         final colorFondo = esActivo
             ? (esOscuro 
-                ? theme.colorScheme.primary.withValues(alpha: 0.15) // Reemplazado withOpacity
-                : theme.colorScheme.primary.withValues(alpha: 0.08)) // Reemplazado withOpacity
+                ? ColoresOscuros.sidebarPrimary.withValues(alpha: 0.15)
+                : ColoresClaros.sidebarPrimary.withValues(alpha: 0.15))
             : Colors.transparent;
 
         return Padding(

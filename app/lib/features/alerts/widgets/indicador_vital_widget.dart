@@ -8,7 +8,7 @@ import '../../../shared/providers/alarma_state.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
 /// Tipos de métrica soportados por el indicador.
-enum TipoMetrica { frecuenciaCardiaca, saturacionOxigeno, dioxidoCarbono }
+enum TipoMetrica { frecuenciaCardiaca, frecuenciaPulsoPPG, dioxidoCarbono }
 
 /// Widget aislado para una sola métrica vital.
 /// Cada instancia hace su propio `ref.watch` selectivo para evitar
@@ -45,15 +45,15 @@ class IndicadorVitalWidget extends ConsumerWidget {
         icono = LucideIcons.heart;
         colorBase = ColoresSensores.ecgVerde;
         fueraDeRango = (valor < umbrales.fcMin || valor > umbrales.fcMax) && activo;
-      case TipoMetrica.saturacionOxigeno:
-        valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
+      case TipoMetrica.frecuenciaPulsoPPG:
+        valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
         activo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.spo2Activo));
-        metrica = 'Saturación de Oxígeno';
-        valorFormateado = '$valor%';
-        rangoNormal = '≥ ${umbrales.spo2Min}%';
-        icono = LucideIcons.droplet;
+        metrica = 'Frecuencia de Pulso (PPG)';
+        valorFormateado = '$valor LPM';
+        rangoNormal = '≥ ${umbrales.ppgMin} LPM';
+        icono = LucideIcons.activity;
         colorBase = ColoresSensores.spo2Azul;
-        fueraDeRango = (valor < umbrales.spo2Min) && activo;
+        fueraDeRango = (valor < umbrales.ppgMin) && activo;
       case TipoMetrica.dioxidoCarbono:
         valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
         activo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.co2Activo));
@@ -67,6 +67,8 @@ class IndicadorVitalWidget extends ConsumerWidget {
 
     final color = fueraDeRango ? theme.colorScheme.error : colorBase;
 
+    final esOscuro = theme.brightness == Brightness.dark;
+
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -76,7 +78,7 @@ class IndicadorVitalWidget extends ConsumerWidget {
           border: Border.all(
             color: fueraDeRango
                 ? theme.colorScheme.error.withValues(alpha: 0.5)
-                : theme.dividerColor.withValues(alpha: 0.1),
+                : (esOscuro ? ColoresOscuros.border : ColoresClaros.border),
             width: fueraDeRango ? 1.5 : 1.0,
           ),
           boxShadow: fueraDeRango

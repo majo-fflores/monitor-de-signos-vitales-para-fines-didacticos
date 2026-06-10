@@ -34,20 +34,11 @@ class BiometricThresholdsCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.ring_volume,
-                color: isDark ? Colors.redAccent : Colors.red,
-              ),
-              const Gap(10),
-              Text(
-                'Umbrales de Alerta Crítica',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          Text(
+            'Umbrales de Alerta Crítica',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const Gap(8),
           Text(
@@ -69,18 +60,18 @@ class BiometricThresholdsCard extends ConsumerWidget {
           ),
           const Divider(height: 32, thickness: 1),
 
-          // 2. SATURACIÓN DE OXÍGENO (SpO2)
+          // 2. FRECUENCIA DE PULSO (PPG)
           ThresholdSingleSlider(
-            titulo: 'Saturación de Oxígeno (Mínimo)',
-            unidad: '%',
-            icono: Icons.opacity,
+            titulo: 'Frecuencia de Pulso PPG (Mínimo)',
+            unidad: 'LPM',
+            icono: Icons.favorite_border,
             colorAcento: ColoresSensores.spo2Azul,
-            min: 80.0,
-            max: 100.0,
-            valorInicial: umbrales.spo2Min.toDouble(),
+            min: 45.0,
+            max: 120.0,
+            valorInicial: umbrales.ppgMin.toDouble(),
             onChanged: (value) {
               ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
-                spo2Min: value.round(),
+                ppgMin: value.round(),
               );
             },
             onChangeEnd: (_) {

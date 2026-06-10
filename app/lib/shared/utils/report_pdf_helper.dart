@@ -6,7 +6,8 @@ import 'package:printing/printing.dart';
 /// Estructura de datos para pasar al generador de PDF.
 class ReporteDatos {
   final String nombrePaciente;
-  final String edadPaciente;
+  final String dniPaciente;
+  final String duracionFormateada;
   final String notasClinicas;
   final int frecuenciaCardiaca;
   final int ppgFrecuenciaCardiaca;
@@ -16,7 +17,8 @@ class ReporteDatos {
 
   ReporteDatos({
     required this.nombrePaciente,
-    required this.edadPaciente,
+    required this.dniPaciente,
+    required this.duracionFormateada,
     required this.notasClinicas,
     required this.frecuenciaCardiaca,
     required this.ppgFrecuenciaCardiaca,
@@ -54,7 +56,6 @@ class ReportPdfHelper {
           final successGreen = PdfColor.fromHex('#10B981');
           final alertRed = PdfColor.fromHex('#D4183D');
           
-          final isSpo2Critico = datos.nivelSpo2 < 95;
           final isFcCritica = datos.frecuenciaCardiaca < 50 || datos.frecuenciaCardiaca > 120;
           final isPpgFcCritica = datos.ppgFrecuenciaCardiaca < 50 || datos.ppgFrecuenciaCardiaca > 120;
           final isCo2Critico = datos.nivelCo2 > 800;
@@ -69,22 +70,25 @@ class ReportPdfHelper {
                 // CABECERA DEL INFORME
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          'DATAVITAL',
+                          'REPORTE DE MONITOREO BIOMÉTRICO',
                           style: pw.TextStyle(
-                            fontSize: 24,
+                            fontSize: 13,
                             fontWeight: pw.FontWeight.bold,
                             color: primaryColor,
                           ),
                         ),
+                        pw.SizedBox(height: 2),
                         pw.Text(
-                          'Sistema de Monitoreo de Biosignales en Tiempo Real',
+                          'Sistemas de Tiempo Real - UNTDF',
                           style: pw.TextStyle(
-                            fontSize: 10,
+                            fontSize: 8,
+                            fontWeight: pw.FontWeight.bold,
                             color: secondaryColor,
                           ),
                         ),
@@ -94,18 +98,20 @@ class ReportPdfHelper {
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
                         pw.Text(
-                          'INFORME CLÍNICO',
+                          'FECHA DE REGISTRO',
                           style: pw.TextStyle(
-                            fontSize: 14,
+                            fontSize: 8,
                             fontWeight: pw.FontWeight.bold,
-                            color: primaryColor,
+                            color: secondaryColor,
                           ),
                         ),
+                        pw.SizedBox(height: 2),
                         pw.Text(
                           formatoFecha,
                           style: pw.TextStyle(
                             fontSize: 10,
-                            color: secondaryColor,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
                           ),
                         ),
                       ],
@@ -116,9 +122,9 @@ class ReportPdfHelper {
                 pw.Divider(thickness: 1, color: borderGrey),
                 pw.SizedBox(height: 16),
 
-                // DATOS DEL PACIENTE
+                // DATOS DEL PACIENTE Y SESIÓN
                 pw.Text(
-                  'DATOS DEL PACIENTE',
+                  'DATOS DEL PACIENTE Y DE LA SESIÓN',
                   style: pw.TextStyle(
                     fontSize: 12,
                     fontWeight: pw.FontWeight.bold,
@@ -146,11 +152,24 @@ class ReportPdfHelper {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Edad / Fecha de Nacimiento', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                          child: pw.Text('DNI del Paciente', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(datos.edadPaciente.isNotEmpty ? '${datos.edadPaciente} años' : 'No especificado', style: const pw.TextStyle(fontSize: 10)),
+                          child: pw.Text(datos.dniPaciente, style: const pw.TextStyle(fontSize: 10)),
+                        ),
+                      ],
+                    ),
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Duración de la Sesión', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(datos.duracionFormateada, style: const pw.TextStyle(fontSize: 10)),
                         ),
                       ],
                     ),
@@ -204,7 +223,7 @@ class ReportPdfHelper {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('AD8232 (Frecuencia Cardíaca ECG)', style: const pw.TextStyle(fontSize: 10)),
+                          child: pw.Text('Frecuencia Cardíaca (ECG)', style: const pw.TextStyle(fontSize: 10)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -233,7 +252,7 @@ class ReportPdfHelper {
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('MAX30100 (Frecuencia Cardíaca PPG)', style: const pw.TextStyle(fontSize: 10)),
+                          child: pw.Text('Frecuencia de Pulso (PPG)', style: const pw.TextStyle(fontSize: 10)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -256,41 +275,12 @@ class ReportPdfHelper {
                         ),
                       ],
                     ),
-                    // Fila SpO2
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('MAX30100 (Saturación SpO2)', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('${datos.nivelSpo2}', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('%', style: const pw.TextStyle(fontSize: 10)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            isSpo2Critico ? 'HIPOXIA / CRÍTICO' : 'NORMAL',
-                            style: pw.TextStyle(
-                              color: isSpo2Critico ? alertRed : successGreen,
-                              fontWeight: pw.FontWeight.bold,
-                              fontSize: 9,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                     // Fila CO2
                     pw.TableRow(
-                      decoration: const pw.BoxDecoration(color: PdfColors.grey50),
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('MQ-135 (Dióxido de Carbono)', style: const pw.TextStyle(fontSize: 10)),
+                          child: pw.Text('Dióxido de Carbono (CO2)', style: const pw.TextStyle(fontSize: 10)),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
@@ -341,45 +331,6 @@ class ReportPdfHelper {
                 ),
 
                 pw.Spacer(),
-
-                // FIRMAS Y AVISO LEGAL
-                pw.Divider(thickness: 1, color: borderGrey),
-                pw.SizedBox(height: 16),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'DataVital Biosensing Systems',
-                          style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
-                        ),
-                        pw.Text(
-                          'Este es un documento didáctico autogenerado y no sustituye un diagnóstico clínico formal.',
-                          style: pw.TextStyle(fontSize: 7, color: secondaryColor),
-                        ),
-                      ],
-                    ),
-                    pw.Column(
-                      children: [
-                        pw.Container(
-                          width: 120,
-                          decoration: const pw.BoxDecoration(
-                            border: pw.Border(top: pw.BorderSide(color: PdfColors.black, width: 1)),
-                          ),
-                          padding: const pw.EdgeInsets.only(top: 4),
-                          child: pw.Center(
-                            child: pw.Text(
-                              'Firma del Profesional',
-                              style: const pw.TextStyle(fontSize: 8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ],
             ),
           );

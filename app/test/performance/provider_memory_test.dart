@@ -50,7 +50,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 100));
         
         // Monitorear critical values to trigger/fire the alarm count-down timer
-        alarmNotifier.monitorearValores(fc: 120, spo2: 90, co2: 1200);
+        alarmNotifier.monitorearValores(fc: 120, ppg: 90, co2: 1200);
 
         // Let count-down start
         async.elapse(const Duration(seconds: 2));

@@ -68,7 +68,7 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
           Text('• Duración: ${widget.segundosGrabacion} segundos'),
           Text('• Prom. Cardíaco (ECG): ${widget.fcProm} LPM'),
           Text('• Prom. Pulso (PPG): ${widget.ppgProm} LPM'),
-          Text('• Prom. SpO2: ${widget.spo2Prom}%'),
+          // Text('• Prom. SpO2: ${widget.spo2Prom}%'),
           Text('• Prom. CO2: ${widget.co2Prom} ppm'),
           const Gap(16),
           TextField(

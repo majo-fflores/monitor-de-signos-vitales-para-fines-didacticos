@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'measurement.dart';
+import 'session.dart';
 
 /// Registro de una medición biométrica realizada durante una sesión de monitoreo.
 /// Captura un snapshot de los valores de los biosensores en un instante dado.
@@ -52,6 +54,56 @@ class RegistroMedicion {
       nivelCo2: nivelCo2,
       alertasDisparadas: alertasDisparadas,
       notasClinicas: notasClinicas,
+    );
+  }
+
+  /// Crea un RegistroMedicion a partir de una sesión y mediciones obtenidas del backend.
+  factory RegistroMedicion.fromBackendSession(
+    Session session, {
+    List<Measurement>? bpm,
+    List<Measurement>? spo2,
+    List<Measurement>? air,
+    String? notasClinicas,
+  }) {
+    final bpmValues = bpm?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
+    final fcProm = bpmValues.isEmpty
+        ? 70
+        : (bpmValues.reduce((a, b) => a + b) / bpmValues.length).round();
+
+    // final spo2Values = spo2?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
+    // final spo2Prom = spo2Values.isEmpty
+    //     ? 98
+    //     : (spo2Values.reduce((a, b) => a + b) / spo2Values.length).round();
+
+    final airValues = air?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
+    final co2Prom = airValues.isEmpty
+        ? 350
+        : (airValues.reduce((a, b) => a + b) / airValues.length).round();
+
+    int alertas = 0;
+    for (var val in bpmValues) {
+      if (val < 60 || val > 100) alertas++;
+    }
+    // for (var val in spo2Values) {
+    //   if (val < 95) alertas++;
+    // }
+    for (var val in airValues) {
+      if (val > 1000) alertas++;
+    }
+
+    final duracion = (session.endTime ?? DateTime.now()).difference(session.startTime).inSeconds;
+
+    return RegistroMedicion(
+      id: session.id.toString(),
+      usuarioId: session.userId.toString(),
+      fechaRegistro: session.startTime,
+      duracionSegundos: duracion > 0 ? duracion : 0,
+      frecuenciaCardiaca: fcProm,
+      ppgFrecuenciaCardiaca: fcProm,
+      nivelSpo2: 0, // spo2Prom comentado
+      nivelCo2: co2Prom,
+      alertasDisparadas: alertas,
+      notasClinicas: notasClinicas ?? 'Sesión de monitoreo en backend',
     );
   }
 

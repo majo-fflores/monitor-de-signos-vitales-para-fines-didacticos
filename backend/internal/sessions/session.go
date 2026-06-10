@@ -8,4 +8,5 @@ type Session struct {
 	UserID    uint       `gorm:"not null" json:"user_id"`
 	StartTime time.Time  `gorm:"not null" json:"start_time"`
 	EndTime   *time.Time `json:"end_time,omitempty"`
+	Notes     string     `json:"notes,omitempty"`
 }

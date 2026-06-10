@@ -92,7 +92,7 @@ void main() {
       );
 
       expect(find.text('My Body Child'), findsOneWidget);
-      expect(find.text('DataVital'), findsOneWidget);
+      expect(find.text('DataVital'), findsNothing);
       expect(find.text('ALARMA CRÍTICA'), findsNothing);
 
       tester.view.resetPhysicalSize();

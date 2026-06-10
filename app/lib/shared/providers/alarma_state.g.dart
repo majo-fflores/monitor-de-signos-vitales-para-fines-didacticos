@@ -6,7 +6,7 @@ part of 'alarma_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$notificadorAlarmaHash() => r'24a5815a71d2070a86aa078203ffaddf6038a621';
+String _$notificadorAlarmaHash() => r'c9660c551d5a57a1db93f7292efee84607c9d009';
 
 /// See also [NotificadorAlarma].
 @ProviderFor(NotificadorAlarma)

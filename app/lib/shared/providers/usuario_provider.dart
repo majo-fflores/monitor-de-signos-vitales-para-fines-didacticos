@@ -4,6 +4,7 @@ import '../../core/models/usuario.dart';
 import '../../core/services/usuario_api_service.dart';
 import '../utils/almacenamiento_local.dart';
 import 'connection_provider.dart';
+import 'session_provider.dart';
 
 part 'usuario_provider.g.dart';
 
@@ -148,6 +149,20 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
   Future<void> eliminarUsuario(String usuarioId) async {
     final apiService = ref.read(usuarioApiServiceProvider);
     
+    // Eliminación en cascada manual de sesiones en el backend
+    final uId = int.tryParse(usuarioId);
+    if (uId != null) {
+      try {
+        final sessionApi = ref.read(sessionApiServiceProvider);
+        final sessions = await sessionApi.obtenerSesionesDeUsuario(uId);
+        for (var session in sessions) {
+          await sessionApi.eliminarSesion(session.id);
+        }
+      } catch (e) {
+        debugPrint('[NotificadorUsuarios] Error al eliminar sesiones en cascada en backend: $e');
+      }
+    }
+
     try {
       await apiService.eliminarUsuario(usuarioId);
     } catch (e) {
@@ -164,8 +179,6 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
       limpiarUsuarioActivo: eraActivo,
     );
 
-    await AlmacenamientoLocal.eliminarRegistrosDeUsuario(usuarioId);
-    
     if (eraActivo) {
       await AlmacenamientoLocal.guardarUsuarioActivo(null);
     }

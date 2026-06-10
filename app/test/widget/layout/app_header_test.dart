@@ -63,7 +63,7 @@ void main() {
         ),
       );
 
-      expect(find.text('DataVital'), findsOneWidget);
+      expect(find.text('DataVital'), findsNothing);
       expect(find.text('Desconectado'), findsOneWidget);
       expect(find.byType(CircleAvatar), findsNothing);
     });

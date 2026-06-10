@@ -47,7 +47,13 @@ func EndSession(c *echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID format"})
 	}
-	if err := ServiceInstance.EndSession(uint(id)); err != nil {
+
+	reqBody := struct {
+		Notes string `json:"notes"`
+	}{}
+	_ = c.Bind(&reqBody)
+
+	if err := ServiceInstance.EndSession(uint(id), reqBody.Notes); err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to end session"})
 	}
 	return c.JSON(http.StatusOK, map[string]string{"message": "Session ended successfully"})

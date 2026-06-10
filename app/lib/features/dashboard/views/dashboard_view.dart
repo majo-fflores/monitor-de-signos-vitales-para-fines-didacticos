@@ -8,6 +8,7 @@ import '../../../core/models/registro_medicion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/connection_provider.dart';
 import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/session_provider.dart';
 import '../../../shared/providers/usuario_provider.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 import '../widgets/dashboard_header.dart';
@@ -33,6 +34,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   final List<int> _spo2Grabados = [];
   final List<int> _co2Grabados = [];
   int _alertasDisparadas = 0;
+  int? _sessionId;
 
   @override
   void initState() {
@@ -54,7 +56,20 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     super.dispose();
   }
 
-  void _iniciarGrabacion() {
+  Future<void> _iniciarGrabacion() async {
+    final usuarioActivo = ref.read(notificadorUsuariosProvider).usuarioActivo;
+    if (usuarioActivo == null) return;
+
+    try {
+      final session = await ref.read(sessionApiServiceProvider).crearSesion(int.parse(usuarioActivo.id));
+      _sessionId = session.id;
+    } catch (e) {
+      debugPrint('Error al crear sesión en backend: $e');
+      _sessionId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    }
+
+    ref.read(notificadorSignosVitalesProvider.notifier).startBuffering();
+
     setState(() {
       _grabando = true;
       _segundosGrabacion = 0;
@@ -76,7 +91,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       // Verificación simple de alertas/anomalías
       if (signos.frecuenciaCardiaca < 60 ||
           signos.frecuenciaCardiaca > 100 ||
-          signos.nivelSpo2 < 95 ||
+          // signos.nivelSpo2 < 95 ||
           signos.nivelCo2 > 1000) {
         _alertasDisparadas++;
       }
@@ -126,12 +141,41 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             setState(() => _grabando = false);
           },
           onSave: (notas) async {
-            final registro = RegistroMedicion.crear(
+            final activeSessionId = _sessionId;
+            final buffers = ref.read(notificadorSignosVitalesProvider.notifier).stopBuffering();
+
+            if (activeSessionId != null) {
+              try {
+                final measApi = ref.read(measurementApiServiceProvider);
+                final sessionApi = ref.read(sessionApiServiceProvider);
+
+                if (buffers['ecg'] != null && buffers['ecg']!.isNotEmpty) {
+                  await measApi.guardarMedicion('ecg', activeSessionId, buffers['ecg']!);
+                }
+                if (buffers['bpm'] != null && buffers['bpm']!.isNotEmpty) {
+                  await measApi.guardarMedicion('bpm', activeSessionId, buffers['bpm']!);
+                }
+                // if (buffers['spo2'] != null && buffers['spo2']!.isNotEmpty) {
+                //   await measApi.guardarMedicion('spo2', activeSessionId, buffers['spo2']!);
+                // }
+                if (buffers['air'] != null && buffers['air']!.isNotEmpty) {
+                  await measApi.guardarMedicion('air', activeSessionId, buffers['air']!);
+                }
+
+                await sessionApi.finalizarSesion(activeSessionId, notes: notas);
+              } catch (e) {
+                debugPrint('Error al guardar datos en el backend: $e');
+              }
+            }
+
+            final registro = RegistroMedicion(
+              id: activeSessionId?.toString() ?? '${DateTime.now().millisecondsSinceEpoch}',
               usuarioId: usuarioActivo.id,
+              fechaRegistro: DateTime.now(),
               duracionSegundos: _segundosGrabacion,
               frecuenciaCardiaca: fcProm,
               ppgFrecuenciaCardiaca: ppgProm,
-              nivelSpo2: spo2Prom,
+              nivelSpo2: 0, // spo2Prom comentado
               nivelCo2: co2Prom,
               alertasDisparadas: _alertasDisparadas,
               notasClinicas: notas,

@@ -13,7 +13,8 @@ class KpiPanels extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
     final ppgFrecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
-    final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
+    // Comentado temporalmente por migración de sensor MAX30100 a HW-827 (que no lee SpO2)
+    // final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
     final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
 
     final listaKpis = [
@@ -23,12 +24,13 @@ class KpiPanels extends ConsumerWidget {
         unidad: 'LPM',
         colorAcento: ColoresSensores.ecgVerde,
       ),
-      TarjetaKpiVital(
-        titulo: 'Saturación de Oxígeno',
-        valor: '$nivelSpo2',
-        unidad: '%',
-        colorAcento: ColoresSensores.spo2Azul,
-      ),
+      // Comentado temporalmente por migración de sensor MAX30100 a HW-827 (que no lee SpO2)
+      // TarjetaKpiVital(
+      //   titulo: 'Saturación de Oxígeno',
+      //   valor: '$nivelSpo2',
+      //   unidad: '%',
+      //   colorAcento: ColoresSensores.spo2Azul,
+      // ),
       TarjetaKpiVital(
         titulo: 'Pulsaciones (PPG)',
         valor: '$ppgFrecuenciaCardiaca',
@@ -60,8 +62,6 @@ class KpiPanels extends ConsumerWidget {
           Row(
             children: [
               Expanded(child: listaKpis[2]),
-              const SizedBox(width: 12),
-              Expanded(child: listaKpis[3]),
             ],
           ),
         ],
@@ -75,8 +75,6 @@ class KpiPanels extends ConsumerWidget {
           Expanded(child: listaKpis[1]),
           const SizedBox(width: 16),
           Expanded(child: listaKpis[2]),
-          const SizedBox(width: 16),
-          Expanded(child: listaKpis[3]),
         ],
       );
     }

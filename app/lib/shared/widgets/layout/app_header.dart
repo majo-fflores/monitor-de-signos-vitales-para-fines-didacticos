@@ -72,15 +72,7 @@ class AppHeader extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                 ],
-                Text(
-                  'DataVital',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
-                ),
                 if (!esMobileChico) ...[
-                  const SizedBox(width: 12),
                   const ArduinoStatus(),
                 ] else ...[
                   const SizedBox(width: 8),

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/providers/session_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
-import '../../../../shared/utils/almacenamiento_local.dart';
 import '../widgets/create_user_form.dart';
 import '../widgets/segmented_toggle.dart';
 import '../widgets/user_gateway_header.dart';
@@ -49,9 +49,15 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
     try {
       final usuarios = ref.read(notificadorUsuariosProvider).usuarios;
       final Map<String, int> counts = {};
+      final sessionApi = ref.read(sessionApiServiceProvider);
       for (final u in usuarios) {
-        final registros = await AlmacenamientoLocal.obtenerRegistros(u.id);
-        counts[u.id] = registros.length;
+        final uId = int.tryParse(u.id);
+        if (uId != null) {
+          final sessions = await sessionApi.obtenerSesionesDeUsuario(uId);
+          counts[u.id] = sessions.length;
+        } else {
+          counts[u.id] = 0;
+        }
       }
       if (mounted) {
         setState(() {

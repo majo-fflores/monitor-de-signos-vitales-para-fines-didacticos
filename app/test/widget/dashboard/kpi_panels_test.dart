@@ -19,7 +19,7 @@ class MockVitalSignsNotifier extends NotificadorSignosVitales {
 
 void main() {
   group('KpiPanels Widget Tests', () {
-    testWidgets('should render all 4 TarjetaKpiVital widgets', (tester) async {
+    testWidgets('should render all 3 TarjetaKpiVital widgets', (tester) async {
       final mockState = EstadoSignosVitales.inicial().copiarCon(
         frecuenciaCardiaca: 75,
         nivelSpo2: 98,
@@ -40,9 +40,8 @@ void main() {
         ),
       );
 
-      expect(find.byType(TarjetaKpiVital), findsNWidgets(4));
+      expect(find.byType(TarjetaKpiVital), findsNWidgets(3));
       expect(find.text('75'), findsOneWidget);
-      expect(find.text('98'), findsOneWidget);
       expect(find.text('76'), findsOneWidget);
       expect(find.text('450'), findsOneWidget);
 
@@ -72,7 +71,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(TarjetaKpiVital), findsNWidgets(4));
+      expect(find.byType(TarjetaKpiVital), findsNWidgets(3));
       // Verifies that Column is used as layout
       expect(find.byType(Column), findsAny);
 

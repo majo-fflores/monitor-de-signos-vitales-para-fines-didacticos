@@ -86,26 +86,26 @@ class SessionHistoryRow extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: ColoresSensores.spo2Azul,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${registro.nivelSpo2}%',
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Expanded(
+                  //   flex: 2,
+                  //   child: Row(
+                  //     children: [
+                  //       Container(
+                  //         width: 8,
+                  //         height: 8,
+                  //         decoration: const BoxDecoration(
+                  //           color: ColoresSensores.spo2Azul,
+                  //           shape: BoxShape.circle,
+                  //         ),
+                  //       ),
+                  //       const SizedBox(width: 6),
+                  //       Text(
+                  //         '${registro.nivelSpo2}%',
+                  //         style: theme.textTheme.bodyMedium,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
                 // Botón eliminar
                 SizedBox(
@@ -185,13 +185,13 @@ class SessionHistoryRow extends ConsumerWidget {
                       theme: theme,
                       esOscuro: esOscuro,
                     ),
-                    MetricaInline(
-                      label: 'SpO2',
-                      value: '${registro.nivelSpo2}%',
-                      color: ColoresSensores.spo2Azul,
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
+                    // MetricaInline(
+                    //   label: 'SpO2',
+                    //   value: '${registro.nivelSpo2}%',
+                    //   color: ColoresSensores.spo2Azul,
+                    //   theme: theme,
+                    //   esOscuro: esOscuro,
+                    // ),
                     MetricaInline(
                       label: 'CO2',
                       value: '${registro.nivelCo2} ppm',

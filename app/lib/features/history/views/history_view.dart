@@ -23,7 +23,6 @@ class HistoryView extends ConsumerStatefulWidget {
 class _HistoryViewState extends ConsumerState<HistoryView> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
-  final _edadController = TextEditingController();
   final _notasController = TextEditingController();
   RegistroMedicion? _sesionSeleccionada;
 
@@ -42,7 +41,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
   @override
   void dispose() {
     _nombreController.dispose();
-    _edadController.dispose();
     _notasController.dispose();
     super.dispose();
   }
@@ -51,9 +49,13 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
     if (_formKey.currentState?.validate() ?? false) {
       if (_sesionSeleccionada == null) return;
 
+      final usuario = ref.read(notificadorUsuariosProvider).usuarioActivo;
+      final dniStr = usuario?.dni?.toString() ?? 'No especificado';
+
       final datosReporte = ReporteDatos(
         nombrePaciente: _nombreController.text.trim(),
-        edadPaciente: _edadController.text.trim(),
+        dniPaciente: dniStr,
+        duracionFormateada: _sesionSeleccionada!.duracionFormateada,
         notasClinicas: _notasController.text.trim(),
         frecuenciaCardiaca: _sesionSeleccionada!.frecuenciaCardiaca,
         ppgFrecuenciaCardiaca: _sesionSeleccionada!.ppgFrecuenciaCardiaca,
@@ -119,7 +121,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                           PatientReportForm(
                             formKey: _formKey,
                             nombreController: _nombreController,
-                            edadController: _edadController,
                             notasController: _notasController,
                             sesiones: sesiones,
                             sesionSeleccionada: _sesionSeleccionada,
@@ -144,7 +145,6 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                               child: PatientReportForm(
                                 formKey: _formKey,
                                 nombreController: _nombreController,
-                                edadController: _edadController,
                                 notasController: _notasController,
                                 sesiones: sesiones,
                                 sesionSeleccionada: _sesionSeleccionada,

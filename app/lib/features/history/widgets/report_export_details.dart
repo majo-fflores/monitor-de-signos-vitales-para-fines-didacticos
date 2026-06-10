@@ -46,7 +46,7 @@ class ReportExportDetails extends StatelessWidget {
           ),
           const Gap(12),
           Text(
-            'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG, SpO2 y CO2) y creará un archivo PDF formalizado.',
+            'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG, PPG y CO2) y creará un archivo PDF formalizado.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
               height: 1.5,
