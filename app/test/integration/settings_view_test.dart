@@ -59,7 +59,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // 4. Tap "Probar" button
-      final testBtnFinder = find.widgetWithText(ElevatedButton, 'Probar');
+      final testBtnFinder = find.widgetWithText(FilledButton, 'Probar');
       expect(testBtnFinder, findsOneWidget);
       await tester.tap(testBtnFinder);
       await tester.pumpAndSettle();

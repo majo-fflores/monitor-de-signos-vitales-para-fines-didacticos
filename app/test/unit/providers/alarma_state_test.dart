@@ -58,7 +58,7 @@ void main() {
 
         final state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
-        expect(state.segundosRestantes, equals(30));
+        expect(state.segundosRestantes, equals(15));
         expect(state.alertasActivas, hasLength(1));
         expect(state.alertasActivas.first.metrica, equals('Frecuencia Cardíaca'));
         expect(state.alertasActivas.first.valor, equals(110));
@@ -118,14 +118,14 @@ void main() {
 
         var state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isTrue);
-        expect(state.segundosRestantes, equals(30));
-
-        async.elapse(const Duration(seconds: 15));
-        state = container.read(notificadorAlarmaProvider);
-        expect(state.alarmaActiva, isTrue);
         expect(state.segundosRestantes, equals(15));
 
-        async.elapse(const Duration(seconds: 15));
+        async.elapse(const Duration(seconds: 8));
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+        expect(state.segundosRestantes, equals(7));
+
+        async.elapse(const Duration(seconds: 7));
         state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isFalse);
         expect(state.segundosRestantes, equals(0));
@@ -171,6 +171,118 @@ void main() {
         state = container.read(notificadorAlarmaProvider);
         expect(state.alarmaActiva, isFalse);
         expect(state.habilitada, isFalse);
+      });
+    });
+
+    test('alarma histéresis - FC mantiene alerta al retornar levemente al rango normal', () async {
+      fakeAsync((async) {
+        final container = createContainer();
+        container.listen(notificadorAlarmaProvider, (_, __) {});
+        async.elapse(const Duration(milliseconds: 50));
+
+        final notifier = container.read(notificadorAlarmaProvider.notifier);
+
+        // 1. Traspasar umbral superior de FC (fcMax = 100) -> Debe activarse la alarma
+        notifier.monitorearValores(fc: 101, ppg: 98, co2: 500);
+        var state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+        expect(state.alertasActivas.any((a) => a.metrica == 'Frecuencia Cardíaca'), isTrue);
+
+        // 2. Retornar levemente a un valor normal pero dentro del margen de histéresis (ej: 99 BPM)
+        // -> Debe mantenerse activa
+        notifier.monitorearValores(fc: 99, ppg: 98, co2: 500);
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+
+        // 3. Bajar por debajo del margen de histéresis (ej: 96 BPM)
+        notifier.monitorearValores(fc: 96, ppg: 98, co2: 500);
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue); // Sigue activa porque el ciclo de 15s no finalizó
+
+        // 4. Avanzar el tiempo para que expire el ciclo de 15s
+        async.elapse(const Duration(seconds: 15));
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isFalse); // Ya se limpia porque expiró el ciclo con valores normales
+      });
+    });
+
+    test('alarma histéresis - CO2 mantiene alerta al retornar levemente al rango normal', () async {
+      fakeAsync((async) {
+        final container = createContainer();
+        container.listen(notificadorAlarmaProvider, (_, __) {});
+        async.elapse(const Duration(milliseconds: 50));
+
+        final notifier = container.read(notificadorAlarmaProvider.notifier);
+
+        // 1. Traspasar umbral superior de CO2 (co2Max = 800) -> Debe activarse la alarma
+        notifier.monitorearValores(fc: 75, ppg: 98, co2: 805);
+        var state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+        expect(state.alertasActivas.any((a) => a.metrica == 'Dióxido de Carbono'), isTrue);
+
+        // 2. Retornar levemente a un valor normal pero dentro del margen de histéresis (ej: 790 ppm)
+        // -> Debe mantenerse activa
+        notifier.monitorearValores(fc: 75, ppg: 98, co2: 790);
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+
+        // 3. Bajar por debajo del margen de histéresis (ej: 775 ppm)
+        notifier.monitorearValores(fc: 75, ppg: 98, co2: 775);
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue); // Sigue activa porque el ciclo de 15s no finalizó
+
+        // 4. Avanzar el tiempo para que expire el ciclo de 15s
+        async.elapse(const Duration(seconds: 15));
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isFalse); // Ya se limpia porque expiró el ciclo con valores normales
+      });
+    });
+
+    test('alarma mantiene visualización activa por periodo completo de 15s al normalizarse', () async {
+      fakeAsync((async) {
+        final container = createContainer();
+        container.listen(notificadorAlarmaProvider, (_, __) {});
+        async.elapse(const Duration(milliseconds: 50));
+
+        final notifier = container.read(notificadorAlarmaProvider.notifier);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
+
+        var state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+        expect(state.segundosRestantes, equals(15));
+
+        // Avanzar 5 segundos e intentar normalizar los signos
+        async.elapse(const Duration(seconds: 5));
+        notifier.monitorearValores(fc: 75, ppg: 98, co2: 500);
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue); // Sigue activa
+        expect(state.segundosRestantes, equals(10));
+
+        // Avanzar 10 segundos más (total 15s desde el disparo inicial) para finalizar el ciclo
+        async.elapse(const Duration(seconds: 10));
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isFalse); // Ya se limpia al final del ciclo
+      });
+    });
+
+    test('descartarAlarma limpia inmediatamente el estado de la alarma', () async {
+      fakeAsync((async) {
+        final container = createContainer();
+        container.listen(notificadorAlarmaProvider, (_, __) {});
+        async.elapse(const Duration(milliseconds: 50));
+
+        final notifier = container.read(notificadorAlarmaProvider.notifier);
+        notifier.monitorearValores(fc: 110, ppg: 98, co2: 500);
+
+        var state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isTrue);
+
+        notifier.descartarAlarma();
+
+        state = container.read(notificadorAlarmaProvider);
+        expect(state.alarmaActiva, isFalse);
+        expect(state.segundosRestantes, equals(0));
+        expect(state.alertasActivas, isEmpty);
       });
     });
   });

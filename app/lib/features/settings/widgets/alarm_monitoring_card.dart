@@ -136,7 +136,7 @@ class AlarmMonitoringCard extends ConsumerWidget {
               const Gap(12),
               SizedBox(
                 height: 48,
-                child: ElevatedButton.icon(
+                child: FilledButton.icon(
                   onPressed: (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
                       ? () {
                           ServicioAudio.instancia.probarSonido(estadoAlarma.sonidoSeleccionado);
@@ -144,7 +144,9 @@ class AlarmMonitoringCard extends ConsumerWidget {
                       : null,
                   icon: const Icon(LucideIcons.play, size: 16),
                   label: const Text('Probar'),
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

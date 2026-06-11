@@ -135,6 +135,23 @@ class BannerAlarmaCritica extends ConsumerWidget {
                 ),
               ),
             ],
+            const Gap(8),
+            IconButton(
+              tooltip: 'Descartar Alarma',
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                ),
+              ),
+              icon: const Icon(Icons.close, size: 14),
+              onPressed: () {
+                ref.read(notificadorAlarmaProvider.notifier).descartarAlarma();
+              },
+            ),
           ],
         );
 

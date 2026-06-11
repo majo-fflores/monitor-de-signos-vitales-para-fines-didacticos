@@ -117,6 +117,59 @@ class NotificadorAlarma extends _$NotificadorAlarma {
   Timer? _timerRegresivo;
   SharedPreferences? _prefs;
 
+  bool _hayValoresCriticosActuales() {
+    try {
+      final signos = ref.read(notificadorSignosVitalesProvider);
+      final u = state.umbrales;
+
+      final fc = signos.frecuenciaCardiaca;
+      final ppg = signos.ppgFrecuenciaCardiaca;
+      final co2 = signos.nivelCo2;
+
+      // 1. FC
+      bool fcEnAlerta = false;
+      final tieneFcAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia Cardíaca');
+      if (tieneFcAlerta) {
+        if (fc < (u.fcMin + 3) || fc > (u.fcMax - 3)) {
+          fcEnAlerta = true;
+        }
+      } else {
+        if (fc < u.fcMin || fc > u.fcMax) {
+          fcEnAlerta = true;
+        }
+      }
+
+      // 2. PPG
+      bool ppgEnAlerta = false;
+      final tienePpgAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia de Pulso (PPG)');
+      if (tienePpgAlerta) {
+        if (ppg < (u.ppgMin + 3)) {
+          ppgEnAlerta = true;
+        }
+      } else {
+        if (ppg < u.ppgMin) {
+          ppgEnAlerta = true;
+        }
+      }
+
+      // 3. CO2
+      bool co2EnAlerta = false;
+      final tieneCo2Alerta = state.alertasActivas.any((a) => a.metrica == 'Dióxido de Carbono');
+      if (tieneCo2Alerta) {
+        if (co2 > (u.co2Max - 20)) {
+          co2EnAlerta = true;
+        }
+      } else {
+        if (co2 > u.co2Max) {
+          co2EnAlerta = true;
+        }
+      }
+
+      return fcEnAlerta || ppgEnAlerta || co2EnAlerta;
+    } catch (_) {}
+    return false;
+  }
+
   @override
   EstadoAlarma build() {
     _cargarUmbrales();
@@ -238,23 +291,62 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     final u = state.umbrales;
     final nuevasAlertas = <AlertaCritica>[];
 
-    if (fc < u.fcMin || fc > u.fcMax) {
+    // Constantes de histéresis
+    const fcHysteresis = 3;
+    const ppgHysteresis = 3;
+    const co2Hysteresis = 20;
+
+    // 1. Evaluar Frecuencia Cardíaca (FC)
+    bool fcEnAlerta = false;
+    final tieneFcAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia Cardíaca');
+    if (tieneFcAlerta) {
+      if (fc < (u.fcMin + fcHysteresis) || fc > (u.fcMax - fcHysteresis)) {
+        fcEnAlerta = true;
+      }
+    } else {
+      if (fc < u.fcMin || fc > u.fcMax) {
+        fcEnAlerta = true;
+      }
+    }
+    if (fcEnAlerta) {
       nuevasAlertas.add(AlertaCritica('Frecuencia Cardíaca', fc));
     }
-    if (ppg < u.ppgMin) {
+
+    // 2. Evaluar PPG (Frecuencia de Pulso)
+    bool ppgEnAlerta = false;
+    final tienePpgAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia de Pulso (PPG)');
+    if (tienePpgAlerta) {
+      if (ppg < (u.ppgMin + ppgHysteresis)) {
+        ppgEnAlerta = true;
+      }
+    } else {
+      if (ppg < u.ppgMin) {
+        ppgEnAlerta = true;
+      }
+    }
+    if (ppgEnAlerta) {
       nuevasAlertas.add(AlertaCritica('Frecuencia de Pulso (PPG)', ppg));
     }
-    if (co2 > u.co2Max) {
+
+    // 3. Evaluar CO2
+    bool co2EnAlerta = false;
+    final tieneCo2Alerta = state.alertasActivas.any((a) => a.metrica == 'Dióxido de Carbono');
+    if (tieneCo2Alerta) {
+      if (co2 > (u.co2Max - co2Hysteresis)) {
+        co2EnAlerta = true;
+      }
+    } else {
+      if (co2 > u.co2Max) {
+        co2EnAlerta = true;
+      }
+    }
+    if (co2EnAlerta) {
       nuevasAlertas.add(AlertaCritica('Dióxido de Carbono', co2));
     }
 
     final estabaActiva = state.alarmaActiva;
 
-    if (nuevasAlertas.isEmpty) {
-      if (estabaActiva) {
-        _limpiarAlarma();
-      }
-    } else {
+    if (nuevasAlertas.isNotEmpty) {
       if (!estabaActiva) {
         _dispararAlarma(nuevasAlertas);
       } else {
@@ -279,7 +371,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     _timerRegresivo?.cancel();
     state = state.copiarCon(
       alarmaActiva: true,
-      segundosRestantes: 30,
+      segundosRestantes: 15,
       alertasActivas: alertas,
       sonidoSilenciadoTemporalmente: false,
     );
@@ -293,8 +385,16 @@ class NotificadorAlarma extends _$NotificadorAlarma {
           segundosRestantes: state.segundosRestantes - 1,
         );
       } else {
-        _timerRegresivo?.cancel();
-        _limpiarAlarma();
+        // Si al terminar el ciclo de 15s persisten lecturas críticas,
+        // reiniciamos el temporizador a 15s silenciosamente en vez de apagar y reencender
+        if (_hayValoresCriticosActuales()) {
+          state = state.copiarCon(
+            segundosRestantes: 15,
+          );
+        } else {
+          _timerRegresivo?.cancel();
+          _limpiarAlarma();
+        }
       }
     });
   }
@@ -307,6 +407,11 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       alertasActivas: const [],
       sonidoSilenciadoTemporalmente: false,
     );
+  }
+
+  /// Descarta manualmente la alarma activa.
+  void descartarAlarma() {
+    _limpiarAlarma();
   }
 
   /// Silencia el sonido de la alarma actual temporalmente sin desactivar la alarma visual ni detener la cuenta regresiva.

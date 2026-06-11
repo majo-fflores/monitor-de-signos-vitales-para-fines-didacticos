@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/breakpoints.dart';
 import '../../../core/services/servicio_audio.dart';
 import '../../providers/alarma_state.dart';
+import 'animated_alarm_banner.dart';
 import 'app_header.dart';
 import 'app_sidebar.dart';
 import 'banner_alarma_critica.dart';
@@ -87,8 +88,11 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
         body: SafeArea(
           child: Column(
             children: [
-              // BANNER DE ALERTA MÉDICA CRÍTICA (widget independiente optimizado)
-              if (alarmaActiva) const BannerAlarmaCritica(),
+              // BANNER DE ALERTA MÉDICA CRÍTICA (animado y sin saltos abruptos)
+              AnimatedAlarmBanner(
+                visible: alarmaActiva,
+                child: const BannerAlarmaCritica(),
+              ),
               Expanded(
                 child: Row(
                   children: [
