@@ -124,31 +124,27 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final esMobile = constraints.maxWidth < Breakpoints.mobile;
-        
-        if (!alarmaActiva) {
-          // Sin alarma, no necesitamos el AnimatedBuilder costoso
-          return buildLayout(esMobile);
-        }
+    final esMobile = MediaQuery.of(context).size.width < Breakpoints.mobile;
+    
+    if (!alarmaActiva) {
+      // Sin alarma, no necesitamos el AnimatedBuilder costoso
+      return buildLayout(esMobile);
+    }
 
-        return AnimatedBuilder(
-          animation: _borderOpacityAnimation,
-          builder: (context, child) {
-            return Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.red.withValues(alpha: _borderOpacityAnimation.value),
-                  width: 4,
-                ),
-              ),
-              child: child,
-            );
-          },
-          child: buildLayout(esMobile),
+    return AnimatedBuilder(
+      animation: _borderOpacityAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.red.withValues(alpha: _borderOpacityAnimation.value),
+              width: 4,
+            ),
+          ),
+          child: child,
         );
       },
+      child: buildLayout(esMobile),
     );
   }
 }
