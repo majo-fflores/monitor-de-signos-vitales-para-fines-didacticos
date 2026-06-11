@@ -9,6 +9,7 @@ type SessionRepository interface {
 	Update(session *Session) error
 	Delete(id uint) error
 	GetSummary(sessionID uint) (*SessionSummaryResponse, error)
+	GetUserSessionSummaries(userID uint) ([]SessionWithSummary, error)
 }
 
 type gormSessionRepository struct {
@@ -65,6 +66,25 @@ func calculateAverage(measurements []SensorMeasurement) float64 {
 	return sum / float64(count)
 }
 
+func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
+	var alerts int
+	for _, m := range bpmData {
+		for _, sample := range m.Datos {
+			if sample.Value < 60 || sample.Value > 100 {
+				alerts++
+			}
+		}
+	}
+	for _, m := range airData {
+		for _, sample := range m.Datos {
+			if sample.Value > 1000 {
+				alerts++
+			}
+		}
+	}
+	return alerts
+}
+
 func (r *gormSessionRepository) GetSummary(sessionID uint) (*SessionSummaryResponse, error) {
 	session, err := r.GetByID(sessionID)
 	if err != nil {
@@ -82,13 +102,76 @@ func (r *gormSessionRepository) GetSummary(sessionID uint) (*SessionSummaryRespo
 	r.db.Table("air_measurements").Where("session_id = ?", sessionID).Find(&airData)
 
 	summary := &SessionSummaryResponse{
-		SessionID: sessionID,
-		Notes:     session.Notes,
-		AvgBPM:    calculateAverage(bpmData),
-		AvgECG:    calculateAverage(ecgData),
-		AvgSPO2:   calculateAverage(spo2Data),
-		AvgAIR:    calculateAverage(airData),
+		SessionID:  sessionID,
+		Notes:      session.Notes,
+		AvgBPM:     calculateAverage(bpmData),
+		AvgECG:     calculateAverage(ecgData),
+		AvgSPO2:    calculateAverage(spo2Data),
+		AvgAIR:     calculateAverage(airData),
+		AlertCount: countAlerts(bpmData, airData),
 	}
 
 	return summary, nil
+}
+
+func (r *gormSessionRepository) GetUserSessionSummaries(userID uint) ([]SessionWithSummary, error) {
+	sessions, err := r.GetByUserID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sessions) == 0 {
+		return []SessionWithSummary{}, nil
+	}
+
+	sessionIDs := make([]uint, len(sessions))
+	for i, s := range sessions {
+		sessionIDs[i] = s.ID
+	}
+
+	var bpmData []SensorMeasurement
+	var ecgData []SensorMeasurement
+	var spo2Data []SensorMeasurement
+	var airData []SensorMeasurement
+
+	r.db.Table("bpm_measurements").Where("session_id IN ?", sessionIDs).Find(&bpmData)
+	r.db.Table("ecg_measurements").Where("session_id IN ?", sessionIDs).Find(&ecgData)
+	r.db.Table("spo2_measurements").Where("session_id IN ?", sessionIDs).Find(&spo2Data)
+	r.db.Table("air_measurements").Where("session_id IN ?", sessionIDs).Find(&airData)
+
+	bpmBySession := make(map[uint][]SensorMeasurement)
+	for _, m := range bpmData {
+		bpmBySession[m.SessionID] = append(bpmBySession[m.SessionID], m)
+	}
+	ecgBySession := make(map[uint][]SensorMeasurement)
+	for _, m := range ecgData {
+		ecgBySession[m.SessionID] = append(ecgBySession[m.SessionID], m)
+	}
+	spo2BySession := make(map[uint][]SensorMeasurement)
+	for _, m := range spo2Data {
+		spo2BySession[m.SessionID] = append(spo2BySession[m.SessionID], m)
+	}
+	airBySession := make(map[uint][]SensorMeasurement)
+	for _, m := range airData {
+		airBySession[m.SessionID] = append(airBySession[m.SessionID], m)
+	}
+
+	results := make([]SessionWithSummary, 0, len(sessions))
+	for _, session := range sessions {
+		bpm := bpmBySession[session.ID]
+		ecg := ecgBySession[session.ID]
+		spo2 := spo2BySession[session.ID]
+		air := airBySession[session.ID]
+
+		results = append(results, SessionWithSummary{
+			Session:    session,
+			AvgBPM:     calculateAverage(bpm),
+			AvgECG:     calculateAverage(ecg),
+			AvgSPO2:    calculateAverage(spo2),
+			AvgAIR:     calculateAverage(air),
+			AlertCount: countAlerts(bpm, air),
+		})
+	}
+
+	return results, nil
 }

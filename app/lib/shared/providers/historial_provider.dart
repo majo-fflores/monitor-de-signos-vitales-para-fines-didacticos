@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../core/models/measurement.dart';
 import '../../core/models/registro_medicion.dart';
 import 'session_provider.dart';
 
@@ -58,38 +57,12 @@ class NotificadorHistorial extends _$NotificadorHistorial {
     if (uId != null) {
       try {
         final sessionApi = ref.read(sessionApiServiceProvider);
-        final measApi = ref.read(measurementApiServiceProvider);
 
-        final sessions = await sessionApi.obtenerSesionesDeUsuario(uId);
+        final summaries = await sessionApi.obtenerResumenesSesiones(uId);
 
-        final allBpm = await measApi.obtenerMedicionesPorUsuario('bpm', uId);
-        final allSpo2 = await measApi.obtenerMedicionesPorUsuario('spo2', uId);
-        final allAir = await measApi.obtenerMedicionesPorUsuario('air', uId);
-
-        final bpmBySession = <int, List<Measurement>>{};
-        for (var m in allBpm) {
-          bpmBySession.putIfAbsent(m.sessionId, () => []).add(m);
-        }
-        final spo2BySession = <int, List<Measurement>>{};
-        for (var m in allSpo2) {
-          spo2BySession.putIfAbsent(m.sessionId, () => []).add(m);
-        }
-        final airBySession = <int, List<Measurement>>{};
-        for (var m in allAir) {
-          airBySession.putIfAbsent(m.sessionId, () => []).add(m);
-        }
-
-        for (var session in sessions) {
-          registros.add(
-            RegistroMedicion.fromBackendSession(
-              session,
-              bpm: bpmBySession[session.id],
-              spo2: spo2BySession[session.id],
-              air: airBySession[session.id],
-              notasClinicas: session.notes,
-            ),
-          );
-        }
+        registros = summaries
+            .map((s) => RegistroMedicion.fromSessionWithSummary(s))
+            .toList();
 
         // Ordenamos por fecha descendente (más reciente primero)
         registros.sort((a, b) => b.fechaRegistro.compareTo(a.fechaRegistro));

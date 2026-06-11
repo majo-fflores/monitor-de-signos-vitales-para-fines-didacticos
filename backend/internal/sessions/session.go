@@ -25,10 +25,21 @@ type SensorMeasurement struct {
 
 // SessionSummaryResponse represents the aggregated measurements for a session.
 type SessionSummaryResponse struct {
-	SessionID uint    `json:"session_id"`
-	Notes     string  `json:"notes"`
-	AvgBPM    float64 `json:"avg_bpm"`
-	AvgECG    float64 `json:"avg_ecg"`
-	AvgSPO2   float64 `json:"avg_spo2"`
-	AvgAIR    float64 `json:"avg_air"`
+	SessionID  uint    `json:"session_id"`
+	Notes      string  `json:"notes"`
+	AvgBPM     float64 `json:"avg_bpm"`
+	AvgECG     float64 `json:"avg_ecg"`
+	AvgSPO2    float64 `json:"avg_spo2"`
+	AvgAIR     float64 `json:"avg_air"`
+	AlertCount int     `json:"alert_count"`
+}
+
+// SessionWithSummary combina la sesión con su resumen para el endpoint batch.
+type SessionWithSummary struct {
+	Session
+	AvgBPM     float64 `json:"avg_bpm"`
+	AvgECG     float64 `json:"avg_ecg"`
+	AvgSPO2    float64 `json:"avg_spo2"`
+	AvgAIR     float64 `json:"avg_air"`
+	AlertCount int     `json:"alert_count"`
 }

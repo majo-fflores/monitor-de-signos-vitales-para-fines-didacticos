@@ -80,3 +80,15 @@ func GetSessionSummary(c *echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, summary)
 }
+
+func GetUserSessionSummaries(c *echo.Context) error {
+	userID, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid User ID format"})
+	}
+	summaries, err := ServiceInstance.GetUserSessionSummaries(uint(userID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, summaries)
+}

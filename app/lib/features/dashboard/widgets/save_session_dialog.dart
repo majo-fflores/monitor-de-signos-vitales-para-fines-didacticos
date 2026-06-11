@@ -6,8 +6,8 @@ class SaveSessionDialog extends StatefulWidget {
   final int segundosGrabacion;
   final int fcProm;
   final int ppgProm;
-  final int spo2Prom;
   final int co2Prom;
+  final int? alertCount;
   final ValueChanged<String> onSave;
   final VoidCallback onCancel;
 
@@ -16,8 +16,8 @@ class SaveSessionDialog extends StatefulWidget {
     required this.segundosGrabacion,
     required this.fcProm,
     required this.ppgProm,
-    required this.spo2Prom,
     required this.co2Prom,
+    this.alertCount,
     required this.onSave,
     required this.onCancel,
   });
@@ -68,8 +68,27 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
           Text('• Duración: ${widget.segundosGrabacion} segundos'),
           Text('• Prom. Cardíaco (ECG): ${widget.fcProm} LPM'),
           Text('• Prom. Pulso (PPG): ${widget.ppgProm} LPM'),
-          // Text('• Prom. SpO2: ${widget.spo2Prom}%'),
           Text('• Prom. CO2: ${widget.co2Prom} ppm'),
+          if (widget.alertCount != null && widget.alertCount! > 0) ...[
+            const Gap(4),
+            Row(
+              children: [
+                const Icon(
+                  LucideIcons.alertTriangle,
+                  color: Colors.orange,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Alertas disparadas: ${widget.alertCount}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
           const Gap(16),
           TextField(
             controller: _notasController,

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/breakpoints.dart';
 import '../../../core/models/registro_medicion.dart';
+import '../../../core/models/session_summary.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/connection_provider.dart';
 import '../../../shared/providers/historial_provider.dart';
@@ -29,11 +30,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   bool _grabando = false;
   int _segundosGrabacion = 0;
   Timer? _timerGrabacion;
-  final List<int> _frecuenciasGrabadas = [];
-  final List<int> _ppgFrecuenciasGrabadas = [];
-  final List<int> _spo2Grabados = [];
-  final List<int> _co2Grabados = [];
-  int _alertasDisparadas = 0;
   int? _sessionId;
 
   @override
@@ -73,132 +69,156 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     setState(() {
       _grabando = true;
       _segundosGrabacion = 0;
-      _frecuenciasGrabadas.clear();
-      _ppgFrecuenciasGrabadas.clear();
-      _spo2Grabados.clear();
-      _co2Grabados.clear();
-      _alertasDisparadas = 0;
     });
 
     _timerGrabacion = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final signos = ref.read(notificadorSignosVitalesProvider);
-
-      _frecuenciasGrabadas.add(signos.frecuenciaCardiaca);
-      _ppgFrecuenciasGrabadas.add(signos.ppgFrecuenciaCardiaca);
-      _spo2Grabados.add(signos.nivelSpo2);
-      _co2Grabados.add(signos.nivelCo2);
-
-      // Verificación simple de alertas/anomalías
-      if (signos.frecuenciaCardiaca < 60 ||
-          signos.frecuenciaCardiaca > 100 ||
-          // signos.nivelSpo2 < 95 ||
-          signos.nivelCo2 > 1000) {
-        _alertasDisparadas++;
-      }
-
       setState(() {
         _segundosGrabacion++;
       });
     });
   }
 
-  void _detenerYGuardar() {
+  Future<void> _detenerYGuardar() async {
     _timerGrabacion?.cancel();
     _timerGrabacion = null;
 
     final usuarioActivo = ref.read(notificadorUsuariosProvider).usuarioActivo;
     if (usuarioActivo == null) return;
 
-    // Calcular promedios
-    final fcProm = _frecuenciasGrabadas.isEmpty
-        ? 70
-        : (_frecuenciasGrabadas.reduce((a, b) => a + b) ~/
-              _frecuenciasGrabadas.length);
-    final ppgProm = _ppgFrecuenciasGrabadas.isEmpty
-        ? 72
-        : (_ppgFrecuenciasGrabadas.reduce((a, b) => a + b) ~/
-              _ppgFrecuenciasGrabadas.length);
-    final spo2Prom = _spo2Grabados.isEmpty
-        ? 98
-        : (_spo2Grabados.reduce((a, b) => a + b) ~/ _spo2Grabados.length);
-    final co2Prom = _co2Grabados.isEmpty
-        ? 400
-        : (_co2Grabados.reduce((a, b) => a + b) ~/ _co2Grabados.length);
-
-    // Mostrar diálogo premium componentizado
+    // Mostrar un indicador de carga mientras se guardan los datos y se obtiene el resumen
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return SaveSessionDialog(
-          segundosGrabacion: _segundosGrabacion,
-          fcProm: fcProm,
-          ppgProm: ppgProm,
-          spo2Prom: spo2Prom,
-          co2Prom: co2Prom,
-          onCancel: () {
-            Navigator.pop(context);
-            setState(() => _grabando = false);
-          },
-          onSave: (notas) async {
-            final activeSessionId = _sessionId;
-            final buffers = ref.read(notificadorSignosVitalesProvider.notifier).stopBuffering();
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
 
-            if (activeSessionId != null) {
-              try {
-                final measApi = ref.read(measurementApiServiceProvider);
-                final sessionApi = ref.read(sessionApiServiceProvider);
+    final activeSessionId = _sessionId;
+    final buffers = ref.read(notificadorSignosVitalesProvider.notifier).stopBuffering();
 
-                if (buffers['ecg'] != null && buffers['ecg']!.isNotEmpty) {
-                  await measApi.guardarMedicion('ecg', activeSessionId, buffers['ecg']!);
+    try {
+      if (activeSessionId != null) {
+        final measApi = ref.read(measurementApiServiceProvider);
+        
+        // Guardar buffers en paralelo
+        try {
+          await Future.wait([
+            if (buffers['ecg']?.isNotEmpty ?? false)
+              measApi.guardarMedicion('ecg', activeSessionId, buffers['ecg']!),
+            if (buffers['bpm']?.isNotEmpty ?? false)
+              measApi.guardarMedicion('bpm', activeSessionId, buffers['bpm']!),
+            if (buffers['air']?.isNotEmpty ?? false)
+              measApi.guardarMedicion('air', activeSessionId, buffers['air']!),
+          ]);
+        } catch (e) {
+          debugPrint('Error al guardar mediciones en backend: $e');
+        }
+
+        // Obtener el summary real del backend
+        final sessionApi = ref.read(sessionApiServiceProvider);
+        SessionSummary summary;
+        try {
+          summary = await sessionApi.obtenerResumenSesion(activeSessionId);
+        } catch (e) {
+          debugPrint('Error al obtener resumen de sesión del backend: $e. Usando valores por defecto.');
+          summary = SessionSummary(
+            sessionId: activeSessionId,
+            notes: '',
+            avgBpm: 70.0,
+            avgEcg: 0.0,
+            avgSpo2: 0.0,
+            avgAir: 350.0,
+            alertCount: 0,
+          );
+        }
+
+        // Quitar el loading dialog
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+
+        // Mostrar el SaveSessionDialog con los promedios reales del backend
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogCtx) {
+            return SaveSessionDialog(
+              segundosGrabacion: _segundosGrabacion,
+              fcProm: summary.avgBpm.round(),
+              ppgProm: summary.avgBpm.round(), // Sin sensor PPG independiente
+              co2Prom: summary.avgAir.round(),
+              alertCount: summary.alertCount,
+              onCancel: () {
+                Navigator.of(dialogCtx, rootNavigator: true).pop();
+                setState(() => _grabando = false);
+              },
+              onSave: (notas) async {
+                try {
+                  // Mostrar loading breve al finalizar
+                  showDialog(
+                    context: dialogCtx,
+                    barrierDismissible: false,
+                    builder: (loadingCtx) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+
+                  await sessionApi.finalizarSesion(activeSessionId, notes: notas);
+
+                  // Construir el RegistroMedicion con datos reales
+                  final registro = RegistroMedicion(
+                    id: activeSessionId.toString(),
+                    usuarioId: usuarioActivo.id,
+                    fechaRegistro: DateTime.now(),
+                    duracionSegundos: _segundosGrabacion,
+                    frecuenciaCardiaca: summary.avgBpm.round(),
+                    ppgFrecuenciaCardiaca: summary.avgBpm.round(),
+                    nivelSpo2: 0,
+                    nivelCo2: summary.avgAir.round(),
+                    alertasDisparadas: summary.alertCount,
+                    notasClinicas: notas.isNotEmpty ? notas : 'Sesión de monitoreo en backend',
+                  );
+                  await ref.read(notificadorHistorialProvider.notifier).guardarRegistro(registro);
+
+                  if (dialogCtx.mounted) {
+                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Quitar loading de finalizar
+                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Cerrar SaveSessionDialog
+                  }
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sesión de medición guardada con éxito'),
+                        backgroundColor: ColoresSensores.statusConectado,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Error al finalizar sesión: $e');
+                  if (dialogCtx.mounted) {
+                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Quitar loading en error
+                  }
+                } finally {
+                  if (mounted) setState(() => _grabando = false);
                 }
-                if (buffers['bpm'] != null && buffers['bpm']!.isNotEmpty) {
-                  await measApi.guardarMedicion('bpm', activeSessionId, buffers['bpm']!);
-                }
-                // if (buffers['spo2'] != null && buffers['spo2']!.isNotEmpty) {
-                //   await measApi.guardarMedicion('spo2', activeSessionId, buffers['spo2']!);
-                // }
-                if (buffers['air'] != null && buffers['air']!.isNotEmpty) {
-                  await measApi.guardarMedicion('air', activeSessionId, buffers['air']!);
-                }
-
-                await sessionApi.finalizarSesion(activeSessionId, notes: notas);
-              } catch (e) {
-                debugPrint('Error al guardar datos en el backend: $e');
-              }
-            }
-
-            final registro = RegistroMedicion(
-              id: activeSessionId?.toString() ?? '${DateTime.now().millisecondsSinceEpoch}',
-              usuarioId: usuarioActivo.id,
-              fechaRegistro: DateTime.now(),
-              duracionSegundos: _segundosGrabacion,
-              frecuenciaCardiaca: fcProm,
-              ppgFrecuenciaCardiaca: ppgProm,
-              nivelSpo2: 0, // spo2Prom comentado
-              nivelCo2: co2Prom,
-              alertasDisparadas: _alertasDisparadas,
-              notasClinicas: notas,
+              },
             );
-
-            await ref
-                .read(notificadorHistorialProvider.notifier)
-                .guardarRegistro(registro);
-
-            if (context.mounted) {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sesión de medición guardada con éxito'),
-                  backgroundColor: ColoresSensores.statusConectado,
-                ),
-              );
-            }
-            setState(() => _grabando = false);
           },
         );
-      },
-    );
+      }
+    } catch (e) {
+      debugPrint('Error al guardar datos y obtener resumen: $e');
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // Quitar loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar datos de sesión: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() => _grabando = false);
+      }
+    }
   }
 
   String _formatearTiempo(int segs) {

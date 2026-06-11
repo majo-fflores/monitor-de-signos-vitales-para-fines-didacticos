@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'measurement.dart';
 import 'session.dart';
+import 'session_summary.dart';
 
 /// Registro de una medición biométrica realizada durante una sesión de monitoreo.
 /// Captura un snapshot de los valores de los biosensores en un instante dado.
@@ -54,6 +55,27 @@ class RegistroMedicion {
       nivelCo2: nivelCo2,
       alertasDisparadas: alertasDisparadas,
       notasClinicas: notasClinicas,
+    );
+  }
+
+  /// Crea un RegistroMedicion a partir del resumen batch del backend.
+  factory RegistroMedicion.fromSessionWithSummary(SessionWithSummary data) {
+    final session = data.session;
+    final duracion = (session.endTime ?? DateTime.now())
+        .difference(session.startTime)
+        .inSeconds;
+
+    return RegistroMedicion(
+      id: session.id.toString(),
+      usuarioId: session.userId.toString(),
+      fechaRegistro: session.startTime,
+      duracionSegundos: duracion > 0 ? duracion : 0,
+      frecuenciaCardiaca: data.avgBpm.round(),
+      ppgFrecuenciaCardiaca: data.avgBpm.round(),
+      nivelSpo2: 0, // Sin sensor SpO2 activo por el momento
+      nivelCo2: data.avgAir.round(),
+      alertasDisparadas: data.alertCount,
+      notasClinicas: session.notes.isNotEmpty ? session.notes : 'Sesión de monitoreo en backend',
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:datavital_flutter/core/models/measurement.dart';
 import 'package:datavital_flutter/core/models/registro_medicion.dart';
 import 'package:datavital_flutter/core/models/session.dart';
+import 'package:datavital_flutter/core/models/session_summary.dart';
 import 'package:datavital_flutter/core/services/measurement_api_service.dart';
 import 'package:datavital_flutter/core/services/session_api_service.dart';
 import 'package:datavital_flutter/shared/providers/historial_provider.dart';
@@ -49,6 +50,34 @@ class FakeSessionApiService implements SessionApiService {
   @override
   Future<void> eliminarSesion(int id) async {
     sessions.removeWhere((s) => s.id == id);
+  }
+
+  @override
+  Future<List<SessionWithSummary>> obtenerResumenesSesiones(int userId) async {
+    return sessions.where((s) => s.userId == userId).map((s) {
+      return SessionWithSummary(
+        session: s,
+        avgBpm: 75.0,
+        avgEcg: 75.0,
+        avgSpo2: 98.0,
+        avgAir: 400.0,
+        alertCount: 0,
+      );
+    }).toList();
+  }
+
+  @override
+  Future<SessionSummary> obtenerResumenSesion(int sessionId) async {
+    final s = sessions.firstWhere((s) => s.id == sessionId);
+    return SessionSummary(
+      sessionId: s.id,
+      notes: s.notes,
+      avgBpm: 75.0,
+      avgEcg: 75.0,
+      avgSpo2: 98.0,
+      avgAir: 400.0,
+      alertCount: 0,
+    );
   }
 }
 

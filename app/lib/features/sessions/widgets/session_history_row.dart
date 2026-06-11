@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/historial_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
 import 'metrica_inline.dart';
+import 'session_raw_data_table.dart';
 
 class SessionHistoryRow extends ConsumerWidget {
   final RegistroMedicion registro;
@@ -216,6 +217,8 @@ class SessionHistoryRow extends ConsumerWidget {
                       ),
                   ],
                 ),
+                const Gap(16),
+                SessionRawDataTable(sessionId: int.parse(registro.id)),
                 if (registro.notasClinicas.isNotEmpty) ...[
                   const Gap(12),
                   Container(

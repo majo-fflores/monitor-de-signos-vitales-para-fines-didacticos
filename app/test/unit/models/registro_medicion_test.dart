@@ -1,4 +1,6 @@
 import 'package:datavital_flutter/core/models/registro_medicion.dart';
+import 'package:datavital_flutter/core/models/session.dart';
+import 'package:datavital_flutter/core/models/session_summary.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -22,6 +24,37 @@ void main() {
       expect(reg.nivelCo2, equals(450));
       expect(reg.alertasDisparadas, equals(0));
       expect(reg.notasClinicas, isEmpty);
+    });
+
+    test('RegistroMedicion.fromSessionWithSummary should construct correctly', () {
+      final session = Session(
+        id: 42,
+        userId: 9,
+        startTime: DateTime(2026, 6, 11, 10, 0, 0),
+        endTime: DateTime(2026, 6, 11, 10, 5, 0),
+        notes: 'Session notes test',
+      );
+      final summary = SessionWithSummary(
+        session: session,
+        avgBpm: 78.4,
+        avgEcg: -0.12,
+        avgSpo2: 98.0,
+        avgAir: 450.2,
+        alertCount: 3,
+      );
+
+      final reg = RegistroMedicion.fromSessionWithSummary(summary);
+
+      expect(reg.id, equals('42'));
+      expect(reg.usuarioId, equals('9'));
+      expect(reg.fechaRegistro, equals(session.startTime));
+      expect(reg.duracionSegundos, equals(300)); // 5 minutes in seconds
+      expect(reg.frecuenciaCardiaca, equals(78)); // round of 78.4
+      expect(reg.ppgFrecuenciaCardiaca, equals(78));
+      expect(reg.nivelSpo2, equals(0)); // ignored SpO2
+      expect(reg.nivelCo2, equals(450)); // round of 450.2
+      expect(reg.alertasDisparadas, equals(3));
+      expect(reg.notasClinicas, equals('Session notes test'));
     });
 
     test('fromJson and toJson should perform a faithful roundtrip', () {
