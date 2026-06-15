@@ -1,29 +1,40 @@
 package sensors
 
 // RawArduinoData es el formato real que envía el Arduino por serial.
-// Ejemplo: {"ecg":362,"bpm":0,"air":0,"leads_off":true}
+// Ejemplos:
+// {"sensor":"MQ135","co2_ppm":2205,"alerta":true}
+// {"sensor":"AD8232","ecg":4095,"leads_off":false}
+// {"sensor":"HW827","bpm":59,"alerta":false}
 type RawArduinoData struct {
-	ECG      float64 `json:"ecg"`
-	BPM      float64 `json:"bpm"`
-	AIR      float64 `json:"air"`
-	LeadsOff bool    `json:"leads_off"`
+	Sensor   string   `json:"sensor"`
+	CO2PPM   *float64 `json:"co2_ppm,omitempty"`
+	ECG      *float64 `json:"ecg,omitempty"`
+	BPM      *float64 `json:"bpm,omitempty"`
+	Alerta   *bool    `json:"alerta,omitempty"`
+	LeadsOff *bool    `json:"leads_off,omitempty"`
 }
 
 // ArduinoPacket es el formato normalizado interno (un valor por paquete).
 type ArduinoPacket struct {
-	Type  string  `json:"type"`
-	Value float64 `json:"value"`
+	Type     string  `json:"type"`
+	Value    float64 `json:"value"`
+	Alert    *bool   `json:"alerta,omitempty"`
+	LeadsOff *bool   `json:"leads_off,omitempty"`
 }
 
 type Sample struct {
 	Timestamp int64   `json:"timestamp"`
 	Value     float64 `json:"value"`
+	Alert     *bool   `json:"alerta,omitempty"`
+	LeadsOff  *bool   `json:"leads_off,omitempty"`
 }
 
 type WsPacket struct {
 	Type      string  `json:"type"`
 	Value     float64 `json:"value"`
 	Timestamp int64   `json:"timestamp"`
+	Alert     *bool   `json:"alerta,omitempty"`
+	LeadsOff  *bool   `json:"leads_off,omitempty"`
 }
 
 type SessionData struct {

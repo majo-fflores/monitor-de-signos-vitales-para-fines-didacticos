@@ -50,7 +50,7 @@ func main() {
 
 	serialPort := os.Getenv("SERIAL_PORT")
 	if serialPort == "" {
-		serialPort = "/dev/ttyUSB0"
+		serialPort = "/dev/ttyUSB1"
 	}
 
 	source, err := sensors.NewSerialArduino(serialPort)

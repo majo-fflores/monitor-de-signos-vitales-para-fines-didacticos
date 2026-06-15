@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 	"time"
 
 	"go.bug.st/serial"
@@ -57,7 +58,6 @@ func (s *SimulatedArduino) Close() error {
 type SerialArduino struct {
 	port   serial.Port
 	reader *bufio.Reader
-	queue  []ArduinoPacket // Cola interna de paquetes normalizados
 }
 
 func NewSerialArduino(portName string) (DataSource, error) {
@@ -72,7 +72,6 @@ func NewSerialArduino(portName string) (DataSource, error) {
 	return &SerialArduino{
 		port:   port,
 		reader: bufio.NewReader(port),
-		queue:  make([]ArduinoPacket, 0, 4),
 	}, nil
 }
 
@@ -112,13 +111,6 @@ func (s *SerialArduino) readNextJSON() (string, error) {
 }
 
 func (s *SerialArduino) ReadPacket() (ArduinoPacket, error) {
-	// Si hay paquetes en la cola interna, devolver el primero
-	if len(s.queue) > 0 {
-		pkt := s.queue[0]
-		s.queue = s.queue[1:]
-		return pkt, nil
-	}
-
 	// Leer el siguiente objeto JSON completo del stream serial
 	for {
 		jsonStr, err := s.readNextJSON()
@@ -126,35 +118,69 @@ func (s *SerialArduino) ReadPacket() (ArduinoPacket, error) {
 			return ArduinoPacket{}, err
 		}
 
-		// Parsear el JSON real del Arduino: {"ecg":362,"bpm":0,"air":0,"leads_off":true}
+		// Parsear el JSON real del Arduino: un objeto por sensor.
 		var raw RawArduinoData
 		if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
 			log.Printf("JSON inválido (descartando): %v → %q", err, jsonStr)
 			continue
 		}
 
-		log.Printf("Arduino → ecg=%.0f bpm=%.0f air=%.0f leads_off=%v", raw.ECG, raw.BPM, raw.AIR, raw.LeadsOff)
-
-		// Siempre enviar BPM y AIR (son independientes del estado de los leads del ECG)
-		s.queue = append(s.queue,
-			ArduinoPacket{Type: "bpm", Value: raw.BPM},
-			ArduinoPacket{Type: "air", Value: raw.AIR},
-		)
-
-		// ECG solo es confiable cuando los leads están conectados
-		if !raw.LeadsOff {
-			s.queue = append(s.queue, ArduinoPacket{Type: "ecg", Value: raw.ECG})
-		}
-
-		if len(s.queue) == 0 {
+		packet, ok := normalizeArduinoData(raw)
+		if !ok {
+			log.Printf("JSON de sensor inválido o no soportado (descartando): %q", jsonStr)
 			continue
 		}
 
-		// Devolver el primero y dejar el resto en la cola
-		pkt := s.queue[0]
-		s.queue = s.queue[1:]
-		return pkt, nil
+		log.Printf("Arduino → sensor=%s type=%s value=%.0f alerta=%s leads_off=%s",
+			raw.Sensor,
+			packet.Type,
+			packet.Value,
+			formatOptionalBool(packet.Alert),
+			formatOptionalBool(packet.LeadsOff),
+		)
+		return packet, nil
 	}
+}
+
+func normalizeArduinoData(raw RawArduinoData) (ArduinoPacket, bool) {
+	switch strings.ToUpper(raw.Sensor) {
+	case "MQ135":
+		if raw.CO2PPM == nil {
+			return ArduinoPacket{}, false
+		}
+		return ArduinoPacket{
+			Type:  "air",
+			Value: *raw.CO2PPM,
+			Alert: raw.Alerta,
+		}, true
+	case "AD8232":
+		if raw.ECG == nil {
+			return ArduinoPacket{}, false
+		}
+		return ArduinoPacket{
+			Type:     "ecg",
+			Value:    *raw.ECG,
+			LeadsOff: raw.LeadsOff,
+		}, true
+	case "HW827":
+		if raw.BPM == nil {
+			return ArduinoPacket{}, false
+		}
+		return ArduinoPacket{
+			Type:  "bpm",
+			Value: *raw.BPM,
+			Alert: raw.Alerta,
+		}, true
+	default:
+		return ArduinoPacket{}, false
+	}
+}
+
+func formatOptionalBool(value *bool) string {
+	if value == nil {
+		return "-"
+	}
+	return fmt.Sprintf("%t", *value)
 }
 
 func (s *SerialArduino) Close() error {

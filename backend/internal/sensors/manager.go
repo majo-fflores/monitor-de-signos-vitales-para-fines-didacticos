@@ -45,6 +45,8 @@ func (m *Manager) StartBackgroundListening() {
 			Type:      packet.Type,
 			Value:     packet.Value,
 			Timestamp: ts,
+			Alert:     packet.Alert,
+			LeadsOff:  packet.LeadsOff,
 		}
 		for ch := range m.subscribers {
 			select {
@@ -58,6 +60,8 @@ func (m *Manager) StartBackgroundListening() {
 			sample := Sample{
 				Timestamp: ts,
 				Value:     packet.Value,
+				Alert:     packet.Alert,
+				LeadsOff:  packet.LeadsOff,
 			}
 
 			switch strings.ToUpper(packet.Type) {
