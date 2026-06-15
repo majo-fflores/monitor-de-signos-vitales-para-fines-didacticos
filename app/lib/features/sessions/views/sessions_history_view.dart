@@ -16,7 +16,8 @@ class SessionsHistoryView extends ConsumerStatefulWidget {
   const SessionsHistoryView({super.key});
 
   @override
-  ConsumerState<SessionsHistoryView> createState() => _SessionsHistoryViewState();
+  ConsumerState<SessionsHistoryView> createState() =>
+      _SessionsHistoryViewState();
 }
 
 class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
@@ -28,7 +29,9 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
     Future.microtask(() {
       final activo = ref.read(notificadorUsuariosProvider).usuarioActivo;
       if (activo != null) {
-        ref.read(notificadorHistorialProvider.notifier).cargarHistorial(activo.id);
+        ref
+            .read(notificadorHistorialProvider.notifier)
+            .cargarHistorial(activo.id);
       }
     });
   }
@@ -41,7 +44,9 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
     final usuarioActivo = ref.watch(notificadorUsuariosProvider).usuarioActivo;
 
     if (usuarioActivo == null) {
-      return const Center(child: Text('No hay ningún usuario activo seleccionado.'));
+      return const Center(
+        child: Text('No hay ningún usuario activo seleccionado.'),
+      );
     }
 
     if (estadoHistorial.cargando) {
@@ -63,14 +68,18 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                 'Historial de Sesiones',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+                  color: esOscuro
+                      ? ColoresOscuros.foreground
+                      : ColoresClaros.foreground,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Historial clínico de ${usuarioActivo.nombre}',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                  color: esOscuro
+                      ? ColoresOscuros.mutedForeground
+                      : ColoresClaros.mutedForeground,
                 ),
               ),
               const Gap(24),
@@ -116,8 +125,9 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
           const Gap(16),
           Text(
             'No hay sesiones registradas',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const Gap(8),
           Text(
@@ -152,14 +162,14 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
         children: [
           // Encabezado de tabla — usa los mismos spacings que SessionHistoryRow
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: esOscuro
                   ? Colors.white.withValues(alpha: 0.02)
                   : Colors.black.withValues(alpha: 0.02),
               borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16)),
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
@@ -167,19 +177,19 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                 const SizedBox(width: 28),
                 Expanded(
                   flex: 2,
-                  child: Text('Fecha',
-                      style: _headerStyle(theme, esOscuro)),
+                  child: Text('Fecha', style: _headerStyle(theme, esOscuro)),
                 ),
                 if (!esMobile) ...[
                   Expanded(
                     flex: 2,
-                    child: Text('Duración',
-                        style: _headerStyle(theme, esOscuro)),
+                    child: Text(
+                      'Duración',
+                      style: _headerStyle(theme, esOscuro),
+                    ),
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text('FC',
-                        style: _headerStyle(theme, esOscuro)),
+                    child: Text('FC', style: _headerStyle(theme, esOscuro)),
                   ),
                   // Expanded(
                   //   flex: 2,
@@ -187,8 +197,8 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                   //       style: _headerStyle(theme, esOscuro)),
                   // ),
                 ],
-                // Mismo ancho que el botón eliminar en la fila: SizedBox(32)
-                const SizedBox(width: 32),
+                // Mismo ancho que los botones de acción en la fila.
+                const SizedBox(width: 72),
               ],
             ),
           ),
@@ -199,8 +209,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: registros.length,
-            separatorBuilder: (_, __) =>
-                const Divider(height: 1),
+            separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final r = registros[index];
               final expandida = _filaExpandida == index;
@@ -225,8 +234,9 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
   TextStyle? _headerStyle(ThemeData theme, bool esOscuro) {
     return theme.textTheme.bodySmall?.copyWith(
       fontWeight: FontWeight.bold,
-      color:
-          esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+      color: esOscuro
+          ? ColoresOscuros.mutedForeground
+          : ColoresClaros.mutedForeground,
       fontSize: 11,
       letterSpacing: 0.5,
     );

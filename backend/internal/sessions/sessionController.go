@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -79,6 +80,25 @@ func GetSessionSummary(c *echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Session not found or error fetching summary"})
 	}
 	return c.JSON(http.StatusOK, summary)
+}
+
+func ExportSessionCSV(c *echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid ID format"})
+	}
+
+	data, err := ServiceInstance.ExportSessionCSV(uint(id))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]string{"error": "Session not found or error exporting CSV"})
+	}
+
+	filename := fmt.Sprintf("session_%d.csv", id)
+	c.Response().Header().Set(
+		echo.HeaderContentDisposition,
+		fmt.Sprintf(`attachment; filename="%s"`, filename),
+	)
+	return c.Blob(http.StatusOK, "text/csv; charset=utf-8", data)
 }
 
 func GetUserSessionSummaries(c *echo.Context) error {

@@ -43,3 +43,10 @@ type SessionWithSummary struct {
 	AvgAIR     float64 `json:"avg_air"`
 	AlertCount int     `json:"alert_count"`
 }
+
+// SensorExportGroup agrupa las mediciones de una sesión por tipo de sensor.
+type SensorExportGroup struct {
+	Sensor       string
+	ValueUnit    string
+	Measurements []SensorMeasurement
+}

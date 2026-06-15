@@ -10,6 +10,7 @@ type SessionRepository interface {
 	Delete(id uint) error
 	GetSummary(sessionID uint) (*SessionSummaryResponse, error)
 	GetUserSessionSummaries(userID uint) ([]SessionWithSummary, error)
+	GetExportGroups(sessionID uint) ([]SensorExportGroup, error)
 }
 
 type gormSessionRepository struct {
@@ -48,6 +49,38 @@ func (r *gormSessionRepository) Delete(id uint) error {
 	return r.db.Delete(&Session{}, id).Error
 }
 
+func (r *gormSessionRepository) GetExportGroups(sessionID uint) ([]SensorExportGroup, error) {
+	configs := []struct {
+		sensor    string
+		valueUnit string
+		tableName string
+	}{
+		{sensor: "ECG", valueUnit: "adc", tableName: "ecg_measurements"},
+		{sensor: "BPM", valueUnit: "bpm", tableName: "bpm_measurements"},
+		{sensor: "CO2", valueUnit: "ppm", tableName: "air_measurements"},
+		{sensor: "SPO2", valueUnit: "%", tableName: "spo2_measurements"},
+	}
+
+	groups := make([]SensorExportGroup, 0, len(configs))
+	for _, config := range configs {
+		var measurements []SensorMeasurement
+		if err := r.db.Table(config.tableName).
+			Where("session_id = ?", sessionID).
+			Order("created_at ASC").
+			Find(&measurements).Error; err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, SensorExportGroup{
+			Sensor:       config.sensor,
+			ValueUnit:    config.valueUnit,
+			Measurements: measurements,
+		})
+	}
+
+	return groups, nil
+}
+
 func calculateAverage(measurements []SensorMeasurement) float64 {
 	if len(measurements) == 0 {
 		return 0
@@ -70,6 +103,12 @@ func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
 	var alerts int
 	for _, m := range bpmData {
 		for _, sample := range m.Datos {
+			if sample.Alert != nil {
+				if *sample.Alert {
+					alerts++
+				}
+				continue
+			}
 			if sample.Value < 60 || sample.Value > 100 {
 				alerts++
 			}
@@ -77,6 +116,12 @@ func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
 	}
 	for _, m := range airData {
 		for _, sample := range m.Datos {
+			if sample.Alert != nil {
+				if *sample.Alert {
+					alerts++
+				}
+				continue
+			}
 			if sample.Value > 1000 {
 				alerts++
 			}

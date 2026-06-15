@@ -5,6 +5,102 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
+class _EcgScale {
+  final double minY;
+  final double maxY;
+
+  const _EcgScale({required this.minY, required this.maxY});
+}
+
+class _EcgChartData {
+  final List<FlSpot> spots;
+  final _EcgScale scale;
+
+  const _EcgChartData({required this.spots, required this.scale});
+}
+
+double _mediana(List<double> valores) {
+  final ordenados = List<double>.of(valores)..sort();
+  final medio = ordenados.length ~/ 2;
+  if (ordenados.length.isOdd) return ordenados[medio];
+  return (ordenados[medio - 1] + ordenados[medio]) / 2;
+}
+
+_EcgScale _calcularEscalaNormalizada(List<FlSpot> spots) {
+  const escalaNormalizada = _EcgScale(minY: -30, maxY: 100);
+  if (spots.isEmpty) return escalaNormalizada;
+
+  final valores = spots
+      .map((spot) => spot.y)
+      .where((value) => value.isFinite)
+      .toList(growable: false);
+  if (valores.isEmpty) return escalaNormalizada;
+
+  var minVal = valores.first;
+  var maxVal = valores.first;
+  for (final value in valores.skip(1)) {
+    if (value < minVal) minVal = value;
+    if (value > maxVal) maxVal = value;
+  }
+
+  final minY = minVal < escalaNormalizada.minY
+      ? minVal - 8
+      : escalaNormalizada.minY;
+  final maxY = maxVal > escalaNormalizada.maxY
+      ? maxVal + 8
+      : escalaNormalizada.maxY;
+
+  return _EcgScale(minY: minY, maxY: maxY);
+}
+
+_EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
+  final primerDatoAdc = datos.indexWhere((punto) => punto.y.abs() > 200);
+  final ecgCrudoAdc = primerDatoAdc >= 0;
+  final datosGrafico = ecgCrudoAdc && primerDatoAdc > 0
+      ? datos.sublist(primerDatoAdc)
+      : datos;
+
+  if (!ecgCrudoAdc) {
+    final spots = datosGrafico
+        .asMap()
+        .entries
+        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.y))
+        .toList();
+
+    return _EcgChartData(
+      spots: spots,
+      scale: _calcularEscalaNormalizada(spots),
+    );
+  }
+
+  final valores = datosGrafico
+      .map((punto) => punto.y)
+      .where((value) => value.isFinite)
+      .toList(growable: false);
+  if (valores.isEmpty) {
+    return const _EcgChartData(
+      spots: [],
+      scale: _EcgScale(minY: -250, maxY: 250),
+    );
+  }
+
+  final lineaBase = _mediana(valores);
+  final spots = <FlSpot>[];
+  var maxAbs = 0.0;
+
+  for (final valor in valores) {
+    final centrado = valor - lineaBase;
+    if (centrado.abs() > maxAbs) maxAbs = centrado.abs();
+    spots.add(FlSpot(spots.length.toDouble(), centrado));
+  }
+
+  final halfRange = (maxAbs * 1.15).clamp(250.0, 1800.0).toDouble();
+  return _EcgChartData(
+    spots: spots,
+    scale: _EcgScale(minY: -halfRange, maxY: halfRange),
+  );
+}
+
 /// Widget de gráfico de Frecuencia Cardíaca (ECG) en tiempo real.
 class GraficoEcg extends ConsumerWidget {
   final bool expandir;
@@ -18,12 +114,7 @@ class GraficoEcg extends ConsumerWidget {
     final ecgActivo = ref.watch(
       notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
     );
-    // Convertimos los PuntoBiometrico a FlSpot de fl_chart usando el índice como X para evitar cruces diagonales
-    final spots = datos
-        .asMap()
-        .entries
-        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.y))
-        .toList();
+    final chartData = _prepararDatosEcg(datos);
 
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
@@ -50,8 +141,8 @@ class GraficoEcg extends ConsumerWidget {
           RepaintBoundary(
             child: LineChart(
               LineChartData(
-                minY: -30,
-                maxY: 100,
+                minY: chartData.scale.minY,
+                maxY: chartData.scale.maxY,
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: true,
@@ -71,23 +162,13 @@ class GraficoEcg extends ConsumerWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: spots,
+                    spots: chartData.spots,
                     isCurved: false,
                     color: colorLinea,
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          colorLinea.withValues(alpha: 0.35),
-                          colorLinea.withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
+                    belowBarData: BarAreaData(show: false),
                   ),
                 ],
               ),

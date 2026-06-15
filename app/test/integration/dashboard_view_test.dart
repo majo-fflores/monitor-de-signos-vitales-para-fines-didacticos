@@ -22,6 +22,7 @@ import '../helpers/mock_providers.dart';
 import '../helpers/test_data.dart';
 
 class MockSessionApiService extends Mock implements SessionApiService {}
+
 class MockMeasurementApiService extends Mock implements MeasurementApiService {}
 
 class MockUsuariosNotifier extends NotificadorUsuarios {
@@ -73,90 +74,108 @@ void main() {
       when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
     });
 
-    testWidgets('should start recording, capture periodic ticks, stop recording, and save session', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should start recording, capture periodic ticks, stop recording, and save session',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      final user = TestData.usuario1;
-      final usersState = EstadoUsuarios.inicial().copiarCon(
-        cargando: false,
-        usuarios: [user],
-        usuarioActivo: user,
-      );
+        final user = TestData.usuario1;
+        final usersState = EstadoUsuarios.inicial().copiarCon(
+          cargando: false,
+          usuarios: [user],
+          usuarioActivo: user,
+        );
 
-      final vitalSignsState = EstadoSignosVitales.inicial().copiarCon(
-        frecuenciaCardiaca: 75,
-        ppgFrecuenciaCardiaca: 76,
-        nivelSpo2: 98,
-        nivelCo2: 450,
-      );
+        final vitalSignsState = EstadoSignosVitales.inicial().copiarCon(
+          frecuenciaCardiaca: 75,
+          ppgFrecuenciaCardiaca: 76,
+          nivelSpo2: 98,
+          nivelCo2: 450,
+        );
 
-      final connectionState = const EstadoConexionBackend(
-        estadoWs: EstadoConexion.desconectado,
-        wsUrl: 'ws://localhost',
-        cargando: false,
-      );
+        final connectionState = const EstadoConexionBackend(
+          estadoWs: EstadoConexion.desconectado,
+          wsUrl: 'ws://localhost',
+          cargando: false,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConnectionNotifier(connectionState, mockWebSocketService)),
-            notificadorSignosVitalesProvider.overrideWith(() => MockDashboardVitalSignsNotifier(vitalSignsState)),
-            sessionApiServiceProvider.overrideWithValue(FakeSessionApiService()),
-            measurementApiServiceProvider.overrideWithValue(FakeMeasurementApiService()),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: DashboardView(),
-            ),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              notificadorUsuariosProvider.overrideWith(
+                () => MockUsuariosNotifier(usersState),
+              ),
+              notificadorConexionProvider.overrideWith(
+                () => MockConnectionNotifier(
+                  connectionState,
+                  mockWebSocketService,
+                ),
+              ),
+              notificadorSignosVitalesProvider.overrideWith(
+                () => MockDashboardVitalSignsNotifier(vitalSignsState),
+              ),
+              sessionApiServiceProvider.overrideWithValue(
+                FakeSessionApiService(),
+              ),
+              measurementApiServiceProvider.overrideWithValue(
+                FakeMeasurementApiService(),
+              ),
+            ],
+            child: const MaterialApp(home: Scaffold(body: DashboardView())),
           ),
-        ),
-      );
+        );
 
-      // Render view
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        // Render view
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // 1. Verify "GRABAR SESIÓN" button exists and tap it
-      final startBtn = find.text('GRABAR SESIÓN');
-      expect(startBtn, findsOneWidget);
-      await tester.tap(startBtn);
-      await tester.pump();
+        // 1. Verify "GRABAR SESIÓN" button exists and tap it
+        final startBtn = find.text('GRABAR SESIÓN');
+        expect(startBtn, findsOneWidget);
+        await tester.tap(startBtn);
+        await tester.pump();
 
-      // 2. Advance time to trigger recording ticks (3 seconds)
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(seconds: 1));
+        // 2. Advance time to trigger recording ticks (3 seconds)
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
 
-      // 3. Verify recording status (should show "DETENER (00:03)")
-      final stopBtn = find.textContaining('DETENER');
-      expect(stopBtn, findsOneWidget);
+        // 3. Verify recording status (should show "DETENER (00:03)")
+        final stopBtn = find.textContaining('DETENER');
+        expect(stopBtn, findsOneWidget);
 
-      // 4. Tap "DETENER"
-      await tester.tap(stopBtn);
-      await tester.pumpAndSettle(); // Dialog animation
+        // 4. Tap "DETENER"
+        await tester.tap(stopBtn);
+        await tester.pumpAndSettle(); // Dialog animation
 
-      // 5. Verify Dialog is shown
-      expect(find.text('Guardar Medición'), findsOneWidget);
-      expect(find.textContaining('Duración: 3 segundos'), findsOneWidget);
+        // 5. Verify Dialog is shown
+        expect(find.text('Guardar Medición'), findsOneWidget);
+        expect(find.textContaining('Duración: 3 segundos'), findsOneWidget);
 
-      // 6. Enter clinical notes
-      await tester.enterText(find.widgetWithText(TextField, 'Notas y Observaciones Clínicas'), 'Patient is healthy');
-      await tester.pump();
+        // 6. Enter clinical notes
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Notas y Observaciones Clínicas'),
+          'Patient is healthy',
+        );
+        await tester.pump();
 
-      // 7. Tap "Guardar"
-      final saveBtn = find.widgetWithText(FilledButton, 'Guardar');
-      await tester.tap(saveBtn);
-      await tester.pumpAndSettle();
+        // 7. Tap "Guardar"
+        final saveBtn = find.widgetWithText(FilledButton, 'Guardar');
+        await tester.tap(saveBtn);
+        await tester.pumpAndSettle();
 
-      // 8. Verify the dialog is dismissed and a success SnackBar or action has run
-      expect(find.text('Guardar Medición'), findsNothing);
-      expect(find.text('Sesión de medición guardada con éxito'), findsOneWidget);
+        // 8. Verify the dialog is dismissed and a success SnackBar or action has run
+        expect(find.text('Guardar Medición'), findsNothing);
+        expect(
+          find.text('Sesión de medición guardada con éxito'),
+          findsOneWidget,
+        );
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
   });
 }
 
@@ -169,20 +188,12 @@ class FakeSessionApiService implements SessionApiService {
 
   @override
   Future<Session> crearSesion(int userId) async {
-    return Session(
-      id: 42,
-      userId: userId,
-      startTime: DateTime.now(),
-    );
+    return Session(id: 42, userId: userId, startTime: DateTime.now());
   }
 
   @override
   Future<Session> obtenerSesion(int id) async {
-    return Session(
-      id: id,
-      userId: 1,
-      startTime: DateTime.now(),
-    );
+    return Session(id: id, userId: 1, startTime: DateTime.now());
   }
 
   @override
@@ -213,6 +224,11 @@ class FakeSessionApiService implements SessionApiService {
       alertCount: 0,
     );
   }
+
+  @override
+  Future<String> exportarSesionCsv(int sessionId) async {
+    return '';
+  }
 }
 
 class FakeMeasurementApiService implements MeasurementApiService {
@@ -223,7 +239,11 @@ class FakeMeasurementApiService implements MeasurementApiService {
   http.Client get client => http.Client();
 
   @override
-  Future<Measurement> guardarMedicion(String tipo, int sessionId, List<Sample> datos) async {
+  Future<Measurement> guardarMedicion(
+    String tipo,
+    int sessionId,
+    List<Sample> datos,
+  ) async {
     return Measurement(
       id: 1,
       sessionId: sessionId,
@@ -233,12 +253,18 @@ class FakeMeasurementApiService implements MeasurementApiService {
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorUsuario(String tipo, int userId) async {
+  Future<List<Measurement>> obtenerMedicionesPorUsuario(
+    String tipo,
+    int userId,
+  ) async {
     return [];
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorSesion(String tipo, int sessionId) async {
+  Future<List<Measurement>> obtenerMedicionesPorSesion(
+    String tipo,
+    int sessionId,
+  ) async {
     return [];
   }
 

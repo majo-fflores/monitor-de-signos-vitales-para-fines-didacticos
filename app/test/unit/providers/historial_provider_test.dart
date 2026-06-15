@@ -23,7 +23,11 @@ class FakeSessionApiService implements SessionApiService {
 
   @override
   Future<Session> crearSesion(int userId) async {
-    final session = Session(id: sessions.length + 1, userId: userId, startTime: DateTime.now());
+    final session = Session(
+      id: sessions.length + 1,
+      userId: userId,
+      startTime: DateTime.now(),
+    );
     sessions.add(session);
     return session;
   }
@@ -43,7 +47,13 @@ class FakeSessionApiService implements SessionApiService {
     final idx = sessions.indexWhere((s) => s.id == id);
     if (idx != -1) {
       final s = sessions[idx];
-      sessions[idx] = Session(id: s.id, userId: s.userId, startTime: s.startTime, endTime: DateTime.now(), notes: notes);
+      sessions[idx] = Session(
+        id: s.id,
+        userId: s.userId,
+        startTime: s.startTime,
+        endTime: DateTime.now(),
+        notes: notes,
+      );
     }
   }
 
@@ -79,6 +89,11 @@ class FakeSessionApiService implements SessionApiService {
       alertCount: 0,
     );
   }
+
+  @override
+  Future<String> exportarSesionCsv(int sessionId) async {
+    return '';
+  }
 }
 
 class FakeMeasurementApiService implements MeasurementApiService {
@@ -90,19 +105,34 @@ class FakeMeasurementApiService implements MeasurementApiService {
   final List<Measurement> measurements = [];
 
   @override
-  Future<Measurement> guardarMedicion(String tipo, int sessionId, List<Sample> datos) async {
-    final m = Measurement(id: measurements.length + 1, sessionId: sessionId, datos: datos, createdAt: DateTime.now());
+  Future<Measurement> guardarMedicion(
+    String tipo,
+    int sessionId,
+    List<Sample> datos,
+  ) async {
+    final m = Measurement(
+      id: measurements.length + 1,
+      sessionId: sessionId,
+      datos: datos,
+      createdAt: DateTime.now(),
+    );
     measurements.add(m);
     return m;
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorSesion(String tipo, int sessionId) async {
+  Future<List<Measurement>> obtenerMedicionesPorSesion(
+    String tipo,
+    int sessionId,
+  ) async {
     return measurements.where((m) => m.sessionId == sessionId).toList();
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorUsuario(String tipo, int userId) async {
+  Future<List<Measurement>> obtenerMedicionesPorUsuario(
+    String tipo,
+    int userId,
+  ) async {
     return measurements;
   }
 
@@ -124,10 +154,14 @@ void main() {
     });
 
     test('initial state is initial', () {
-      final container = createContainer(overrides: [
-        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
-        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
-      ]);
+      final container = createContainer(
+        overrides: [
+          sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+          measurementApiServiceProvider.overrideWith(
+            (ref) => fakeMeasurementApi,
+          ),
+        ],
+      );
       final state = container.read(notificadorHistorialProvider);
 
       expect(state.registros, isEmpty);
@@ -136,19 +170,43 @@ void main() {
     });
 
     test('cargarHistorial should load and sort records by date desc', () async {
-      final sessOld = Session(id: 1, userId: 1, startTime: DateTime(2026, 6, 1), endTime: DateTime(2026, 6, 1, 0, 0, 10));
-      final sessNew = Session(id: 2, userId: 1, startTime: DateTime(2026, 6, 2), endTime: DateTime(2026, 6, 2, 0, 0, 10));
+      final sessOld = Session(
+        id: 1,
+        userId: 1,
+        startTime: DateTime(2026, 6, 1),
+        endTime: DateTime(2026, 6, 1, 0, 0, 10),
+      );
+      final sessNew = Session(
+        id: 2,
+        userId: 1,
+        startTime: DateTime(2026, 6, 2),
+        endTime: DateTime(2026, 6, 2, 0, 0, 10),
+      );
       fakeSessionApi.sessions.addAll([sessOld, sessNew]);
 
       fakeMeasurementApi.measurements.addAll([
-        Measurement(id: 1, sessionId: 1, datos: [const Sample(timestamp: 1, value: 70)], createdAt: DateTime.now()),
-        Measurement(id: 2, sessionId: 2, datos: [const Sample(timestamp: 1, value: 80)], createdAt: DateTime.now()),
+        Measurement(
+          id: 1,
+          sessionId: 1,
+          datos: [const Sample(timestamp: 1, value: 70)],
+          createdAt: DateTime.now(),
+        ),
+        Measurement(
+          id: 2,
+          sessionId: 2,
+          datos: [const Sample(timestamp: 1, value: 80)],
+          createdAt: DateTime.now(),
+        ),
       ]);
 
-      final container = createContainer(overrides: [
-        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
-        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
-      ]);
+      final container = createContainer(
+        overrides: [
+          sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+          measurementApiServiceProvider.overrideWith(
+            (ref) => fakeMeasurementApi,
+          ),
+        ],
+      );
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       await notifier.cargarHistorial('1');
@@ -162,10 +220,14 @@ void main() {
     });
 
     test('guardarRegistro should add to state', () async {
-      final container = createContainer(overrides: [
-        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
-        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
-      ]);
+      final container = createContainer(
+        overrides: [
+          sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+          measurementApiServiceProvider.overrideWith(
+            (ref) => fakeMeasurementApi,
+          ),
+        ],
+      );
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       final reg = TestData.registro1;
@@ -177,10 +239,14 @@ void main() {
     });
 
     test('eliminarRegistro should filter out and update storage', () async {
-      final container = createContainer(overrides: [
-        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
-        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
-      ]);
+      final container = createContainer(
+        overrides: [
+          sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+          measurementApiServiceProvider.overrideWith(
+            (ref) => fakeMeasurementApi,
+          ),
+        ],
+      );
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       final sess1 = Session(id: 10, userId: 1, startTime: DateTime.now());
@@ -200,7 +266,10 @@ void main() {
       );
 
       await notifier.guardarRegistro(reg1);
-      expect(container.read(notificadorHistorialProvider).registros, hasLength(1));
+      expect(
+        container.read(notificadorHistorialProvider).registros,
+        hasLength(1),
+      );
 
       await notifier.eliminarRegistro('10', '1');
 
@@ -210,14 +279,21 @@ void main() {
     });
 
     test('limpiar should reset state to initial', () async {
-      final container = createContainer(overrides: [
-        sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
-        measurementApiServiceProvider.overrideWith((ref) => fakeMeasurementApi),
-      ]);
+      final container = createContainer(
+        overrides: [
+          sessionApiServiceProvider.overrideWith((ref) => fakeSessionApi),
+          measurementApiServiceProvider.overrideWith(
+            (ref) => fakeMeasurementApi,
+          ),
+        ],
+      );
       final notifier = container.read(notificadorHistorialProvider.notifier);
 
       await notifier.guardarRegistro(TestData.registro1);
-      expect(container.read(notificadorHistorialProvider).registros, isNotEmpty);
+      expect(
+        container.read(notificadorHistorialProvider).registros,
+        isNotEmpty,
+      );
 
       notifier.limpiar();
 

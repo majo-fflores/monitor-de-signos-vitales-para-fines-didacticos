@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/models/registro_medicion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/historial_provider.dart';
+import '../../../../shared/providers/session_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
 import 'metrica_inline.dart';
 import 'session_raw_data_table.dart';
@@ -23,6 +24,45 @@ class SessionHistoryRow extends ConsumerWidget {
     required this.expandida,
     required this.onTap,
   });
+
+  Future<void> _exportarCsv(BuildContext context, WidgetRef ref) async {
+    final sessionId = int.tryParse(registro.id);
+    if (sessionId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'No se pudo identificar la sesión para exportar.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final path = await ref
+          .read(sessionApiServiceProvider)
+          .exportarSesionCsv(sessionId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('CSV exportado: $path'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al exportar CSV: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,49 +148,80 @@ class SessionHistoryRow extends ConsumerWidget {
                   //   ),
                   // ),
                 ],
-                // Botón eliminar
+                // Acciones
                 SizedBox(
-                  width: 32,
+                  width: 72,
                   height: 32,
-                  child: IconButton(
-                    icon: const Icon(LucideIcons.trash2, size: 14),
-                    color: theme.colorScheme.error.withValues(alpha: 0.6),
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('¿Eliminar sesión?'),
-                          content: const Text(
-                            'Se eliminará permanentemente esta medición.',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Tooltip(
+                        message: 'Exportar CSV',
+                        child: IconButton(
+                          icon: const Icon(LucideIcons.download, size: 14),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.75,
                           ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancelar'),
-                            ),
-                            FilledButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                if (usuarioActivo != null) {
-                                  ref
-                                      .read(notificadorHistorialProvider.notifier)
-                                      .eliminarRegistro(
-                                        registro.id,
-                                        usuarioActivo.id,
-                                      );
-                                }
-                              },
-                              style: FilledButton.styleFrom(
-                                backgroundColor: theme.colorScheme.error,
-                                foregroundColor: theme.colorScheme.onError,
-                              ),
-                              child: const Text('Eliminar'),
-                            ),
-                          ],
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 32,
+                            height: 32,
+                          ),
+                          onPressed: () => _exportarCsv(context, ref),
                         ),
-                      );
-                    },
+                      ),
+                      Tooltip(
+                        message: 'Eliminar sesión',
+                        child: IconButton(
+                          icon: const Icon(LucideIcons.trash2, size: 14),
+                          color: theme.colorScheme.error.withValues(alpha: 0.6),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 32,
+                            height: 32,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('¿Eliminar sesión?'),
+                                content: const Text(
+                                  'Se eliminará permanentemente esta medición.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Cancelar'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      if (usuarioActivo != null) {
+                                        ref
+                                            .read(
+                                              notificadorHistorialProvider
+                                                  .notifier,
+                                            )
+                                            .eliminarRegistro(
+                                              registro.id,
+                                              usuarioActivo.id,
+                                            );
+                                      }
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: theme.colorScheme.error,
+                                      foregroundColor:
+                                          theme.colorScheme.onError,
+                                    ),
+                                    child: const Text('Eliminar'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -244,8 +315,9 @@ class SessionHistoryRow extends ConsumerWidget {
               ],
             ),
           ),
-          crossFadeState:
-              expandida ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState: expandida
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
           sizeCurve: Curves.easeOut,
         ),
