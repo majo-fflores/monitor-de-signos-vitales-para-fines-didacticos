@@ -17,7 +17,7 @@ void main() {
 
     test('fromJson and toJson should be a faithful roundtrip', () {
       final original = Usuario(
-        id: 'user_123',
+        id: '123',
         nombre: 'Jane Smith',
         email: 'jane@example.com',
         dni: 12345678,

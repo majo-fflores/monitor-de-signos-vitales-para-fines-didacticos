@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../../shared/utils/export_path_helper.dart';
 import '../models/session.dart';
 import '../models/session_summary.dart';
 
@@ -191,29 +192,12 @@ class SessionApiService {
         }
       }
 
-      final downloadsDir = _downloadsDirectory();
-      final file = File(
-        '${downloadsDir.path}${Platform.pathSeparator}$filename',
-      );
+      final exportDir = ExportPathHelper.getExportDir('csv');
+      final file = File('${exportDir.path}${Platform.pathSeparator}$filename');
       await file.writeAsBytes(response.bodyBytes);
       return file.path;
     } catch (e) {
       throw Exception('Fallo al exportar sesión en CSV: $e');
     }
-  }
-
-  Directory _downloadsDirectory() {
-    final homeDir = Platform.isWindows
-        ? Platform.environment['USERPROFILE']
-        : Platform.environment['HOME'];
-    if (homeDir != null && homeDir.isNotEmpty) {
-      final downloadsDir = Directory(
-        '$homeDir${Platform.pathSeparator}Downloads',
-      );
-      if (downloadsDir.existsSync()) {
-        return downloadsDir;
-      }
-    }
-    return Directory.current;
   }
 }

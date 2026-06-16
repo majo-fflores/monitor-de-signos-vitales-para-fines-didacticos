@@ -9,7 +9,7 @@ void main() {
       'RegistroMedicion.crear should generate unique ID and default fields',
       () {
         final reg = RegistroMedicion.crear(
-          usuarioId: 'user_123',
+          usuarioId: '123',
           duracionSegundos: 30,
           frecuenciaCardiaca: 80,
           ppgFrecuenciaCardiaca: 82,
@@ -18,7 +18,7 @@ void main() {
         );
 
         expect(reg.id, isNotEmpty);
-        expect(reg.usuarioId, equals('user_123'));
+        expect(reg.usuarioId, equals('123'));
         expect(reg.duracionSegundos, equals(30));
         expect(reg.frecuenciaCardiaca, equals(80));
         expect(reg.ppgFrecuenciaCardiaca, equals(82));
@@ -74,7 +74,7 @@ void main() {
     test('fromJson and toJson should perform a faithful roundtrip', () {
       final original = RegistroMedicion(
         id: 'reg_xyz',
-        usuarioId: 'user_456',
+        usuarioId: '456',
         fechaRegistro: DateTime(2026, 6, 4, 15, 30),
         duracionSegundos: 150,
         frecuenciaCardiaca: 75,

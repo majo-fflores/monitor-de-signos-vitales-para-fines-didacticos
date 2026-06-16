@@ -151,7 +151,7 @@ void main() {
 
         // 5. Verify Dialog is shown
         expect(find.text('Guardar Medición'), findsOneWidget);
-        expect(find.textContaining('Duración: 3 segundos'), findsOneWidget);
+        expect(find.text('3 s'), findsOneWidget);
 
         // 6. Enter clinical notes
         await tester.enterText(

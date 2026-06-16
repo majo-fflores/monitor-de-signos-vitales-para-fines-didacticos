@@ -4,14 +4,14 @@ import 'package:datavital_flutter/core/models/ws_packet.dart';
 
 class TestData {
   static final usuario1 = Usuario(
-    id: 'user_123',
+    id: '123',
     nombre: 'John Doe',
     email: 'john@example.com',
     creadoEn: DateTime(2026, 6, 1, 12, 0),
   );
 
   static final usuario2 = Usuario(
-    id: 'user_456',
+    id: '456',
     nombre: 'Jane Smith',
     email: 'jane@example.com',
     creadoEn: DateTime(2026, 6, 2, 12, 0),
@@ -19,7 +19,7 @@ class TestData {
 
   static final registro1 = RegistroMedicion(
     id: 'reg_1',
-    usuarioId: 'user_123',
+    usuarioId: '123',
     fechaRegistro: DateTime(2026, 6, 4, 10, 0),
     duracionSegundos: 45,
     frecuenciaCardiaca: 72,
@@ -40,7 +40,7 @@ class TestData {
 
   static final registroCritico = RegistroMedicion(
     id: 'reg_critico',
-    usuarioId: 'user_123',
+    usuarioId: '123',
     fechaRegistro: DateTime(2026, 6, 4, 10, 5),
     duracionSegundos: 120,
     frecuenciaCardiaca: 110,

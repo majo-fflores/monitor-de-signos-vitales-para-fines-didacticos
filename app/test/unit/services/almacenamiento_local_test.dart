@@ -16,9 +16,9 @@ void main() {
         expect(activeId, isNull);
 
         // Save ID
-        await AlmacenamientoLocal.guardarUsuarioActivo('user_123');
+        await AlmacenamientoLocal.guardarUsuarioActivo('123');
         activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
-        expect(activeId, equals('user_123'));
+        expect(activeId, equals('123'));
 
         // Save null to remove
         await AlmacenamientoLocal.guardarUsuarioActivo(null);
