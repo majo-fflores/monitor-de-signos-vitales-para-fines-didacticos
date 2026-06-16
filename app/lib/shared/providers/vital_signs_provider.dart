@@ -98,6 +98,7 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   Timer? _timerSimulacion;
   int _simIndex = 0;
   bool _estaActivo = false;
+  int _lastEcgWindowIndex = 0;
   final math.Random _random = math.Random();
 
   bool _isBuffering = false;
@@ -144,18 +145,17 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
   /// Inicializa la ventana de datos con puntos vacíos.
   void _inicializarVentana() {
     final ahora = DateTime.now().millisecondsSinceEpoch.toDouble();
-    final ecgInicial = <PuntoBiometrico>[];
+    _lastEcgWindowIndex = (ahora / 5000).floor();
     final spo2Inicial = <PuntoBiometrico>[];
 
     double t = ahora;
     for (int i = 0; i < _kVentanaPuntos; i++) {
-      ecgInicial.add(PuntoBiometrico(t, 0.0));
       spo2Inicial.add(PuntoBiometrico(t, 98.0));
       t += 100;
     }
 
     state = state.copiarCon(
-      ecgDatos: ecgInicial,
+      ecgDatos: [], // ECG inicia vacío y se llena dinámicamente cada 5 segundos
       spo2Datos: spo2Inicial,
     );
   }
@@ -215,10 +215,18 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
       final nuevosEcg = List<PuntoBiometrico>.of(state.ecgDatos);
       final nuevosSpo2 = List<PuntoBiometrico>.of(state.spo2Datos);
 
-      if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
+      // Lógica de barrido (sweep) de 5 segundos para ECG
+      final currentPacketWindow = (ahora / 5000).floor();
+      if (currentPacketWindow > _lastEcgWindowIndex) {
+        _lastEcgWindowIndex = currentPacketWindow;
+        nuevosEcg.clear();
+      }
+
       double rawEcg = ecgTemplate[_simIndex % ecgTemplate.length];
       double valEcg = -10.0 + rawEcg * 90.0;
       nuevosEcg.add(PuntoBiometrico(ahora, valEcg));
+      // Prevenir desbordamientos en caso de latencia prolongada
+      if (nuevosEcg.length > 1000) nuevosEcg.removeAt(0);
 
       if (nuevosSpo2.length >= _kVentanaPuntos) nuevosSpo2.removeAt(0);
       double valSpo2 = spo2Template[_simIndex % spo2Template.length];
@@ -406,8 +414,13 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
 
       switch (pType) {
         case 'ecg':
-          if (nuevosEcg.length >= _kVentanaPuntos) nuevosEcg.removeAt(0);
+          final currentPacketWindow = (packet.timestamp / 5000).floor();
+          if (currentPacketWindow > _lastEcgWindowIndex) {
+            _lastEcgWindowIndex = currentPacketWindow;
+            nuevosEcg.clear();
+          }
           nuevosEcg.add(punto);
+          if (nuevosEcg.length > 1000) nuevosEcg.removeAt(0);
           ecgActivo = true;
           break;
         case 'spo2':

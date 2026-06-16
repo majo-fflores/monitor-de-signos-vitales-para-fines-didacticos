@@ -62,10 +62,9 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
 
   if (!ecgCrudoAdc) {
     final spots = datosGrafico
-        .asMap()
-        .entries
-        .map((entry) => FlSpot(entry.key.toDouble(), entry.value.y))
+        .map((punto) => FlSpot(punto.x % 5000, punto.y))
         .toList();
+    spots.sort((a, b) => a.x.compareTo(b.x));
 
     return _EcgChartData(
       spots: spots,
@@ -73,28 +72,27 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
     );
   }
 
-  final valores = datosGrafico
-      .map((punto) => punto.y)
-      .where((value) => value.isFinite)
-      .toList(growable: false);
-  if (valores.isEmpty) {
+  final puntosValidos = datosGrafico.where((p) => p.y.isFinite).toList(growable: false);
+  if (puntosValidos.isEmpty) {
     return const _EcgChartData(
       spots: [],
       scale: _EcgScale(minY: -250, maxY: 250),
     );
   }
 
-  final lineaBase = _mediana(valores);
+  final lineaBase = _mediana(puntosValidos.map((p) => p.y).toList(growable: false));
   final spots = <FlSpot>[];
   var maxAbs = 0.0;
 
-  for (final valor in valores) {
-    final centrado = valor - lineaBase;
+  for (final punto in puntosValidos) {
+    final centrado = punto.y - lineaBase;
     if (centrado.abs() > maxAbs) maxAbs = centrado.abs();
-    spots.add(FlSpot(spots.length.toDouble(), centrado));
+    spots.add(FlSpot(punto.x % 5000, centrado));
   }
 
   final halfRange = (maxAbs * 1.15).clamp(250.0, 1800.0).toDouble();
+  spots.sort((a, b) => a.x.compareTo(b.x));
+  
   return _EcgChartData(
     spots: spots,
     scale: _EcgScale(minY: -halfRange, maxY: halfRange),
@@ -141,6 +139,8 @@ class GraficoEcg extends ConsumerWidget {
           RepaintBoundary(
             child: LineChart(
               LineChartData(
+                minX: 0,
+                maxX: 5000,
                 minY: chartData.scale.minY,
                 maxY: chartData.scale.maxY,
                 gridData: FlGridData(

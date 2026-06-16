@@ -20,27 +20,38 @@ type DataSource interface {
 }
 
 type SimulatedArduino struct {
-	types []string
+	types     []string
+	typeIndex int
+	ecgIndex  int
 }
 
 func NewSimulatedArduino() DataSource {
 	return &SimulatedArduino{
-		types: []string{"bpm", "ecg", "air"},
+		types:     []string{"bpm", "ecg", "air"},
+		typeIndex: 0,
+		ecgIndex:  0,
 	}
 }
 
 func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
-	time.Sleep(80 * time.Millisecond) // Simulate delay
+	time.Sleep(10 * time.Millisecond) // Simulate delay
 
-	// Pick a random type
-	t := s.types[rand.Intn(len(s.types))]
+	// Pick sequentially to ensure steady rate
+	t := s.types[s.typeIndex%len(s.types)]
+	s.typeIndex++
 
 	var val float64
 	switch t {
 	case "bpm":
 		val = 65 + rand.Float64()*(95-65)
 	case "ecg":
-		val = 0.2 + rand.Float64()*(1.2-0.2)
+		ecgTemplate := []float64{
+			0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.05, 0.0,
+			0.0, -0.05, 0.8, -0.2, 0.0, 0.05, 0.1, 0.15, 0.2, 0.15,
+			0.1, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+		}
+		val = 0.3 + ecgTemplate[s.ecgIndex%len(ecgTemplate)]
+		s.ecgIndex++
 	case "air":
 		val = 350 + rand.Float64()*(500-350)
 	}
