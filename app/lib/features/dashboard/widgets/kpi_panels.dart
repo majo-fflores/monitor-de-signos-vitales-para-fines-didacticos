@@ -11,11 +11,17 @@ class KpiPanels extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final frecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
-    final ppgFrecuenciaCardiaca = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
+    final frecuenciaCardiaca = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca),
+    );
+    final ppgFrecuenciaCardiaca = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca),
+    );
     // Comentado temporalmente por migración de sensor MAX30100 a HW-827 (que no lee SpO2)
     // final nivelSpo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelSpo2));
-    final nivelCo2 = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
+    final nivelCo2 = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
+    );
 
     final listaKpis = [
       TarjetaKpiVital(
@@ -59,11 +65,7 @@ class KpiPanels extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: listaKpis[2]),
-            ],
-          ),
+          Row(children: [Expanded(child: listaKpis[2])]),
         ],
       );
     } else {

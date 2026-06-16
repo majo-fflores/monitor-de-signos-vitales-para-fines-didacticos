@@ -71,9 +71,7 @@ class NotificadorConexion extends _$NotificadorConexion {
   /// Inicia la conexión con el WebSocket.
   Future<void> _cargarConfiguracion() async {
     try {
-      state = state.copiarCon(
-        cargando: false,
-      );
+      state = state.copiarCon(cargando: false);
 
       wsService.connect(state.wsUrl);
     } catch (e) {

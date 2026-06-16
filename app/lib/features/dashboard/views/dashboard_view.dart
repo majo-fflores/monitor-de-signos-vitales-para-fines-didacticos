@@ -57,7 +57,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     if (usuarioActivo == null) return;
 
     try {
-      final session = await ref.read(sessionApiServiceProvider).crearSesion(int.parse(usuarioActivo.id));
+      final session = await ref
+          .read(sessionApiServiceProvider)
+          .crearSesion(int.parse(usuarioActivo.id));
       _sessionId = session.id;
     } catch (e) {
       debugPrint('Error al crear sesión en backend: $e');
@@ -82,6 +84,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     _timerGrabacion?.cancel();
     _timerGrabacion = null;
 
+    setState(() => _grabando = false);
+
     final usuarioActivo = ref.read(notificadorUsuariosProvider).usuarioActivo;
     if (usuarioActivo == null) return;
 
@@ -90,18 +94,27 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     final activeSessionId = _sessionId;
-    final buffers = ref.read(notificadorSignosVitalesProvider.notifier).stopBuffering();
+    final buffers = ref
+        .read(notificadorSignosVitalesProvider.notifier)
+        .stopBuffering();
 
     try {
       if (activeSessionId != null) {
+        final sessionApi = ref.read(sessionApiServiceProvider);
+
+        // Congelar el EndTime en el backend inmediatamente
+        try {
+          await sessionApi.finalizarSesion(activeSessionId);
+        } catch (e) {
+          debugPrint('Error al pre-finalizar sesión: $e');
+        }
+
         final measApi = ref.read(measurementApiServiceProvider);
-        
+
         // Guardar buffers en paralelo
         try {
           await Future.wait([
@@ -117,18 +130,27 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         }
 
         // Obtener el summary real del backend
-        final sessionApi = ref.read(sessionApiServiceProvider);
         SessionSummary summary;
         try {
           summary = await sessionApi.obtenerResumenSesion(activeSessionId);
         } catch (e) {
-          debugPrint('Error al obtener resumen de sesión del backend: $e. Usando valores por defecto.');
+          debugPrint(
+            'Error al obtener resumen de sesión del backend: $e. Usando valores por defecto.',
+          );
           summary = SessionSummary(
             sessionId: activeSessionId,
             notes: '',
+            minBpm: 0.0,
+            maxBpm: 0.0,
             avgBpm: 70.0,
+            minEcg: 0.0,
+            maxEcg: 0.0,
             avgEcg: 0.0,
+            minSpo2: 0.0,
+            maxSpo2: 0.0,
             avgSpo2: 0.0,
+            minAir: 0.0,
+            maxAir: 0.0,
             avgAir: 350.0,
             alertCount: 0,
           );
@@ -146,12 +168,24 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             return SaveSessionDialog(
               segundosGrabacion: _segundosGrabacion,
               fcProm: summary.avgBpm.round(),
-              ppgProm: summary.avgBpm.round(), // Sin sensor PPG independiente
+              fcMin: summary.minBpm.round(),
+              fcMax: summary.maxBpm.round(),
+              ppgProm: summary.avgBpm.round(),
+              ppgMin: summary.minBpm.round(),
+              ppgMax: summary.maxBpm.round(),
               co2Prom: summary.avgAir.round(),
+              co2Min: summary.minAir.round(),
+              co2Max: summary.maxAir.round(),
               alertCount: summary.alertCount,
-              onCancel: () {
-                Navigator.of(dialogCtx, rootNavigator: true).pop();
-                setState(() => _grabando = false);
+              onCancel: () async {
+                try {
+                  await sessionApi.eliminarSesion(activeSessionId);
+                } catch (e) {
+                  debugPrint('Error al descartar sesión: $e');
+                }
+                if (dialogCtx.mounted) {
+                  Navigator.of(dialogCtx, rootNavigator: true).pop();
+                }
               },
               onSave: (notas) async {
                 try {
@@ -159,12 +193,14 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   showDialog(
                     context: dialogCtx,
                     barrierDismissible: false,
-                    builder: (loadingCtx) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    builder: (loadingCtx) =>
+                        const Center(child: CircularProgressIndicator()),
                   );
 
-                  await sessionApi.finalizarSesion(activeSessionId, notes: notas);
+                  await sessionApi.finalizarSesion(
+                    activeSessionId,
+                    notes: notas,
+                  );
 
                   // Construir el RegistroMedicion con datos reales
                   final registro = RegistroMedicion(
@@ -173,22 +209,41 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                     fechaRegistro: DateTime.now(),
                     duracionSegundos: _segundosGrabacion,
                     frecuenciaCardiaca: summary.avgBpm.round(),
+                    minFrecuenciaCardiaca: summary.minBpm.round(),
+                    maxFrecuenciaCardiaca: summary.maxBpm.round(),
                     ppgFrecuenciaCardiaca: summary.avgBpm.round(),
+                    minPpgFrecuenciaCardiaca: summary.minBpm.round(),
+                    maxPpgFrecuenciaCardiaca: summary.maxBpm.round(),
                     nivelSpo2: 0,
+                    minSpo2: 0,
+                    maxSpo2: 0,
                     nivelCo2: summary.avgAir.round(),
+                    minCo2: summary.minAir.round(),
+                    maxCo2: summary.maxAir.round(),
                     alertasDisparadas: summary.alertCount,
-                    notasClinicas: notas.isNotEmpty ? notas : 'Sesión de monitoreo en backend',
+                    notasClinicas: notas,
                   );
-                  await ref.read(notificadorHistorialProvider.notifier).guardarRegistro(registro);
+                  await ref
+                      .read(notificadorHistorialProvider.notifier)
+                      .guardarRegistro(registro);
 
                   if (dialogCtx.mounted) {
-                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Quitar loading de finalizar
-                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Cerrar SaveSessionDialog
+                    Navigator.of(
+                      dialogCtx,
+                      rootNavigator: true,
+                    ).pop(); // Quitar loading de finalizar
+                    Navigator.of(
+                      dialogCtx,
+                      rootNavigator: true,
+                    ).pop(); // Cerrar SaveSessionDialog
                   }
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Sesión de medición guardada con éxito'),
+                        content: Text(
+                          'Sesión de medición guardada con éxito',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         backgroundColor: ColoresSensores.statusConectado,
                       ),
                     );
@@ -196,10 +251,13 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 } catch (e) {
                   debugPrint('Error al finalizar sesión: $e');
                   if (dialogCtx.mounted) {
-                    Navigator.of(dialogCtx, rootNavigator: true).pop(); // Quitar loading en error
+                    Navigator.of(
+                      dialogCtx,
+                      rootNavigator: true,
+                    ).pop(); // Quitar loading en error
                   }
                 } finally {
-                  if (mounted) setState(() => _grabando = false);
+                  // _grabando = false is handled at start
                 }
               },
             );
@@ -212,11 +270,13 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         Navigator.of(context, rootNavigator: true).pop(); // Quitar loading
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar datos de sesión: $e'),
+            content: Text(
+              'Error al guardar datos de sesión: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red,
           ),
         );
-        setState(() => _grabando = false);
       }
     }
   }

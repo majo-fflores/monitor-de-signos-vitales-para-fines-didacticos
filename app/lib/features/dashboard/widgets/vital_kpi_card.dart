@@ -58,7 +58,11 @@ class TarjetaKpiVital extends StatelessWidget {
             child: Row(
               children: [
                 // Barra decorativa vertical de acento a la izquierda (Sensor color indicator)
-                Container(width: 5, height: double.infinity, color: colorAcento),
+                Container(
+                  width: 5,
+                  height: double.infinity,
+                  color: colorAcento,
+                ),
 
                 // Contenido del KPI
                 Expanded(
@@ -95,7 +99,8 @@ class TarjetaKpiVital extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.baseline,
                                       textBaseline: TextBaseline.alphabetic,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           valor,
@@ -129,11 +134,14 @@ class TarjetaKpiVital extends StatelessWidget {
                               Container(
                                 width: 1,
                                 height: 48,
-                                color: (esOscuro
-                                        ? ColoresOscuros.border
-                                        : ColoresClaros.border)
-                                    .withValues(alpha: 0.6),
-                                margin: const EdgeInsets.symmetric(horizontal: 12),
+                                color:
+                                    (esOscuro
+                                            ? ColoresOscuros.border
+                                            : ColoresClaros.border)
+                                        .withValues(alpha: 0.6),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                               ),
                               Expanded(
                                 child: Column(
@@ -158,7 +166,8 @@ class TarjetaKpiVital extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.baseline,
                                       textBaseline: TextBaseline.alphabetic,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           valorSecundario!,

@@ -35,11 +35,7 @@ void main() {
     test('fromJson works with all known types', () {
       final types = ['ecg', 'spo2', 'bpm', 'co2', 'air'];
       for (final type in types) {
-        final json = {
-          'type': type,
-          'value': 50,
-          'timestamp': 1000,
-        };
+        final json = {'type': type, 'value': 50, 'timestamp': 1000};
         final packet = WsPacket.fromJson(json);
         expect(packet.type, equals(type));
       }

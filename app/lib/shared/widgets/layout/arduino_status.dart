@@ -71,8 +71,9 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
     final texto = _obtenerTexto(estadoConexion.estadoWs);
 
     // Solo parpadea el LED si está conectado o conectando
-    final debeAnimar = estadoConexion.estadoWs == EstadoConexion.conectado ||
-                       estadoConexion.estadoWs == EstadoConexion.conectando;
+    final debeAnimar =
+        estadoConexion.estadoWs == EstadoConexion.conectado ||
+        estadoConexion.estadoWs == EstadoConexion.conectando;
 
     if (!debeAnimar && _controller.isAnimating) {
       _controller.stop();
@@ -101,7 +102,10 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
                 if (debeAnimar)
                   ScaleTransition(
                     scale: Tween<double>(begin: 1.0, end: 2.2).animate(
-                      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+                      CurvedAnimation(
+                        parent: _controller,
+                        curve: Curves.easeOut,
+                      ),
                     ),
                     child: FadeTransition(
                       opacity: Tween<double>(

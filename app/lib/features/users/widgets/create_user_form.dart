@@ -72,7 +72,10 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
@@ -85,16 +88,17 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
           TextFormField(
             controller: _dniController,
             keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: 'DNI',
               hintText: 'Ej. 12345678',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {
@@ -120,7 +124,10 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
             validator: (val) {
               if (val == null || val.trim().isEmpty) {

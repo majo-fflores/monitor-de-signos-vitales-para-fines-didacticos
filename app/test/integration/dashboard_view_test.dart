@@ -218,9 +218,17 @@ class FakeSessionApiService implements SessionApiService {
       sessionId: sessionId,
       notes: '',
       avgBpm: 75.0,
+      minBpm: 60.0,
+      maxBpm: 90.0,
       avgEcg: 0.0,
+      minEcg: -1.0,
+      maxEcg: 1.0,
       avgSpo2: 0.0,
+      minSpo2: 95.0,
+      maxSpo2: 100.0,
       avgAir: 450.0,
+      minAir: 400.0,
+      maxAir: 500.0,
       alertCount: 0,
     );
   }

@@ -34,10 +34,7 @@ class AlarmMonitoringCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.security,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(Icons.security, color: theme.colorScheme.primary),
               const Gap(10),
               Text(
                 'Monitoreo del Paciente',
@@ -50,18 +47,18 @@ class AlarmMonitoringCard extends ConsumerWidget {
           const Gap(8),
           Text(
             'Habilite o deshabilite el sistema de alarmas de bioseñales y configure las alertas sonoras.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
           const Gap(16),
-          
+
           // Switch para alarmas globales
           Material(
             type: MaterialType.transparency,
             child: SwitchListTile(
               title: const Text('Alarmas de Bioseñales Activas'),
-              subtitle: const Text('Dispara alertas visuales ante anomalías fisiológicas'),
+              subtitle: const Text(
+                'Dispara alertas visuales ante anomalías fisiológicas',
+              ),
               value: estadoAlarma.habilitada,
               onChanged: (val) {
                 notifierAlarma.cambiarHabilitacion(val);
@@ -70,13 +67,15 @@ class AlarmMonitoringCard extends ConsumerWidget {
             ),
           ),
           const Divider(height: 32),
-          
+
           // Switch para el sonido
           Material(
             type: MaterialType.transparency,
             child: SwitchListTile(
               title: const Text('Alertas Sonoras'),
-              subtitle: const Text('Emite un tono audible cuando se dispara una alarma crítica'),
+              subtitle: const Text(
+                'Emite un tono audible cuando se dispara una alarma crítica',
+              ),
               value: estadoAlarma.sonidoHabilitado,
               onChanged: estadoAlarma.habilitada
                   ? (val) {
@@ -99,7 +98,10 @@ class AlarmMonitoringCard extends ConsumerWidget {
                     labelStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: subtitleColor,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: borderColor),
@@ -110,7 +112,8 @@ class AlarmMonitoringCard extends ConsumerWidget {
                     ),
                   ),
                   initialValue: estadoAlarma.sonidoSeleccionado,
-                  onChanged: (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
+                  onChanged:
+                      (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
                       ? (val) {
                           if (val != null) {
                             notifierAlarma.cambiarSonidoSeleccionado(val);
@@ -137,9 +140,12 @@ class AlarmMonitoringCard extends ConsumerWidget {
               SizedBox(
                 height: 48,
                 child: FilledButton.icon(
-                  onPressed: (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
+                  onPressed:
+                      (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
                       ? () {
-                          ServicioAudio.instancia.probarSonido(estadoAlarma.sonidoSeleccionado);
+                          ServicioAudio.instancia.probarSonido(
+                            estadoAlarma.sonidoSeleccionado,
+                          );
                         }
                       : null,
                   icon: const Icon(LucideIcons.play, size: 16),

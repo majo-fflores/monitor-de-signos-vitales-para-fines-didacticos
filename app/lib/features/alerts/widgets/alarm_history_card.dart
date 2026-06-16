@@ -19,7 +19,8 @@ class AlarmHistoryCard extends ConsumerWidget {
     final ahora = DateTime.now();
     final diferencia = ahora.difference(fecha);
 
-    final horaMin = '${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}:${fecha.second.toString().padLeft(2, '0')}';
+    final horaMin =
+        '${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}:${fecha.second.toString().padLeft(2, '0')}';
 
     if (diferencia.inSeconds < 10) {
       return 'Ahora mismo ($horaMin)';
@@ -37,33 +38,45 @@ class AlarmHistoryCard extends ConsumerWidget {
   }
 
   IconData _obtenerIconoMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') || metrica.toLowerCase().contains('cardíaca')) {
+    if (metrica.toLowerCase().contains('frecuencia') ||
+        metrica.toLowerCase().contains('cardíaca')) {
       return LucideIcons.heart;
-    } else if (metrica.toLowerCase().contains('saturación') || metrica.toLowerCase().contains('oxígeno')) {
+    } else if (metrica.toLowerCase().contains('saturación') ||
+        metrica.toLowerCase().contains('oxígeno')) {
       return LucideIcons.droplets;
-    } else if (metrica.toLowerCase().contains('dióxido') || metrica.toLowerCase().contains('carbono') || metrica.toLowerCase().contains('co2')) {
+    } else if (metrica.toLowerCase().contains('dióxido') ||
+        metrica.toLowerCase().contains('carbono') ||
+        metrica.toLowerCase().contains('co2')) {
       return LucideIcons.wind;
     }
     return LucideIcons.alertTriangle;
   }
 
   Color _obtenerColorMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') || metrica.toLowerCase().contains('cardíaca')) {
+    if (metrica.toLowerCase().contains('frecuencia') ||
+        metrica.toLowerCase().contains('cardíaca')) {
       return ColoresSensores.ecgVerde;
-    } else if (metrica.toLowerCase().contains('saturación') || metrica.toLowerCase().contains('oxígeno')) {
+    } else if (metrica.toLowerCase().contains('saturación') ||
+        metrica.toLowerCase().contains('oxígeno')) {
       return ColoresSensores.spo2Azul;
-    } else if (metrica.toLowerCase().contains('dióxido') || metrica.toLowerCase().contains('carbono') || metrica.toLowerCase().contains('co2')) {
+    } else if (metrica.toLowerCase().contains('dióxido') ||
+        metrica.toLowerCase().contains('carbono') ||
+        metrica.toLowerCase().contains('co2')) {
       return ColoresSensores.co2Amarillo;
     }
     return Colors.red;
   }
 
   String _obtenerUnidadMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') || metrica.toLowerCase().contains('cardíaca')) {
+    if (metrica.toLowerCase().contains('frecuencia') ||
+        metrica.toLowerCase().contains('cardíaca')) {
       return 'LPM';
-    } else if (metrica.toLowerCase().contains('saturación') || metrica.toLowerCase().contains('oxígeno')) {
+    } else if (metrica.toLowerCase().contains('saturación') ||
+        metrica.toLowerCase().contains('oxígeno')) {
       return '%';
-    } else if (metrica.toLowerCase().contains('dióxido') || metrica.toLowerCase().contains('carbono') || metrica.toLowerCase().contains('co2')) {
+    } else if (metrica.toLowerCase().contains('dióxido') ||
+        metrica.toLowerCase().contains('carbono') ||
+        metrica.toLowerCase().contains('co2')) {
       return 'PPM';
     }
     return '';
@@ -90,10 +103,7 @@ class AlarmHistoryCard extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.history,
-                  color: theme.colorScheme.primary,
-                ),
+                Icon(LucideIcons.history, color: theme.colorScheme.primary),
                 const Gap(10),
                 Text(
                   'Historial de Alarmas Recientes',
@@ -105,7 +115,9 @@ class AlarmHistoryCard extends ConsumerWidget {
                 if (historial.isNotEmpty)
                   IconButton(
                     onPressed: () {
-                      ref.read(historialAlarmasProvider.notifier).limpiarHistorial();
+                      ref
+                          .read(historialAlarmasProvider.notifier)
+                          .limpiarHistorial();
                     },
                     icon: const Icon(LucideIcons.trash2, size: 18),
                     tooltip: 'Limpiar Historial',
@@ -122,13 +134,18 @@ class AlarmHistoryCard extends ConsumerWidget {
           if (historial.isEmpty)
             Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 48,
+                  horizontal: 24,
+                ),
                 child: Column(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: ColoresSensores.statusConectado.withValues(alpha: 0.1),
+                        color: ColoresSensores.statusConectado.withValues(
+                          alpha: 0.1,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -165,7 +182,10 @@ class AlarmHistoryCard extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final registro = historial[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -184,7 +204,9 @@ class AlarmHistoryCard extends ConsumerWidget {
                                 'Alerta Crítica Detectada',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.red[200] : Colors.red[900],
+                                  color: isDark
+                                      ? Colors.red[200]
+                                      : Colors.red[900],
                                 ),
                               ),
                             ],
@@ -207,7 +229,10 @@ class AlarmHistoryCard extends ConsumerWidget {
                           final unidad = _obtenerUnidadMetrica(entry.key);
 
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: colorMetrica.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
@@ -227,7 +252,9 @@ class AlarmHistoryCard extends ConsumerWidget {
                                 Text(
                                   '${entry.key}: ',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isDark ? Colors.white70 : Colors.black87,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black87,
                                   ),
                                 ),
                                 Text(
@@ -247,7 +274,7 @@ class AlarmHistoryCard extends ConsumerWidget {
                 );
               },
             ),
-          
+
           if (historial.length > 5) ...[
             const Divider(height: 1),
             Padding(

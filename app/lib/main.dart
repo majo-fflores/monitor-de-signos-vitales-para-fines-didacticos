@@ -5,11 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'shared/providers/theme_provider.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -27,7 +23,8 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: modoTema,
-      themeAnimationDuration: Duration.zero, // Elimina la costosa interpolación de temas de 200ms a 60fps
+      themeAnimationDuration: Duration
+          .zero, // Elimina la costosa interpolación de temas de 200ms a 60fps
     );
   }
 }

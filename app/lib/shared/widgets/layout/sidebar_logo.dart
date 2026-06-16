@@ -18,8 +18,8 @@ class SidebarLogo extends StatelessWidget {
       width: 56,
       height: 56,
       child: SvgPicture.asset(
-        esOscuroSidebar 
-            ? 'assets/svg/isotipo-dark.svg' 
+        esOscuroSidebar
+            ? 'assets/svg/isotipo-dark.svg'
             : 'assets/svg/isotipo-light.svg',
         fit: BoxFit.contain,
       ),

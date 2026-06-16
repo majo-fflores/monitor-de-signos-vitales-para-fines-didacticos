@@ -23,7 +23,9 @@ class PdfPreviewView extends StatelessWidget {
           'Previsualizar Reporte',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+            color: esOscuro
+                ? ColoresOscuros.foreground
+                : ColoresClaros.foreground,
           ),
         ),
         leading: IconButton(
@@ -33,7 +35,9 @@ class PdfPreviewView extends StatelessWidget {
         elevation: 0,
         backgroundColor: theme.scaffoldBackgroundColor,
         iconTheme: IconThemeData(
-          color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+          color: esOscuro
+              ? ColoresOscuros.foreground
+              : ColoresClaros.foreground,
         ),
       ),
       body: PdfPreview(
@@ -42,11 +46,10 @@ class PdfPreviewView extends StatelessWidget {
         allowSharing: true,
         canChangePageFormat: false,
         canChangeOrientation: false,
-        pdfFileName: 'reporte_datavital_${datos.nombrePaciente.replaceAll(' ', '_')}.pdf',
+        pdfFileName:
+            'reporte_datavital_${datos.nombrePaciente.replaceAll(' ', '_')}.pdf',
         // Estilización de PdfPreview para acoplarse al Dark/Light Mode
-        loadingWidget: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loadingWidget: const Center(child: CircularProgressIndicator()),
         previewPageMargin: const EdgeInsets.all(16),
       ),
     );

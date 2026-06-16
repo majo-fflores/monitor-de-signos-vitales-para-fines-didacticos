@@ -6,7 +6,9 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   group('TarjetaKpiVital Widget Tests', () {
-    testWidgets('should render title, value and unit correctly', (tester) async {
+    testWidgets('should render title, value and unit correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestableWidget(
           child: const TarjetaKpiVital(
@@ -23,7 +25,9 @@ void main() {
       expect(find.text('bpm'), findsOneWidget);
     });
 
-    testWidgets('should render dual fields when valorSecundario is provided', (tester) async {
+    testWidgets('should render dual fields when valorSecundario is provided', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createTestableWidget(
           child: const TarjetaKpiVital(

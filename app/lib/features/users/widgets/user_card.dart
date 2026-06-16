@@ -57,7 +57,10 @@ class TarjetaUsuario extends StatelessWidget {
                 ? theme.colorScheme.primary.withValues(alpha: 0.06)
                 : theme.cardTheme.color,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: esSeleccionado ? 2 : 1),
+            border: Border.all(
+              color: borderColor,
+              width: esSeleccionado ? 2 : 1,
+            ),
           ),
           child: Row(
             children: [
@@ -90,7 +93,9 @@ class TarjetaUsuario extends StatelessWidget {
                   children: [
                     Text(
                       usuario.nombre,
-                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -98,7 +103,9 @@ class TarjetaUsuario extends StatelessWidget {
                     Text(
                       usuario.email,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
                         fontSize: 11,
                       ),
                       maxLines: 1,

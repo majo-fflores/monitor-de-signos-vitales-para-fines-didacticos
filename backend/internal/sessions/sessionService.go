@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"backend/internal/users"
@@ -61,8 +62,10 @@ func (s *sessionService) EndSession(id uint, notes string) error {
 	if err != nil {
 		return err
 	}
-	now := time.Now()
-	session.EndTime = &now
+	if session.EndTime == nil {
+		now := time.Now()
+		session.EndTime = &now
+	}
 	session.Notes = notes
 	return s.repo.Update(session)
 }
@@ -80,7 +83,8 @@ func (s *sessionService) GetUserSessionSummaries(userID uint) ([]SessionWithSumm
 }
 
 func (s *sessionService) ExportSessionCSV(sessionID uint) ([]byte, error) {
-	if _, err := s.repo.GetByID(sessionID); err != nil {
+	session, err := s.repo.GetByID(sessionID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -92,9 +96,25 @@ func (s *sessionService) ExportSessionCSV(sessionID uint) ([]byte, error) {
 	var buf bytes.Buffer
 	writer := csv.NewWriter(&buf)
 
+	// Agregar metadatos de la sesión
+	writer.Write([]string{"#_METADATOS_DE_LA_SESION"})
+	writer.Write([]string{"#_ID_Sesion", strconv.Itoa(int(session.ID))})
+	writer.Write([]string{"#_Fecha_Inicio", session.StartTime.Format(time.RFC3339)})
+	endTimeStr := ""
+	if session.EndTime != nil {
+		endTimeStr = session.EndTime.Format(time.RFC3339)
+	}
+	writer.Write([]string{"#_Fecha_Fin", endTimeStr})
+	// Eliminar espacios y saltos de línea de las notas para no romper el CSV si lo leen por espacio
+	notasLimpias := strings.ReplaceAll(session.Notes, " ", "_")
+	notasLimpias = strings.ReplaceAll(notasLimpias, "\n", "_")
+	writer.Write([]string{"#_Notas_Clinicas", notasLimpias})
+	writer.Write([]string{""})
+
 	if err := writer.Write([]string{
 		"sensor",
-		"resultado_medicion",
+		"valor",
+		"unidad",
 		"timestamp",
 		"alerta",
 	}); err != nil {
@@ -104,14 +124,15 @@ func (s *sessionService) ExportSessionCSV(sessionID uint) ([]byte, error) {
 	for _, group := range groups {
 		for _, measurement := range group.Measurements {
 			for _, sample := range measurement.Datos {
-				timestamp := measurement.CreatedAt.Local().Format("2006-01-02 15:04:05.000")
+				timestamp := measurement.CreatedAt.UTC().Format(time.RFC3339)
 				if sample.Timestamp > 0 {
-					timestamp = time.UnixMilli(sample.Timestamp).Local().Format("2006-01-02 15:04:05.000")
+					timestamp = time.UnixMilli(sample.Timestamp).UTC().Format(time.RFC3339)
 				}
 
 				if err := writer.Write([]string{
 					group.Sensor,
-					formatMeasurementResult(sample.Value, group.ValueUnit),
+					strconv.FormatFloat(sample.Value, 'f', -1, 64),
+					group.ValueUnit,
 					timestamp,
 					formatAlert(sample.Alert, sample.LeadsOff),
 				}); err != nil {

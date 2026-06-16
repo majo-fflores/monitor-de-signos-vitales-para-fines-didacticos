@@ -7,7 +7,9 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   group('TarjetaUsuario Widget Tests', () {
-    testWidgets('should render user information and handle tap', (tester) async {
+    testWidgets('should render user information and handle tap', (
+      tester,
+    ) async {
       final user = TestData.usuario1;
       bool tapped = false;
 
@@ -36,7 +38,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('should show dialog and call onDelete when confirmed', (tester) async {
+    testWidgets('should show dialog and call onDelete when confirmed', (
+      tester,
+    ) async {
       final user = TestData.usuario1;
       bool deleted = false;
 
@@ -61,7 +65,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('¿Eliminar usuario?'), findsOneWidget);
-      expect(find.text('Se eliminará permanentemente a John Doe y todo su historial local.'), findsOneWidget);
+      expect(
+        find.text(
+          'Se eliminará permanentemente a John Doe y todo su historial local.',
+        ),
+        findsOneWidget,
+      );
 
       final confirmBtnFinder = find.widgetWithText(FilledButton, 'Eliminar');
       expect(confirmBtnFinder, findsOneWidget);

@@ -16,8 +16,6 @@ class HistoryStatisticsSummary extends StatelessWidget {
     required this.esOscuro,
   });
 
-
-
   @override
   Widget build(BuildContext context) {
     final total = registros.length;

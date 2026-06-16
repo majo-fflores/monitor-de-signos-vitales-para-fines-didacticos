@@ -22,7 +22,7 @@ class _PremiumGaugePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 16;
-    
+
     // Ángulos del arco: de 145 grados a 35 grados (escala invertida para Flutter)
     const double startAngle = math.pi * 0.8; // ~144°
     const double sweepAngle = math.pi * 1.4; // ~252°
@@ -30,7 +30,9 @@ class _PremiumGaugePainter extends CustomPainter {
 
     // 1. Dibujar el arco de base (Track)
     final trackPaint = Paint()
-      ..color = esOscuro ? ColoresComponentes.co2GaugeTrackOscuro : ColoresComponentes.co2GaugeTrackClaro
+      ..color = esOscuro
+          ? ColoresComponentes.co2GaugeTrackOscuro
+          : ColoresComponentes.co2GaugeTrackClaro
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.round;
@@ -44,7 +46,10 @@ class _PremiumGaugePainter extends CustomPainter {
     );
 
     // Calcular progreso
-    final double pct = ((value - minValue) / (maxValue - minValue)).clamp(0.0, 1.0);
+    final double pct = ((value - minValue) / (maxValue - minValue)).clamp(
+      0.0,
+      1.0,
+    );
     final double currentSweep = sweepAngle * pct;
     final double activeEndAngle = startAngle + currentSweep;
 
@@ -55,7 +60,7 @@ class _PremiumGaugePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 14
         ..strokeCap = StrokeCap.round;
-      
+
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startAngle,
@@ -83,11 +88,11 @@ class _PremiumGaugePainter extends CustomPainter {
     const int numTicks = 21;
     final tickColor = esOscuro ? Colors.grey.shade800 : Colors.grey.shade300;
     final activeTickColor = accentColor.withValues(alpha: 0.8);
-    
+
     for (int i = 0; i < numTicks; i++) {
       final double tickAngle = startAngle + (sweepAngle * (i / (numTicks - 1)));
       final bool isTickActive = tickAngle <= activeEndAngle;
-      
+
       // Los ticks principales son un poco más largos
       final bool isMajor = i % 5 == 0;
       final double tickLength = isMajor ? 8.0 : 4.0;
@@ -113,9 +118,7 @@ class _PremiumGaugePainter extends CustomPainter {
     }
 
     // 4. Dibujar etiquetas de los extremos (300 y 1500)
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     void drawLabel(String text, double angle, Offset alignment) {
       textPainter.text = TextSpan(
@@ -130,8 +133,12 @@ class _PremiumGaugePainter extends CustomPainter {
       textPainter.layout();
       final double labelRadius = radius + 22;
       final Offset labelCenter = Offset(
-        center.dx + labelRadius * math.cos(angle) - (textPainter.width * alignment.dx),
-        center.dy + labelRadius * math.sin(angle) - (textPainter.height * alignment.dy),
+        center.dx +
+            labelRadius * math.cos(angle) -
+            (textPainter.width * alignment.dx),
+        center.dy +
+            labelRadius * math.sin(angle) -
+            (textPainter.height * alignment.dy),
       );
       textPainter.paint(canvas, labelCenter);
     }
@@ -143,7 +150,7 @@ class _PremiumGaugePainter extends CustomPainter {
     if (pct > 0.0) {
       final double dotX = center.dx + radius * math.cos(activeEndAngle);
       final double dotY = center.dy + radius * math.sin(activeEndAngle);
-      
+
       // Glow circular
       final pointGlow = Paint()
         ..color = accentColor.withValues(alpha: 0.6)
@@ -232,7 +239,9 @@ class Co2Gauge extends StatelessWidget {
                   textScaler: TextScaler.noScaling,
                   style: TextStyle(
                     fontSize: sizeInner * 0.07,
-                    color: esOscuro ? Colors.grey.shade400 : Colors.grey.shade600,
+                    color: esOscuro
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade600,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,
                   ),

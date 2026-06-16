@@ -41,7 +41,9 @@ class SegmentedToggle extends StatelessWidget {
                 curve: Curves.easeOut,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: esActivo ? theme.colorScheme.primary : Colors.transparent,
+                  color: esActivo
+                      ? theme.colorScheme.primary
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -52,8 +54,8 @@ class SegmentedToggle extends StatelessWidget {
                     color: esActivo
                         ? theme.colorScheme.onPrimary
                         : (esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground),
+                              ? ColoresOscuros.mutedForeground
+                              : ColoresClaros.mutedForeground),
                   ),
                 ),
               ),

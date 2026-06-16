@@ -23,7 +23,6 @@ class DashboardHeader extends StatelessWidget {
     required this.onStopRecording,
   });
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -33,11 +32,15 @@ class DashboardHeader extends StatelessWidget {
     final titleStyle = esMobile
         ? theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w800,
-            color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+            color: esOscuro
+                ? ColoresOscuros.foreground
+                : ColoresClaros.foreground,
           )
         : theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w800,
-            color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+            color: esOscuro
+                ? ColoresOscuros.foreground
+                : ColoresClaros.foreground,
           );
 
     return Row(
@@ -47,30 +50,36 @@ class DashboardHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Dashboard de Bioseñales',
-                style: titleStyle,
-              ),
+              Text('Dashboard de Bioseñales', style: titleStyle),
               const SizedBox(height: 4),
               Text(
                 'Visualización en tiempo real de sensores.',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: esOscuro ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                  color: esOscuro
+                      ? ColoresOscuros.mutedForeground
+                      : ColoresClaros.mutedForeground,
                 ),
               ),
             ],
           ),
         ),
-        
+
         // Botón de control de grabación
         if (tieneUsuarioActivo) ...[
           grabando
               ? OutlinedButton.icon(
                   onPressed: onStopRecording,
-                  icon: const Icon(LucideIcons.square, size: 16, color: Colors.red),
+                  icon: const Icon(
+                    LucideIcons.square,
+                    size: 16,
+                    color: Colors.red,
+                  ),
                   label: Text(
                     'DETENER ($tiempoFormateado)',
-                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),

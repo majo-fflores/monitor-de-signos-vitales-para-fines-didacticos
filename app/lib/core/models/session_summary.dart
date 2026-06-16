@@ -5,17 +5,33 @@ import 'session.dart';
 @immutable
 class SessionWithSummary {
   final Session session;
+  final double minBpm;
+  final double maxBpm;
   final double avgBpm;
+  final double minEcg;
+  final double maxEcg;
   final double avgEcg;
+  final double minSpo2;
+  final double maxSpo2;
   final double avgSpo2;
+  final double minAir;
+  final double maxAir;
   final double avgAir;
   final int alertCount;
 
   const SessionWithSummary({
     required this.session,
+    required this.minBpm,
+    required this.maxBpm,
     required this.avgBpm,
+    required this.minEcg,
+    required this.maxEcg,
     required this.avgEcg,
+    required this.minSpo2,
+    required this.maxSpo2,
     required this.avgSpo2,
+    required this.minAir,
+    required this.maxAir,
     required this.avgAir,
     required this.alertCount,
   });
@@ -24,9 +40,17 @@ class SessionWithSummary {
   factory SessionWithSummary.fromJson(Map<String, dynamic> json) {
     return SessionWithSummary(
       session: Session.fromBackendJson(json),
+      minBpm: (json['min_bpm'] as num?)?.toDouble() ?? 0.0,
+      maxBpm: (json['max_bpm'] as num?)?.toDouble() ?? 0.0,
       avgBpm: (json['avg_bpm'] as num?)?.toDouble() ?? 0.0,
+      minEcg: (json['min_ecg'] as num?)?.toDouble() ?? 0.0,
+      maxEcg: (json['max_ecg'] as num?)?.toDouble() ?? 0.0,
       avgEcg: (json['avg_ecg'] as num?)?.toDouble() ?? 0.0,
+      minSpo2: (json['min_spo2'] as num?)?.toDouble() ?? 0.0,
+      maxSpo2: (json['max_spo2'] as num?)?.toDouble() ?? 0.0,
       avgSpo2: (json['avg_spo2'] as num?)?.toDouble() ?? 0.0,
+      minAir: (json['min_air'] as num?)?.toDouble() ?? 0.0,
+      maxAir: (json['max_air'] as num?)?.toDouble() ?? 0.0,
       avgAir: (json['avg_air'] as num?)?.toDouble() ?? 0.0,
       alertCount: json['alert_count'] as int? ?? 0,
     );
@@ -38,18 +62,34 @@ class SessionWithSummary {
 class SessionSummary {
   final int sessionId;
   final String notes;
+  final double minBpm;
+  final double maxBpm;
   final double avgBpm;
+  final double minEcg;
+  final double maxEcg;
   final double avgEcg;
+  final double minSpo2;
+  final double maxSpo2;
   final double avgSpo2;
+  final double minAir;
+  final double maxAir;
   final double avgAir;
   final int alertCount;
 
   const SessionSummary({
     required this.sessionId,
     required this.notes,
+    required this.minBpm,
+    required this.maxBpm,
     required this.avgBpm,
+    required this.minEcg,
+    required this.maxEcg,
     required this.avgEcg,
+    required this.minSpo2,
+    required this.maxSpo2,
     required this.avgSpo2,
+    required this.minAir,
+    required this.maxAir,
     required this.avgAir,
     required this.alertCount,
   });
@@ -58,9 +98,17 @@ class SessionSummary {
     return SessionSummary(
       sessionId: json['session_id'] as int? ?? 0,
       notes: json['notes'] as String? ?? '',
+      minBpm: (json['min_bpm'] as num?)?.toDouble() ?? 0.0,
+      maxBpm: (json['max_bpm'] as num?)?.toDouble() ?? 0.0,
       avgBpm: (json['avg_bpm'] as num?)?.toDouble() ?? 0.0,
+      minEcg: (json['min_ecg'] as num?)?.toDouble() ?? 0.0,
+      maxEcg: (json['max_ecg'] as num?)?.toDouble() ?? 0.0,
       avgEcg: (json['avg_ecg'] as num?)?.toDouble() ?? 0.0,
+      minSpo2: (json['min_spo2'] as num?)?.toDouble() ?? 0.0,
+      maxSpo2: (json['max_spo2'] as num?)?.toDouble() ?? 0.0,
       avgSpo2: (json['avg_spo2'] as num?)?.toDouble() ?? 0.0,
+      minAir: (json['min_air'] as num?)?.toDouble() ?? 0.0,
+      maxAir: (json['max_air'] as num?)?.toDouble() ?? 0.0,
       avgAir: (json['avg_air'] as num?)?.toDouble() ?? 0.0,
       alertCount: json['alert_count'] as int? ?? 0,
     );

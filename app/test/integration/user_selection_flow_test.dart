@@ -22,77 +22,90 @@ void main() {
       ServicioAudio.instancia = mockAudio;
       when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
       when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
-      
+
       // Default stub for obtaining users
       when(() => mockApi.obtenerUsuarios()).thenAnswer((_) async => []);
     });
 
     Widget createRouterScope() {
       return ProviderScope(
-        overrides: [
-          usuarioApiServiceProvider.overrideWithValue(mockApi),
-        ],
+        overrides: [usuarioApiServiceProvider.overrideWithValue(mockApi)],
         child: Consumer(
           builder: (context, ref, child) {
             final router = ref.watch(routerProvider);
-            return MaterialApp.router(
-              routerConfig: router,
-            );
+            return MaterialApp.router(routerConfig: router);
           },
         ),
       );
     }
 
-    testWidgets('should allow creating a user and automatically selecting it to navigate to dashboard', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should allow creating a user and automatically selecting it to navigate to dashboard',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      // Mock user creation response
-      final expectedUser = Usuario(
-        id: '123',
-        nombre: 'Maria Gimenez',
-        email: 'maria@correo.com',
-        dni: 12345678,
-        creadoEn: DateTime.now(),
-      );
-      when(() => mockApi.crearUsuario(
+        // Mock user creation response
+        final expectedUser = Usuario(
+          id: '123',
+          nombre: 'Maria Gimenez',
+          email: 'maria@correo.com',
+          dni: 12345678,
+          creadoEn: DateTime.now(),
+        );
+        when(
+          () => mockApi.crearUsuario(
             nombre: 'Maria Gimenez',
             email: 'maria@correo.com',
             dni: 12345678,
-          )).thenAnswer((_) async => expectedUser);
+          ),
+        ).thenAnswer((_) async => expectedUser);
 
-      await tester.pumpWidget(createRouterScope());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createRouterScope());
+        await tester.pumpAndSettle();
 
-      // Verify we are on User Selection page
-      expect(find.text('Seleccionar Usuario'), findsOneWidget);
-      expect(find.text('Registrar Nuevo'), findsOneWidget);
+        // Verify we are on User Selection page
+        expect(find.text('Seleccionar Usuario'), findsOneWidget);
+        expect(find.text('Registrar Nuevo'), findsOneWidget);
 
-      // Tap on the "Registrar Nuevo" segment to show form
-      await tester.tap(find.text('Registrar Nuevo'));
-      await tester.pumpAndSettle();
+        // Tap on the "Registrar Nuevo" segment to show form
+        await tester.tap(find.text('Registrar Nuevo'));
+        await tester.pumpAndSettle();
 
-      // Enter name, DNI, email
-      await tester.enterText(find.widgetWithText(TextFormField, 'Nombre Completo'), 'Maria Gimenez');
-      await tester.enterText(find.widgetWithText(TextFormField, 'DNI'), '12345678');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Correo Electrónico'), 'maria@correo.com');
-      await tester.pump();
+        // Enter name, DNI, email
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre Completo'),
+          'Maria Gimenez',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'DNI'),
+          '12345678',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Correo Electrónico'),
+          'maria@correo.com',
+        );
+        await tester.pump();
 
-      // Tap "CREAR Y SELECCIONAR"
-      final submitBtn = find.widgetWithText(FilledButton, 'CREAR Y SELECCIONAR');
-      expect(submitBtn, findsOneWidget);
-      await tester.tap(submitBtn);
+        // Tap "CREAR Y SELECCIONAR"
+        final submitBtn = find.widgetWithText(
+          FilledButton,
+          'CREAR Y SELECCIONAR',
+        );
+        expect(submitBtn, findsOneWidget);
+        await tester.tap(submitBtn);
 
-      // Wait for navigation and layout loading
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        // Wait for navigation and layout loading
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Should be redirected to Dashboard
-      expect(find.text('Dashboard de Bioseñales'), findsOneWidget);
-      expect(find.text('MG'), findsOneWidget); // Initials of Maria Gimenez
+        // Should be redirected to Dashboard
+        expect(find.text('Dashboard de Bioseñales'), findsOneWidget);
+        expect(find.text('MG'), findsOneWidget); // Initials of Maria Gimenez
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
   });
 }

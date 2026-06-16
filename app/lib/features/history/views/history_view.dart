@@ -7,6 +7,7 @@ import '../../../core/constants/breakpoints.dart';
 import '../../../core/models/registro_medicion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/session_provider.dart';
 import '../../../shared/providers/usuario_provider.dart';
 import '../../../shared/utils/report_pdf_helper.dart';
 import '../widgets/patient_report_form.dart';
@@ -33,7 +34,9 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
       final usuario = ref.read(notificadorUsuariosProvider).usuarioActivo;
       if (usuario != null) {
         _nombreController.text = usuario.nombre;
-        ref.read(notificadorHistorialProvider.notifier).cargarHistorial(usuario.id);
+        ref
+            .read(notificadorHistorialProvider.notifier)
+            .cargarHistorial(usuario.id);
       }
     });
   }
@@ -58,9 +61,17 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
         duracionFormateada: _sesionSeleccionada!.duracionFormateada,
         notasClinicas: _notasController.text.trim(),
         frecuenciaCardiaca: _sesionSeleccionada!.frecuenciaCardiaca,
+        minFrecuenciaCardiaca: _sesionSeleccionada!.minFrecuenciaCardiaca,
+        maxFrecuenciaCardiaca: _sesionSeleccionada!.maxFrecuenciaCardiaca,
         ppgFrecuenciaCardiaca: _sesionSeleccionada!.ppgFrecuenciaCardiaca,
+        minPpgFrecuenciaCardiaca: _sesionSeleccionada!.minPpgFrecuenciaCardiaca,
+        maxPpgFrecuenciaCardiaca: _sesionSeleccionada!.maxPpgFrecuenciaCardiaca,
         nivelSpo2: _sesionSeleccionada!.nivelSpo2,
+        minSpo2: _sesionSeleccionada!.minSpo2,
+        maxSpo2: _sesionSeleccionada!.maxSpo2,
         nivelCo2: _sesionSeleccionada!.nivelCo2,
+        minCo2: _sesionSeleccionada!.minCo2,
+        maxCo2: _sesionSeleccionada!.maxCo2,
         fechaReporte: _sesionSeleccionada!.fechaRegistro,
       );
 
@@ -69,18 +80,57 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
     }
   }
 
+  Future<void> _exportarCsv() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      if (_sesionSeleccionada == null) return;
+
+      final sessionId = int.tryParse(_sesionSeleccionada!.id);
+      if (sessionId == null) return;
+
+      try {
+        final path = await ref
+            .read(sessionApiServiceProvider)
+            .exportarSesionCsv(sessionId);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'CSV exportado: $path',
+              style: const TextStyle(color: Colors.white),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al exportar CSV: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Escuchar el historial del usuario activo
     final estadoHistorial = ref.watch(notificadorHistorialProvider);
     final sesiones = estadoHistorial.registros;
 
     // Inicializar o ajustar la selección de sesión en cada reconstrucción de la lista
     if (sesiones.isNotEmpty) {
-      if (_sesionSeleccionada == null || !sesiones.any((s) => s.id == _sesionSeleccionada!.id)) {
+      if (_sesionSeleccionada == null ||
+          !sesiones.any((s) => s.id == _sesionSeleccionada!.id)) {
         _sesionSeleccionada = sesiones.first;
         _notasController.text = _sesionSeleccionada!.notasClinicas;
       }
@@ -99,14 +149,18 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
               'Reportes Clínicos',
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: isDark ? ColoresOscuros.foreground : ColoresClaros.foreground,
+                color: isDark
+                    ? ColoresOscuros.foreground
+                    : ColoresClaros.foreground,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Genera, previsualiza y descarga informes biométricos basados en las sesiones del paciente.',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                color: isDark
+                    ? ColoresOscuros.mutedForeground
+                    : ColoresClaros.mutedForeground,
               ),
             ),
             const SizedBox(height: 24),
@@ -128,11 +182,13 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                               setState(() {
                                 _sesionSeleccionada = nuevaSesion;
                                 if (nuevaSesion != null) {
-                                  _notasController.text = nuevaSesion.notasClinicas;
+                                  _notasController.text =
+                                      nuevaSesion.notasClinicas;
                                 }
                               });
                             },
                             onGenerarReporte: _generarReporte,
+                            onExportarCsv: _exportarCsv,
                           ),
                         ],
                       )
@@ -152,11 +208,13 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
                                   setState(() {
                                     _sesionSeleccionada = nuevaSesion;
                                     if (nuevaSesion != null) {
-                                      _notasController.text = nuevaSesion.notasClinicas;
+                                      _notasController.text =
+                                          nuevaSesion.notasClinicas;
                                     }
                                   });
                                 },
                                 onGenerarReporte: _generarReporte,
+                                onExportarCsv: _exportarCsv,
                               ),
                             ),
                             const Gap(24),

@@ -72,7 +72,9 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
     );
   }
 
-  final puntosValidos = datosGrafico.where((p) => p.y.isFinite).toList(growable: false);
+  final puntosValidos = datosGrafico
+      .where((p) => p.y.isFinite)
+      .toList(growable: false);
   if (puntosValidos.isEmpty) {
     return const _EcgChartData(
       spots: [],
@@ -80,7 +82,9 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
     );
   }
 
-  final lineaBase = _mediana(puntosValidos.map((p) => p.y).toList(growable: false));
+  final lineaBase = _mediana(
+    puntosValidos.map((p) => p.y).toList(growable: false),
+  );
   final spots = <FlSpot>[];
   var maxAbs = 0.0;
 
@@ -92,7 +96,7 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
 
   final halfRange = (maxAbs * 1.15).clamp(250.0, 1800.0).toDouble();
   spots.sort((a, b) => a.x.compareTo(b.x));
-  
+
   return _EcgChartData(
     spots: spots,
     scale: _EcgScale(minY: -halfRange, maxY: halfRange),

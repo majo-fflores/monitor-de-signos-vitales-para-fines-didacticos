@@ -22,7 +22,8 @@ class ThresholdRangeSlider extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ThresholdRangeSlider> createState() => _ThresholdRangeSliderState();
+  ConsumerState<ThresholdRangeSlider> createState() =>
+      _ThresholdRangeSliderState();
 }
 
 class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
@@ -31,10 +32,14 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Obtenemos los valores iniciales del provider si no han sido cargados localmente
-    final umbrales = ref.read(notificadorAlarmaProvider.select((s) => s.umbrales));
-    final rangoActual = _rangoLocal ?? RangeValues(umbrales.fcMin.toDouble(), umbrales.fcMax.toDouble());
+    final umbrales = ref.read(
+      notificadorAlarmaProvider.select((s) => s.umbrales),
+    );
+    final rangoActual =
+        _rangoLocal ??
+        RangeValues(umbrales.fcMin.toDouble(), umbrales.fcMax.toDouble());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +55,9 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
                   Expanded(
                     child: Text(
                       widget.titulo,
-                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -73,18 +80,25 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
           max: widget.max,
           activeColor: widget.colorAcento,
           inactiveColor: widget.colorAcento.withValues(alpha: 0.2),
-          labels: RangeLabels('${rangoActual.start.round()}', '${rangoActual.end.round()}'),
+          labels: RangeLabels(
+            '${rangoActual.start.round()}',
+            '${rangoActual.end.round()}',
+          ),
           onChanged: (values) {
             setState(() {
               _rangoLocal = values;
             });
-            ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
+            ref
+                .read(notificadorAlarmaProvider.notifier)
+                .actualizarUmbralesMemoria(
                   fcMin: values.start.round(),
                   fcMax: values.end.round(),
                 );
           },
           onChangeEnd: (_) {
-            ref.read(notificadorAlarmaProvider.notifier).guardarUmbralesEnDisco();
+            ref
+                .read(notificadorAlarmaProvider.notifier)
+                .guardarUmbralesEnDisco();
           },
         ),
       ],

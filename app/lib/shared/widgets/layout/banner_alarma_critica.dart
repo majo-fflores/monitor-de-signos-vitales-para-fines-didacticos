@@ -34,7 +34,11 @@ class BannerAlarmaCritica extends ConsumerWidget {
         final infoAlarma = Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
             const Gap(8),
             Expanded(
               child: Column(
@@ -62,7 +66,9 @@ class BannerAlarmaCritica extends ConsumerWidget {
         );
 
         final controlesAlarma = Row(
-          mainAxisAlignment: esMobileChico ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment: esMobileChico
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
@@ -93,7 +99,10 @@ class BannerAlarmaCritica extends ConsumerWidget {
                 backgroundColor: Colors.white.withValues(alpha: 0.15),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
@@ -105,7 +114,11 @@ class BannerAlarmaCritica extends ConsumerWidget {
               icon: const Icon(Icons.visibility, size: 14, color: Colors.white),
               label: const Text(
                 'VER DETALLES',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.white),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                  color: Colors.white,
+                ),
               ),
             ),
             if (sonidoHabilitado) ...[
@@ -115,14 +128,23 @@ class BannerAlarmaCritica extends ConsumerWidget {
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.red.shade900,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                 ),
                 onPressed: () {
                   if (sonidoSilenciado) {
-                    ref.read(notificadorAlarmaProvider.notifier).desactivarSilencioTemporal();
+                    ref
+                        .read(notificadorAlarmaProvider.notifier)
+                        .desactivarSilencioTemporal();
                   } else {
-                    ref.read(notificadorAlarmaProvider.notifier).silenciarAlarma();
+                    ref
+                        .read(notificadorAlarmaProvider.notifier)
+                        .silenciarAlarma();
                   }
                 },
                 icon: Icon(
@@ -131,7 +153,10 @@ class BannerAlarmaCritica extends ConsumerWidget {
                 ),
                 label: Text(
                   sonidoSilenciado ? 'ACTIVAR SONIDO' : 'SILENCIAR',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ],
@@ -162,11 +187,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                infoAlarma,
-                const Gap(8),
-                controlesAlarma,
-              ],
+              children: [infoAlarma, const Gap(8), controlesAlarma],
             ),
           );
         }

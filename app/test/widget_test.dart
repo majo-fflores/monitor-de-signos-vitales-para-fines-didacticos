@@ -12,11 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   testWidgets('App launches successfully', (WidgetTester tester) async {
     // Build our app under ProviderScope and trigger a frame.
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MyApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
 
     // Verify MaterialApp.router is rendered
     expect(find.byType(MyApp), findsOneWidget);

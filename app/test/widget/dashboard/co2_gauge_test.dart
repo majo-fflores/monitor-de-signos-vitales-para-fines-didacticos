@@ -36,7 +36,10 @@ void main() {
 
       // Find the specific SizedBox wrapping our Co2Gauge
       final sizedBoxFinder = find.byWidgetPredicate(
-        (widget) => widget is SizedBox && widget.width == 150.0 && widget.height == 150.0,
+        (widget) =>
+            widget is SizedBox &&
+            widget.width == 150.0 &&
+            widget.height == 150.0,
       );
       expect(sizedBoxFinder, findsOneWidget);
     });

@@ -34,7 +34,9 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(() => MockVitalSignsNotifier(mockState)),
+            notificadorSignosVitalesProvider.overrideWith(
+              () => MockVitalSignsNotifier(mockState),
+            ),
           ],
           child: const KpiPanels(esMobile: false),
         ),
@@ -65,7 +67,9 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(() => MockVitalSignsNotifier(mockState)),
+            notificadorSignosVitalesProvider.overrideWith(
+              () => MockVitalSignsNotifier(mockState),
+            ),
           ],
           child: const KpiPanels(esMobile: true),
         ),

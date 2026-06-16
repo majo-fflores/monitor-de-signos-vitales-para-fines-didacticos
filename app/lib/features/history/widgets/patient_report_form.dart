@@ -13,6 +13,7 @@ class PatientReportForm extends StatelessWidget {
   final RegistroMedicion? sesionSeleccionada;
   final ValueChanged<RegistroMedicion?> onSesionChanged;
   final VoidCallback onGenerarReporte;
+  final VoidCallback onExportarCsv;
 
   const PatientReportForm({
     super.key,
@@ -23,6 +24,7 @@ class PatientReportForm extends StatelessWidget {
     required this.sesionSeleccionada,
     required this.onSesionChanged,
     required this.onGenerarReporte,
+    required this.onExportarCsv,
   });
 
   @override
@@ -51,37 +53,83 @@ class PatientReportForm extends StatelessWidget {
             const Gap(16),
             Text(
               'No hay sesiones registradas',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const Gap(8),
             Text(
               'Para generar un reporte clínico, primero debe registrar una sesión de monitoreo para el paciente actual desde el Dashboard.',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+                color: isDark
+                    ? ColoresOscuros.mutedForeground
+                    : ColoresClaros.mutedForeground,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
             const Gap(24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                  foregroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.05,
+                        ),
+                        foregroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: null,
+                      icon: const Icon(Icons.picture_as_pdf, size: 20),
+                      label: const Text(
+                        'REPORTE PDF',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: null,
-                icon: const Icon(Icons.picture_as_pdf, size: 20),
-                label: const Text(
-                  'GENERAR REPORTE EN PDF',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                const Gap(16),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
+                        side: BorderSide(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.1,
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: null,
+                      icon: const Icon(LucideIcons.download, size: 20),
+                      label: const Text(
+                        'EXPORTAR CSV',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -117,7 +165,10 @@ class PatientReportForm extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               items: sesiones.map((s) {
                 return DropdownMenuItem<RegistroMedicion>(
@@ -145,7 +196,10 @@ class PatientReportForm extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
@@ -161,7 +215,8 @@ class PatientReportForm extends StatelessWidget {
               maxLines: 4,
               decoration: InputDecoration(
                 labelText: 'Notas y Observaciones Clínicas',
-                hintText: 'Describa cualquier síntoma, anomalía o indicación del monitoreo...',
+                hintText:
+                    'Describa cualquier síntoma, anomalía o indicación del monitoreo...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -169,24 +224,56 @@ class PatientReportForm extends StatelessWidget {
               ),
             ),
             const Gap(24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: onGenerarReporte,
+                      icon: const Icon(Icons.picture_as_pdf, size: 20),
+                      label: const Text(
+                        'REPORTE PDF',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                onPressed: onGenerarReporte,
-                icon: const Icon(Icons.picture_as_pdf, size: 20),
-                label: const Text(
-                  'GENERAR REPORTE EN PDF',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                const Gap(16),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        side: BorderSide(color: theme.colorScheme.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: onExportarCsv,
+                      icon: const Icon(LucideIcons.download, size: 20),
+                      label: const Text(
+                        'EXPORTAR CSV',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

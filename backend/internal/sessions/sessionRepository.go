@@ -81,22 +81,32 @@ func (r *gormSessionRepository) GetExportGroups(sessionID uint) ([]SensorExportG
 	return groups, nil
 }
 
-func calculateAverage(measurements []SensorMeasurement) float64 {
+func calculateStats(measurements []SensorMeasurement) (min, max, avg float64) {
 	if len(measurements) == 0 {
-		return 0
+		return 0, 0, 0
 	}
 	var sum float64
 	var count int
+	min = measurements[0].Datos[0].Value
+	max = measurements[0].Datos[0].Value
+
 	for _, m := range measurements {
 		for _, sample := range m.Datos {
+			if sample.Value < min {
+				min = sample.Value
+			}
+			if sample.Value > max {
+				max = sample.Value
+			}
 			sum += sample.Value
 			count++
 		}
 	}
 	if count == 0 {
-		return 0
+		return 0, 0, 0
 	}
-	return sum / float64(count)
+	avg = sum / float64(count)
+	return min, max, avg
 }
 
 func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
@@ -146,13 +156,26 @@ func (r *gormSessionRepository) GetSummary(sessionID uint) (*SessionSummaryRespo
 	r.db.Table("spo2_measurements").Where("session_id = ?", sessionID).Find(&spo2Data)
 	r.db.Table("air_measurements").Where("session_id = ?", sessionID).Find(&airData)
 
+	minBPM, maxBPM, avgBPM := calculateStats(bpmData)
+	minECG, maxECG, avgECG := calculateStats(ecgData)
+	minSPO2, maxSPO2, avgSPO2 := calculateStats(spo2Data)
+	minAIR, maxAIR, avgAIR := calculateStats(airData)
+
 	summary := &SessionSummaryResponse{
 		SessionID:  sessionID,
 		Notes:      session.Notes,
-		AvgBPM:     calculateAverage(bpmData),
-		AvgECG:     calculateAverage(ecgData),
-		AvgSPO2:    calculateAverage(spo2Data),
-		AvgAIR:     calculateAverage(airData),
+		MinBPM:     minBPM,
+		MaxBPM:     maxBPM,
+		AvgBPM:     avgBPM,
+		MinECG:     minECG,
+		MaxECG:     maxECG,
+		AvgECG:     avgECG,
+		MinSPO2:    minSPO2,
+		MaxSPO2:    maxSPO2,
+		AvgSPO2:    avgSPO2,
+		MinAIR:     minAIR,
+		MaxAIR:     maxAIR,
+		AvgAIR:     avgAIR,
 		AlertCount: countAlerts(bpmData, airData),
 	}
 
@@ -208,12 +231,25 @@ func (r *gormSessionRepository) GetUserSessionSummaries(userID uint) ([]SessionW
 		spo2 := spo2BySession[session.ID]
 		air := airBySession[session.ID]
 
+		minBPM, maxBPM, avgBPM := calculateStats(bpm)
+		minECG, maxECG, avgECG := calculateStats(ecg)
+		minSPO2, maxSPO2, avgSPO2 := calculateStats(spo2)
+		minAIR, maxAIR, avgAIR := calculateStats(air)
+
 		results = append(results, SessionWithSummary{
 			Session:    session,
-			AvgBPM:     calculateAverage(bpm),
-			AvgECG:     calculateAverage(ecg),
-			AvgSPO2:    calculateAverage(spo2),
-			AvgAIR:     calculateAverage(air),
+			MinBPM:     minBPM,
+			MaxBPM:     maxBPM,
+			AvgBPM:     avgBPM,
+			MinECG:     minECG,
+			MaxECG:     maxECG,
+			AvgECG:     avgECG,
+			MinSPO2:    minSPO2,
+			MaxSPO2:    maxSPO2,
+			AvgSPO2:    avgSPO2,
+			MinAIR:     minAIR,
+			MaxAIR:     maxAIR,
+			AvgAIR:     avgAIR,
 			AlertCount: countAlerts(bpm, air),
 		})
 	}

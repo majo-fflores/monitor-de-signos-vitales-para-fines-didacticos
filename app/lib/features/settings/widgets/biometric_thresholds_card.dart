@@ -21,7 +21,9 @@ class BiometricThresholdsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final umbrales = ref.watch(notificadorAlarmaProvider.select((s) => s.umbrales));
+    final umbrales = ref.watch(
+      notificadorAlarmaProvider.select((s) => s.umbrales),
+    );
 
     return Container(
       width: double.infinity,
@@ -43,9 +45,7 @@ class BiometricThresholdsCard extends ConsumerWidget {
           const Gap(8),
           Text(
             'Configura los límites fuera de los cuales se activará el ciclo de alarma de 30 segundos.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
           const Gap(24),
 
@@ -70,12 +70,14 @@ class BiometricThresholdsCard extends ConsumerWidget {
             max: 120.0,
             valorInicial: umbrales.ppgMin.toDouble(),
             onChanged: (value) {
-              ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
-                ppgMin: value.round(),
-              );
+              ref
+                  .read(notificadorAlarmaProvider.notifier)
+                  .actualizarUmbralesMemoria(ppgMin: value.round());
             },
             onChangeEnd: (_) {
-              ref.read(notificadorAlarmaProvider.notifier).guardarUmbralesEnDisco();
+              ref
+                  .read(notificadorAlarmaProvider.notifier)
+                  .guardarUmbralesEnDisco();
             },
           ),
           const Divider(height: 32, thickness: 1),
@@ -90,12 +92,14 @@ class BiometricThresholdsCard extends ConsumerWidget {
             max: 1200.0,
             valorInicial: umbrales.co2Max.toDouble(),
             onChanged: (value) {
-              ref.read(notificadorAlarmaProvider.notifier).actualizarUmbralesMemoria(
-                co2Max: value.round(),
-              );
+              ref
+                  .read(notificadorAlarmaProvider.notifier)
+                  .actualizarUmbralesMemoria(co2Max: value.round());
             },
             onChangeEnd: (_) {
-              ref.read(notificadorAlarmaProvider.notifier).guardarUmbralesEnDisco();
+              ref
+                  .read(notificadorAlarmaProvider.notifier)
+                  .guardarUmbralesEnDisco();
             },
           ),
         ],

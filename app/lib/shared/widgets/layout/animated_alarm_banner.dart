@@ -14,7 +14,8 @@ class AnimatedAlarmBanner extends StatefulWidget {
   State<AnimatedAlarmBanner> createState() => _AnimatedAlarmBannerState();
 }
 
-class _AnimatedAlarmBannerState extends State<AnimatedAlarmBanner> with SingleTickerProviderStateMixin {
+class _AnimatedAlarmBannerState extends State<AnimatedAlarmBanner>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _heightFactor;
 
@@ -63,10 +64,7 @@ class _AnimatedAlarmBannerState extends State<AnimatedAlarmBanner> with SingleTi
     return SizeTransition(
       sizeFactor: _heightFactor,
       alignment: Alignment.topCenter,
-      child: FadeTransition(
-        opacity: _heightFactor,
-        child: widget.child,
-      ),
+      child: FadeTransition(opacity: _heightFactor, child: widget.child),
     );
   }
 }

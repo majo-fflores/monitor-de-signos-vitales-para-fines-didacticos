@@ -6,10 +6,7 @@ class Sample {
   final int timestamp;
   final double value;
 
-  const Sample({
-    required this.timestamp,
-    required this.value,
-  });
+  const Sample({required this.timestamp, required this.value});
 
   factory Sample.fromJson(Map<String, dynamic> json) {
     return Sample(
@@ -19,10 +16,7 @@ class Sample {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'timestamp': timestamp,
-      'value': value,
-    };
+    return {'timestamp': timestamp, 'value': value};
   }
 }
 
@@ -43,7 +37,9 @@ class Measurement {
 
   factory Measurement.fromJson(Map<String, dynamic> json) {
     var list = json['datos'] as List? ?? [];
-    List<Sample> samplesList = list.map((i) => Sample.fromJson(i as Map<String, dynamic>)).toList();
+    List<Sample> samplesList = list
+        .map((i) => Sample.fromJson(i as Map<String, dynamic>))
+        .toList();
 
     return Measurement(
       id: json['id'] as int,

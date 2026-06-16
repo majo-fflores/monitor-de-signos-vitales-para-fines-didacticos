@@ -74,7 +74,8 @@ class EstadoSignosVitales {
       ecgDatos: ecgDatos ?? this.ecgDatos,
       spo2Datos: spo2Datos ?? this.spo2Datos,
       frecuenciaCardiaca: frecuenciaCardiaca ?? this.frecuenciaCardiaca,
-      ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca ?? this.ppgFrecuenciaCardiaca,
+      ppgFrecuenciaCardiaca:
+          ppgFrecuenciaCardiaca ?? this.ppgFrecuenciaCardiaca,
       nivelSpo2: nivelSpo2 ?? this.nivelSpo2,
       nivelCo2: nivelCo2 ?? this.nivelCo2,
       ecgActivo: ecgActivo ?? ((this.ecgActivo as dynamic) ?? true),
@@ -88,7 +89,7 @@ class EstadoSignosVitales {
 const int _kVentanaPuntos = 100;
 
 /// Notifier reactivo para signos vitales de alto rendimiento.
-/// 
+///
 /// Características STR avanzadas:
 /// - Throttling adaptativo a nivel de frame sincronizado con SchedulerBinding.
 /// - Reducción de jank y micro-allocations de memoria.
@@ -183,34 +184,86 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
     _inicializarVentana();
 
     // Marcamos los sensores simulados como activos
-    state = state.copiarCon(
-      ecgActivo: true,
-      spo2Activo: true,
-      co2Activo: true,
-    );
+    state = state.copiarCon(ecgActivo: true, spo2Activo: true, co2Activo: true);
 
     // Plantillas de ondas sinusoidales/fisiológicas para ECG y SpO2 (Plethysmogram)
     const ecgTemplate = [
-      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.05, 0.0,
-      0.0, -0.05, 0.8, -0.2, 0.0, 0.05, 0.1, 0.15, 0.2, 0.15,
-      0.1, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.05,
+      0.1,
+      0.05,
+      0.0,
+      0.0,
+      -0.05,
+      0.8,
+      -0.2,
+      0.0,
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.15,
+      0.1,
+      0.05,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
     ];
 
     const spo2Template = [
-      50.0, 50.5, 51.5, 53.0, 55.0, 57.5, 60.0, 62.0, 63.5, 64.0,
-      63.5, 62.5, 61.0, 59.5, 58.5, 58.0, 58.5, 59.0, 58.5, 57.0,
-      55.0, 53.0, 51.5, 50.5, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0
+      50.0,
+      50.5,
+      51.5,
+      53.0,
+      55.0,
+      57.5,
+      60.0,
+      62.0,
+      63.5,
+      64.0,
+      63.5,
+      62.5,
+      61.0,
+      59.5,
+      58.5,
+      58.0,
+      58.5,
+      59.0,
+      58.5,
+      57.0,
+      55.0,
+      53.0,
+      51.5,
+      50.5,
+      50.0,
+      50.0,
+      50.0,
+      50.0,
+      50.0,
+      50.0,
     ];
 
     int tick = 0;
-    _timerSimulacion = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    _timerSimulacion = Timer.periodic(const Duration(milliseconds: 20), (
+      timer,
+    ) {
       if (!_estaActivo) {
         timer.cancel();
         return;
       }
 
       final ahora = DateTime.now().millisecondsSinceEpoch.toDouble();
-      
+
       // Añadir puntos a los gráficos
       final nuevosEcg = List<PuntoBiometrico>.of(state.ecgDatos);
       final nuevosSpo2 = List<PuntoBiometrico>.of(state.spo2Datos);
@@ -243,15 +296,19 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
       tick++;
       if (tick >= 50) {
         tick = 0;
-        
+
         // Generar valores fisiológicos realistas
         final fc = 72 + _random.nextInt(5) - 2; // 70-74 BPM
         final spo2 = 98 - _random.nextInt(2); // 97-98%
         final co2 = 380 + _random.nextInt(40) - 20; // 360-400 ppm
 
         if (_isBuffering) {
-          _bpmBuffer.add(Sample(timestamp: ahora.toInt(), value: fc.toDouble()));
-          _airBuffer.add(Sample(timestamp: ahora.toInt(), value: co2.toDouble()));
+          _bpmBuffer.add(
+            Sample(timestamp: ahora.toInt(), value: fc.toDouble()),
+          );
+          _airBuffer.add(
+            Sample(timestamp: ahora.toInt(), value: co2.toDouble()),
+          );
         }
 
         state = state.copiarCon(
@@ -263,21 +320,14 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
           nivelCo2: co2,
         );
 
-        ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
-          fc: fc,
-          ppg: fc + 1,
-          co2: co2,
-        );
+        ref
+            .read(notificadorAlarmaProvider.notifier)
+            .monitorearValores(fc: fc, ppg: fc + 1, co2: co2);
       } else {
-        state = state.copiarCon(
-          ecgDatos: nuevosEcg,
-          spo2Datos: nuevosSpo2,
-        );
+        state = state.copiarCon(ecgDatos: nuevosEcg, spo2Datos: nuevosSpo2);
       }
     });
   }
-
-
 
   // ═══════════════════════════════════════════════════════════════
   //  MODO WEBSOCKET CON SCHEDULER BINDING (FRAME-RATE THROTTLING)
@@ -306,12 +356,16 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         _lastEcgTime = DateTime.now();
       } else if (pType == 'spo2') {
         _lastSpo2Time = DateTime.now();
-      } else if (pType == 'co2' || pType == 'air' || pType == 'mq' || pType == 'mq135' || pType == 'gas') {
+      } else if (pType == 'co2' ||
+          pType == 'air' ||
+          pType == 'mq' ||
+          pType == 'mq135' ||
+          pType == 'gas') {
         _lastCo2Time = DateTime.now();
       }
 
       _pendingPackets.add(packet);
-      
+
       // Si no tenemos programado un vaciado para el siguiente frame, lo planificamos
       if (!_hasFrameCallbackPending) {
         _hasFrameCallbackPending = true;
@@ -329,17 +383,24 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
       }
 
       final ahora = DateTime.now();
-      final limite = const Duration(seconds: 3); // Límite de 3 segundos sin recibir datos
+      final limite = const Duration(
+        seconds: 3,
+      ); // Límite de 3 segundos sin recibir datos
 
-      final ecgOk = _lastEcgTime != null && ahora.difference(_lastEcgTime!) < limite;
-      final spo2Ok = _lastSpo2Time != null && ahora.difference(_lastSpo2Time!) < limite;
-      final co2Ok = _lastCo2Time != null && ahora.difference(_lastCo2Time!) < limite;
+      final ecgOk =
+          _lastEcgTime != null && ahora.difference(_lastEcgTime!) < limite;
+      final spo2Ok =
+          _lastSpo2Time != null && ahora.difference(_lastSpo2Time!) < limite;
+      final co2Ok =
+          _lastCo2Time != null && ahora.difference(_lastCo2Time!) < limite;
 
       final currentEcgActivo = (state.ecgActivo as dynamic) ?? true;
       final currentSpo2Activo = (state.spo2Activo as dynamic) ?? true;
       final currentCo2Activo = (state.co2Activo as dynamic) ?? true;
 
-      if (ecgOk != currentEcgActivo || spo2Ok != currentSpo2Activo || co2Ok != currentCo2Activo) {
+      if (ecgOk != currentEcgActivo ||
+          spo2Ok != currentSpo2Activo ||
+          co2Ok != currentCo2Activo) {
         state = state.copiarCon(
           ecgActivo: ecgOk,
           spo2Activo: spo2Ok,
@@ -382,16 +443,10 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         valor = -10.0 + (valor - 0.2) * 90.0;
       }
 
-      final punto = PuntoBiometrico(
-        packet.timestamp.toDouble(),
-        valor,
-      );
+      final punto = PuntoBiometrico(packet.timestamp.toDouble(), valor);
 
       if (_isBuffering) {
-        final sample = Sample(
-          timestamp: packet.timestamp,
-          value: packet.value,
-        );
+        final sample = Sample(timestamp: packet.timestamp, value: packet.value);
         switch (pType) {
           case 'ecg':
             _ecgBuffer.add(sample);
@@ -459,15 +514,11 @@ class NotificadorSignosVitales extends _$NotificadorSignosVitales {
         co2Activo: co2Activo,
       );
 
-      ref.read(notificadorAlarmaProvider.notifier).monitorearValores(
-        fc: fc,
-        ppg: ppgFc,
-        co2: co2Nivel,
-      );
+      ref
+          .read(notificadorAlarmaProvider.notifier)
+          .monitorearValores(fc: fc, ppg: ppgFc, co2: co2Nivel);
     } catch (e) {
       debugPrint('[VitalSigns] Error en Scheduler Flush: $e');
     }
   }
-
-
 }

@@ -15,13 +15,17 @@ UsuarioApiService usuarioApiService(UsuarioApiServiceRef ref) {
   final conexionState = ref.watch(notificadorConexionProvider);
   String httpUrl = 'http://localhost:8080';
   final wsUrl = conexionState.wsUrl;
-  
+
   if (wsUrl.startsWith('ws://')) {
-    httpUrl = wsUrl.replaceFirst('ws://', 'http://').replaceAll('/ws/sensors', '');
+    httpUrl = wsUrl
+        .replaceFirst('ws://', 'http://')
+        .replaceAll('/ws/sensors', '');
   } else if (wsUrl.startsWith('wss://')) {
-    httpUrl = wsUrl.replaceFirst('wss://', 'https://').replaceAll('/ws/sensors', '');
+    httpUrl = wsUrl
+        .replaceFirst('wss://', 'https://')
+        .replaceAll('/ws/sensors', '');
   }
-  
+
   return UsuarioApiService(baseUrl: httpUrl);
 }
 
@@ -39,10 +43,7 @@ class EstadoUsuarios {
   });
 
   factory EstadoUsuarios.inicial() {
-    return const EstadoUsuarios(
-      usuarios: [],
-      cargando: true,
-    );
+    return const EstadoUsuarios(usuarios: [], cargando: true);
   }
 
   EstadoUsuarios copiarCon({
@@ -53,8 +54,9 @@ class EstadoUsuarios {
   }) {
     return EstadoUsuarios(
       usuarios: usuarios ?? this.usuarios,
-      usuarioActivo:
-          limpiarUsuarioActivo ? null : (usuarioActivo ?? this.usuarioActivo),
+      usuarioActivo: limpiarUsuarioActivo
+          ? null
+          : (usuarioActivo ?? this.usuarioActivo),
       cargando: cargando ?? this.cargando,
     );
   }
@@ -69,17 +71,14 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
     final cargando = ref.watch(
       notificadorConexionProvider.select((s) => s.cargando),
     );
-    
+
     if (cargando) {
       return EstadoUsuarios.inicial();
     }
 
     Future.microtask(() => _cargarUsuarios());
-    
-    return const EstadoUsuarios(
-      usuarios: [],
-      cargando: true,
-    );
+
+    return const EstadoUsuarios(usuarios: [], cargando: true);
   }
 
   Future<void> _cargarUsuarios() async {
@@ -119,7 +118,7 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
         email: email,
         dni: dni,
       );
-      
+
       final nuevaLista = [...state.usuarios, nuevoUsuario];
       state = state.copiarCon(
         usuarios: nuevaLista,
@@ -148,7 +147,7 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
   /// Elimina un usuario y todos sus registros de medición asociados.
   Future<void> eliminarUsuario(String usuarioId) async {
     final apiService = ref.read(usuarioApiServiceProvider);
-    
+
     // Eliminación en cascada manual de sesiones en el backend
     final uId = int.tryParse(usuarioId);
     if (uId != null) {
@@ -159,18 +158,21 @@ class NotificadorUsuarios extends _$NotificadorUsuarios {
           await sessionApi.eliminarSesion(session.id);
         }
       } catch (e) {
-        debugPrint('[NotificadorUsuarios] Error al eliminar sesiones en cascada en backend: $e');
+        debugPrint(
+          '[NotificadorUsuarios] Error al eliminar sesiones en cascada en backend: $e',
+        );
       }
     }
 
     try {
       await apiService.eliminarUsuario(usuarioId);
     } catch (e) {
-      debugPrint('[NotificadorUsuarios] Error al eliminar en el backend (tal vez no está implementado aún): $e');
+      debugPrint(
+        '[NotificadorUsuarios] Error al eliminar en el backend (tal vez no está implementado aún): $e',
+      );
     }
 
-    final nuevaLista =
-        state.usuarios.where((u) => u.id != usuarioId).toList();
+    final nuevaLista = state.usuarios.where((u) => u.id != usuarioId).toList();
 
     final bool eraActivo = state.usuarioActivo?.id == usuarioId;
 

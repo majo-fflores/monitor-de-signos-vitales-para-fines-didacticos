@@ -180,9 +180,20 @@ class SessionApiService {
         );
       }
 
+      String filename = 'session_$sessionId.csv';
+      final contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition != null) {
+        final match = RegExp(
+          r'filename="?([^"]+)"?',
+        ).firstMatch(contentDisposition);
+        if (match != null) {
+          filename = match.group(1)!;
+        }
+      }
+
       final downloadsDir = _downloadsDirectory();
       final file = File(
-        '${downloadsDir.path}${Platform.pathSeparator}datavital_session_$sessionId.csv',
+        '${downloadsDir.path}${Platform.pathSeparator}$filename',
       );
       await file.writeAsBytes(response.bodyBytes);
       return file.path;

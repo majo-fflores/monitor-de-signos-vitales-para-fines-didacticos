@@ -15,33 +15,39 @@ void main() {
       expect(theme, equals(ThemeMode.system));
     });
 
-    test('should load theme mode string from SharedPreferences on init', () async {
-      SharedPreferences.setMockInitialValues({'tema_modo_str': 'light'});
+    test(
+      'should load theme mode string from SharedPreferences on init',
+      () async {
+        SharedPreferences.setMockInitialValues({'tema_modo_str': 'light'});
 
-      final container = createContainer();
-      // Listen to keep provider alive
-      container.listen(themeNotifierProvider, (_, __) {});
-      
-      // Wait for unawaited _initPrefs to finish
-      await Future.delayed(const Duration(milliseconds: 50));
+        final container = createContainer();
+        // Listen to keep provider alive
+        container.listen(themeNotifierProvider, (_, __) {});
 
-      final theme = container.read(themeNotifierProvider);
-      expect(theme, equals(ThemeMode.light));
-    });
+        // Wait for unawaited _initPrefs to finish
+        await Future.delayed(const Duration(milliseconds: 50));
 
-    test('should load legacy bool theme on init if string mode not set', () async {
-      SharedPreferences.setMockInitialValues({'tema_oscuro': true});
+        final theme = container.read(themeNotifierProvider);
+        expect(theme, equals(ThemeMode.light));
+      },
+    );
 
-      final container = createContainer();
-      // Listen to keep provider alive
-      container.listen(themeNotifierProvider, (_, __) {});
+    test(
+      'should load legacy bool theme on init if string mode not set',
+      () async {
+        SharedPreferences.setMockInitialValues({'tema_oscuro': true});
 
-      // Wait for unawaited _initPrefs to finish
-      await Future.delayed(const Duration(milliseconds: 50));
+        final container = createContainer();
+        // Listen to keep provider alive
+        container.listen(themeNotifierProvider, (_, __) {});
 
-      final theme = container.read(themeNotifierProvider);
-      expect(theme, equals(ThemeMode.dark));
-    });
+        // Wait for unawaited _initPrefs to finish
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        final theme = container.read(themeNotifierProvider);
+        expect(theme, equals(ThemeMode.dark));
+      },
+    );
 
     test('cambiarTema should update state and persist value', () async {
       SharedPreferences.setMockInitialValues({});

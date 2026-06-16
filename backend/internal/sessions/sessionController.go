@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v5"
 )
@@ -93,7 +94,8 @@ func ExportSessionCSV(c *echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Session not found or error exporting CSV"})
 	}
 
-	filename := fmt.Sprintf("session_%d.csv", id)
+	timestamp := time.Now().Format("20060102_150405")
+	filename := fmt.Sprintf("session_%d_%s.csv", id, timestamp)
 	c.Response().Header().Set(
 		echo.HeaderContentDisposition,
 		fmt.Sprintf(`attachment; filename="%s"`, filename),

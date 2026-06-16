@@ -66,13 +66,13 @@ void main() {
 
       return ProviderScope(
         overrides: overrides,
-        child: MaterialApp.router(
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(routerConfig: router),
       );
     }
 
-    testWidgets('should render children and default layout elements', (tester) async {
+    testWidgets('should render children and default layout elements', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
 
@@ -84,9 +84,15 @@ void main() {
         createLayoutWithRouter(
           child: const Text('My Body Child'),
           overrides: [
-            notificadorAlarmaProvider.overrideWith(() => MockAlarmaNotifier(alarmState)),
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConexionNotifier(conState)),
+            notificadorAlarmaProvider.overrideWith(
+              () => MockAlarmaNotifier(alarmState),
+            ),
+            notificadorUsuariosProvider.overrideWith(
+              () => MockUsuariosNotifier(usersState),
+            ),
+            notificadorConexionProvider.overrideWith(
+              () => MockConexionNotifier(conState),
+            ),
           ],
         ),
       );
@@ -99,45 +105,52 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    testWidgets('should show BannerAlarmaCritica and trigger audio when alarm transitions to active', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should show BannerAlarmaCritica and trigger audio when alarm transitions to active',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      final initialAlarmState = EstadoAlarma.inicial();
-      final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
-      final conState = EstadoConexionBackend.inicial();
+        final initialAlarmState = EstadoAlarma.inicial();
+        final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
+        final conState = EstadoConexionBackend.inicial();
 
-      final notifier = MockAlarmaNotifier(initialAlarmState);
+        final notifier = MockAlarmaNotifier(initialAlarmState);
 
-      await tester.pumpWidget(
-        createLayoutWithRouter(
-          child: const Text('My Body Child'),
-          overrides: [
-            notificadorAlarmaProvider.overrideWith(() => notifier),
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConexionNotifier(conState)),
-          ],
-        ),
-      );
+        await tester.pumpWidget(
+          createLayoutWithRouter(
+            child: const Text('My Body Child'),
+            overrides: [
+              notificadorAlarmaProvider.overrideWith(() => notifier),
+              notificadorUsuariosProvider.overrideWith(
+                () => MockUsuariosNotifier(usersState),
+              ),
+              notificadorConexionProvider.overrideWith(
+                () => MockConexionNotifier(conState),
+              ),
+            ],
+          ),
+        );
 
-      expect(find.text('ALARMA CRÍTICA'), findsNothing);
+        expect(find.text('ALARMA CRÍTICA'), findsNothing);
 
-      // Transition state
-      final activeAlarmState = EstadoAlarma.inicial().copiarCon(
-        alarmaActiva: true,
-        segundosRestantes: 30,
-        alertasActivas: [const AlertaCritica('Frecuencia Cardíaca', 110)],
-      );
-      notifier.updateState(activeAlarmState);
-      await tester.pump();
+        // Transition state
+        final activeAlarmState = EstadoAlarma.inicial().copiarCon(
+          alarmaActiva: true,
+          segundosRestantes: 30,
+          alertasActivas: [const AlertaCritica('Frecuencia Cardíaca', 110)],
+        );
+        notifier.updateState(activeAlarmState);
+        await tester.pump();
 
-      // Banner should be visible
-      expect(find.text('ALARMA CRÍTICA'), findsOneWidget);
-      // Audio should have been triggered
-      verify(() => mockAudio.iniciarAlarma(any())).called(1);
+        // Banner should be visible
+        expect(find.text('ALARMA CRÍTICA'), findsOneWidget);
+        // Audio should have been triggered
+        verify(() => mockAudio.iniciarAlarma(any())).called(1);
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
   });
 }

@@ -22,7 +22,9 @@ class MockThemeNotifier extends ThemeNotifier {
 
 void main() {
   group('DisplayPreferencesCard Widget Tests', () {
-    testWidgets('should render titles and SegmentedButton on wide screen', (tester) async {
+    testWidgets('should render titles and SegmentedButton on wide screen', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(800, 600);
       tester.view.devicePixelRatio = 1.0;
 
@@ -30,9 +32,7 @@ void main() {
 
       await tester.pumpWidget(
         createTestableWidget(
-          overrides: [
-            themeNotifierProvider.overrideWith(() => themeNotifier),
-          ],
+          overrides: [themeNotifierProvider.overrideWith(() => themeNotifier)],
           child: const DisplayPreferencesCard(
             subtitleColor: Colors.grey,
             borderColor: Colors.blue,

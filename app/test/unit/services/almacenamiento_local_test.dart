@@ -8,20 +8,23 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('guardarUsuarioActivo should store and remove active user ID', () async {
-      // Initially null
-      var activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
-      expect(activeId, isNull);
+    test(
+      'guardarUsuarioActivo should store and remove active user ID',
+      () async {
+        // Initially null
+        var activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
+        expect(activeId, isNull);
 
-      // Save ID
-      await AlmacenamientoLocal.guardarUsuarioActivo('user_123');
-      activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
-      expect(activeId, equals('user_123'));
+        // Save ID
+        await AlmacenamientoLocal.guardarUsuarioActivo('user_123');
+        activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
+        expect(activeId, equals('user_123'));
 
-      // Save null to remove
-      await AlmacenamientoLocal.guardarUsuarioActivo(null);
-      activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
-      expect(activeId, isNull);
-    });
+        // Save null to remove
+        await AlmacenamientoLocal.guardarUsuarioActivo(null);
+        activeId = await AlmacenamientoLocal.obtenerUsuarioActivoId();
+        expect(activeId, isNull);
+      },
+    );
   });
 }

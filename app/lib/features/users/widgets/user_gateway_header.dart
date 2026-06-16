@@ -6,10 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 class UserGatewayHeader extends StatelessWidget {
   final bool esOscuro;
 
-  const UserGatewayHeader({
-    super.key,
-    required this.esOscuro,
-  });
+  const UserGatewayHeader({super.key, required this.esOscuro});
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +16,8 @@ class UserGatewayHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SvgPicture.asset(
-          esOscuro 
-              ? 'assets/svg/isotipo-dark.svg' 
+          esOscuro
+              ? 'assets/svg/isotipo-dark.svg'
               : 'assets/svg/isotipo-light.svg',
           width: 40,
           height: 40,

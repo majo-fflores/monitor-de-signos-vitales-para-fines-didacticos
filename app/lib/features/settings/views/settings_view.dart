@@ -14,8 +14,12 @@ class SettingsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final titleColor = isDark ? ColoresOscuros.foreground : ColoresClaros.foreground;
-    final subtitleColor = isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground;
+    final titleColor = isDark
+        ? ColoresOscuros.foreground
+        : ColoresClaros.foreground;
+    final subtitleColor = isDark
+        ? ColoresOscuros.mutedForeground
+        : ColoresClaros.mutedForeground;
     final borderColor = isDark ? ColoresOscuros.border : ColoresClaros.border;
 
     return SingleChildScrollView(
@@ -33,9 +37,7 @@ class SettingsView extends ConsumerWidget {
           const Gap(4),
           Text(
             'Ajustes de umbrales de alerta, control de alarmas y preferencias del sistema.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodyMedium?.copyWith(color: subtitleColor),
           ),
 
           const Gap(24),

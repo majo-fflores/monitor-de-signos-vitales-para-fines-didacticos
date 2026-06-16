@@ -55,10 +55,17 @@ class HistorialAlarmas extends _$HistorialAlarmas {
       _prefs = await SharedPreferences.getInstance();
       final listJson = _prefs?.getStringList(_historyKey);
       if (listJson != null) {
-        state = listJson
-            .map((item) => RegistroAlarma.fromJson(json.decode(item) as Map<String, dynamic>))
-            .toList()
-          ..sort((a, b) => b.fecha.compareTo(a.fecha)); // El más reciente primero
+        state =
+            listJson
+                .map(
+                  (item) => RegistroAlarma.fromJson(
+                    json.decode(item) as Map<String, dynamic>,
+                  ),
+                )
+                .toList()
+              ..sort(
+                (a, b) => b.fecha.compareTo(a.fecha),
+              ); // El más reciente primero
       }
     } catch (e) {
       debugPrint('Error cargando historial de alarmas: $e');

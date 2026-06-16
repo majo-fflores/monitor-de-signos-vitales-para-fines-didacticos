@@ -47,7 +47,10 @@ class SessionHistoryRow extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('CSV exportado: $path'),
+          content: Text(
+            'CSV exportado: $path',
+            style: const TextStyle(color: Colors.white),
+          ),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
@@ -56,7 +59,10 @@ class SessionHistoryRow extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al exportar CSV: $e'),
+          content: Text(
+            'Error al exportar CSV: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
           behavior: SnackBarBehavior.floating,
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
@@ -245,14 +251,16 @@ class SessionHistoryRow extends ConsumerWidget {
                   children: [
                     MetricaInline(
                       label: 'Frecuencia Cardíaca (ECG)',
-                      value: '${registro.frecuenciaCardiaca} LPM',
+                      value:
+                          'Mín ${registro.minFrecuenciaCardiaca} | Prom ${registro.frecuenciaCardiaca} | Máx ${registro.maxFrecuenciaCardiaca} LPM',
                       color: ColoresSensores.ecgVerde,
                       theme: theme,
                       esOscuro: esOscuro,
                     ),
                     MetricaInline(
                       label: 'Pulso (PPG)',
-                      value: '${registro.ppgFrecuenciaCardiaca} LPM',
+                      value:
+                          'Mín ${registro.minPpgFrecuenciaCardiaca} | Prom ${registro.ppgFrecuenciaCardiaca} | Máx ${registro.maxPpgFrecuenciaCardiaca} LPM',
                       color: ColoresSensores.spo2Azul,
                       theme: theme,
                       esOscuro: esOscuro,
@@ -266,7 +274,8 @@ class SessionHistoryRow extends ConsumerWidget {
                     // ),
                     MetricaInline(
                       label: 'CO2',
-                      value: '${registro.nivelCo2} ppm',
+                      value:
+                          'Mín ${registro.minCo2} | Prom ${registro.nivelCo2} | Máx ${registro.maxCo2} ppm',
                       color: ColoresSensores.co2Amarillo,
                       theme: theme,
                       esOscuro: esOscuro,

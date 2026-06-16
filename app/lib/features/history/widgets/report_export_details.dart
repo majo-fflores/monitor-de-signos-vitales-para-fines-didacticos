@@ -6,10 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 class ReportExportDetails extends StatelessWidget {
   final bool esMobile;
 
-  const ReportExportDetails({
-    super.key,
-    this.esMobile = false,
-  });
+  const ReportExportDetails({super.key, this.esMobile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +24,8 @@ class ReportExportDetails extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark 
-            ? Colors.white.withValues(alpha: 0.02) 
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
             : Colors.black.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -46,21 +43,38 @@ class ReportExportDetails extends StatelessWidget {
           ),
           const Gap(12),
           Text(
-            'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG, PPG y CO2) y creará un archivo PDF formalizado.',
+            'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG, PPG y CO2) y creará un archivo PDF formalizado o un archivo CSV con datos crudos.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+              color: isDark
+                  ? ColoresOscuros.mutedForeground
+                  : ColoresClaros.mutedForeground,
               height: 1.5,
             ),
           ),
           const Gap(16),
           const Divider(),
           const Gap(16),
-          _buildInfoRow(theme, isDark, Icons.check_circle_outline, 'Formato Médico A4/Letter'),
+          _buildInfoRow(
+            theme,
+            isDark,
+            Icons.check_circle_outline,
+            'Formato Médico A4/Letter',
+          ),
           const Gap(12),
-          _buildInfoRow(theme, isDark, Icons.print_outlined, 'Listo para Impresión Física'),
+          _buildInfoRow(
+            theme,
+            isDark,
+            Icons.print_outlined,
+            'Listo para Impresión Física',
+          ),
           const Gap(12),
-          _buildInfoRow(theme, isDark, Icons.lock_outline, 'Datos locales privados'),
-          
+          _buildInfoRow(
+            theme,
+            isDark,
+            Icons.lock_outline,
+            'Datos locales privados',
+          ),
+
           // Spacer + ícono decorativo para llenar el espacio en desktop
           const Spacer(),
           const Gap(24),
@@ -68,18 +82,18 @@ class ReportExportDetails extends StatelessWidget {
             child: Icon(
               LucideIcons.fileText,
               size: 64,
-              color: isDark 
-                  ? Colors.white.withValues(alpha: 0.03) 
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.03)
                   : Colors.black.withValues(alpha: 0.03),
             ),
           ),
           const Gap(8),
           Center(
             child: Text(
-              'PDF • Reporte Clínico',
+              'PDF / CSV • Reporte Clínico',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isDark 
-                    ? Colors.white.withValues(alpha: 0.08) 
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
                     : Colors.black.withValues(alpha: 0.08),
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.5,
@@ -96,8 +110,8 @@ class ReportExportDetails extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark 
-            ? Colors.white.withValues(alpha: 0.02) 
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
             : Colors.black.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -115,9 +129,11 @@ class ReportExportDetails extends StatelessWidget {
           ),
           const Gap(8),
           Text(
-            'El sistema recopilará las lecturas de los biosensores activos y creará un PDF formalizado.',
+            'El sistema recopilará las lecturas de los biosensores activos y creará un PDF formalizado o un CSV crudo.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+              color: isDark
+                  ? ColoresOscuros.mutedForeground
+                  : ColoresClaros.mutedForeground,
               height: 1.4,
             ),
           ),
@@ -127,19 +143,28 @@ class ReportExportDetails extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildCompactInfoItem(
-                  theme, isDark, Icons.check_circle_outline, 'A4/Letter',
+                  theme,
+                  isDark,
+                  Icons.check_circle_outline,
+                  'A4/Letter',
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildCompactInfoItem(
-                  theme, isDark, Icons.print_outlined, 'Imprimible',
+                  theme,
+                  isDark,
+                  Icons.print_outlined,
+                  'Imprimible',
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _buildCompactInfoItem(
-                  theme, isDark, Icons.lock_outline, 'Privado',
+                  theme,
+                  isDark,
+                  Icons.lock_outline,
+                  'Privado',
                 ),
               ),
             ],
@@ -169,7 +194,9 @@ class ReportExportDetails extends StatelessWidget {
           Icon(
             icon,
             size: 16,
-            color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+            color: isDark
+                ? ColoresOscuros.mutedForeground
+                : ColoresClaros.mutedForeground,
           ),
           const SizedBox(height: 4),
           Text(
@@ -185,13 +212,20 @@ class ReportExportDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(ThemeData theme, bool isDark, IconData icon, String text) {
+  Widget _buildInfoRow(
+    ThemeData theme,
+    bool isDark,
+    IconData icon,
+    String text,
+  ) {
     return Row(
       children: [
         Icon(
-          icon, 
-          size: 16, 
-          color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+          icon,
+          size: 16,
+          color: isDark
+              ? ColoresOscuros.mutedForeground
+              : ColoresClaros.mutedForeground,
         ),
         const Gap(8),
         Expanded(

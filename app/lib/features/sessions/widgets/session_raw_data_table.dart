@@ -10,13 +10,11 @@ import '../../../shared/providers/session_provider.dart';
 class SessionRawDataTable extends ConsumerStatefulWidget {
   final int sessionId;
 
-  const SessionRawDataTable({
-    super.key,
-    required this.sessionId,
-  });
+  const SessionRawDataTable({super.key, required this.sessionId});
 
   @override
-  ConsumerState<SessionRawDataTable> createState() => _SessionRawDataTableState();
+  ConsumerState<SessionRawDataTable> createState() =>
+      _SessionRawDataTableState();
 }
 
 class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
@@ -95,12 +93,10 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
 
   String _formatearTimestamp(int timestamp) {
     final dt = DateTime.fromMillisecondsSinceEpoch(
-      timestamp < 1000000000000 ? timestamp * 1000 : timestamp
+      timestamp < 1000000000000 ? timestamp * 1000 : timestamp,
     ).toLocal();
     return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -110,9 +106,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
     if (_cargando) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -162,7 +156,10 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
               unselectedLabelColor: theme.hintColor,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: UnderlineTabIndicator(
-                borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
               ),
               tabs: const [
                 Tab(
@@ -202,9 +199,27 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
               height: 220,
               child: TabBarView(
                 children: [
-                  _buildSensorTable(_bpmSamples, 'BPM', (val) => val < 60 || val > 100, 'LPM', _bpmScrollController),
-                  _buildSensorTable(_ecgSamples, 'ECG', (_) => false, 'mV', _ecgScrollController),
-                  _buildSensorTable(_airSamples, 'AIR', (val) => val > 1000, 'ppm', _airScrollController),
+                  _buildSensorTable(
+                    _bpmSamples,
+                    'BPM',
+                    (val) => val < 60 || val > 100,
+                    'LPM',
+                    _bpmScrollController,
+                  ),
+                  _buildSensorTable(
+                    _ecgSamples,
+                    'ECG',
+                    (_) => false,
+                    'mV',
+                    _ecgScrollController,
+                  ),
+                  _buildSensorTable(
+                    _airSamples,
+                    'AIR',
+                    (val) => val > 1000,
+                    'ppm',
+                    _airScrollController,
+                  ),
                 ],
               ),
             ),
@@ -214,7 +229,13 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
     );
   }
 
-  Widget _buildSensorTable(List<Sample> samples, String label, bool Function(double) isOutOfRange, String unit, ScrollController scrollController) {
+  Widget _buildSensorTable(
+    List<Sample> samples,
+    String label,
+    bool Function(double) isOutOfRange,
+    String unit,
+    ScrollController scrollController,
+  ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -251,11 +272,15 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
             children: [
               Text(
                 'Hora de Registro',
-                style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 'Valor ($unit)',
-                style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -294,14 +319,20 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                       Row(
                         children: [
                           if (outOfRange) ...[
-                            const Icon(LucideIcons.alertCircle, color: Colors.orange, size: 14),
+                            const Icon(
+                              LucideIcons.alertCircle,
+                              color: Colors.orange,
+                              size: 14,
+                            ),
                             const SizedBox(width: 4),
                           ],
                           Text(
                             '${sample.value.toStringAsFixed(1)} $unit',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontFamily: 'monospace',
-                              fontWeight: outOfRange ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: outOfRange
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               color: outOfRange ? Colors.orange : null,
                             ),
                           ),
@@ -327,7 +358,9 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
           ),
           child: Text(
             'Total: ${samples.length} muestras',
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.disabledColor,
+            ),
             textAlign: TextAlign.right,
           ),
         ),

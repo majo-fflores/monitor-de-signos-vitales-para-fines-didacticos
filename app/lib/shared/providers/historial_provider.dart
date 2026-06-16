@@ -20,10 +20,7 @@ class EstadoHistorial {
   });
 
   factory EstadoHistorial.inicial() {
-    return const EstadoHistorial(
-      registros: [],
-      cargando: false,
-    );
+    return const EstadoHistorial(registros: [], cargando: false);
   }
 
   EstadoHistorial copiarCon({
@@ -67,7 +64,9 @@ class NotificadorHistorial extends _$NotificadorHistorial {
         // Ordenamos por fecha descendente (más reciente primero)
         registros.sort((a, b) => b.fechaRegistro.compareTo(a.fechaRegistro));
       } catch (e) {
-        debugPrint('[NotificadorHistorial] Error al cargar historial desde el backend: $e');
+        debugPrint(
+          '[NotificadorHistorial] Error al cargar historial desde el backend: $e',
+        );
         registros = [];
       }
     }
@@ -87,8 +86,9 @@ class NotificadorHistorial extends _$NotificadorHistorial {
 
   /// Elimina un registro de medición específico (elimina la sesión del backend).
   Future<void> eliminarRegistro(String registroId, String usuarioId) async {
-    final nuevaLista =
-        state.registros.where((r) => r.id != registroId).toList();
+    final nuevaLista = state.registros
+        .where((r) => r.id != registroId)
+        .toList();
     state = state.copiarCon(registros: nuevaLista);
 
     final sessionId = int.tryParse(registroId);
@@ -96,7 +96,9 @@ class NotificadorHistorial extends _$NotificadorHistorial {
       try {
         await ref.read(sessionApiServiceProvider).eliminarSesion(sessionId);
       } catch (e) {
-        debugPrint('[NotificadorHistorial] Error al eliminar sesión $sessionId del backend: $e');
+        debugPrint(
+          '[NotificadorHistorial] Error al eliminar sesión $sessionId del backend: $e',
+        );
       }
     }
   }

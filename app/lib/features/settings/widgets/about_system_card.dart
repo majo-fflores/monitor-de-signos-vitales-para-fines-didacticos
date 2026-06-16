@@ -29,10 +29,7 @@ class AboutSystemCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                LucideIcons.info,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(LucideIcons.info, color: theme.colorScheme.primary),
               const Gap(10),
               Text(
                 'Acerca del Sistema',
@@ -45,9 +42,7 @@ class AboutSystemCard extends StatelessWidget {
           const Gap(8),
           Text(
             'Información técnica, de compilación y autoría del sistema de monitoreo en tiempo real.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
           const Gap(24),
 
@@ -91,13 +86,33 @@ class AboutSystemCard extends StatelessWidget {
           const Gap(16),
 
           // Tabla/Lista de Datos de Versión
-          _buildInfoRow(context, 'Versión de la Aplicación', 'v1.0.0-estable', LucideIcons.appWindow),
+          _buildInfoRow(
+            context,
+            'Versión de la Aplicación',
+            'v1.0.0-estable',
+            LucideIcons.appWindow,
+          ),
           const Gap(12),
-          _buildInfoRow(context, 'Firmware Requerido', 'DataVital-Arduino v1.0.3', LucideIcons.cpu),
+          _buildInfoRow(
+            context,
+            'Firmware Requerido',
+            'DataVital-Arduino v1.0.3',
+            LucideIcons.cpu,
+          ),
           const Gap(12),
-          _buildInfoRow(context, 'Desarrollado por', 'UNTDF - Sistemas de Tiempo Real', LucideIcons.graduationCap),
+          _buildInfoRow(
+            context,
+            'Desarrollado por',
+            'UNTDF - Sistemas de Tiempo Real',
+            LucideIcons.graduationCap,
+          ),
           const Gap(12),
-          _buildInfoRow(context, 'Licencia', 'GPL v3 - Académica', LucideIcons.fileText),
+          _buildInfoRow(
+            context,
+            'Licencia',
+            'GPL v3 - Académica',
+            LucideIcons.fileText,
+          ),
 
           const Gap(20),
           const Divider(),
@@ -108,7 +123,10 @@ class AboutSystemCard extends StatelessWidget {
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Documentación del proyecto cargada en el repositorio local.'),
+                  content: Text(
+                    'Documentación del proyecto cargada en el repositorio local.',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -128,7 +146,12 @@ class AboutSystemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String title, String value, IconData icon) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+  ) {
     final theme = Theme.of(context);
     return Row(
       children: [

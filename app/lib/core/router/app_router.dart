@@ -55,7 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/usuarios',
         builder: (context, state) => const UserSelectionView(),
       ),
-      
+
       // Rutas de la app envueltas en el Layout principal
       ShellRoute(
         builder: (BuildContext context, GoRouterState state, Widget child) {
@@ -64,15 +64,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DashboardView(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DashboardView()),
           ),
           GoRoute(
             path: '/historial',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HistoryView(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HistoryView()),
             routes: [
               GoRoute(
                 path: 'preview-pdf',
@@ -85,21 +83,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/sesiones',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SessionsHistoryView(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SessionsHistoryView()),
           ),
           GoRoute(
             path: '/alertas',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AlertsView(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AlertsView()),
           ),
           GoRoute(
             path: '/configuracion',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SettingsView(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SettingsView()),
           ),
         ],
       ),

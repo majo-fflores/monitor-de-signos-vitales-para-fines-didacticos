@@ -13,7 +13,8 @@ class ThemeNotifier extends _$ThemeNotifier {
   @override
   ThemeMode build() {
     _initPrefs();
-    return ThemeMode.system; // Por defecto usa el del sistema hasta que se carguen los guardados
+    return ThemeMode
+        .system; // Por defecto usa el del sistema hasta que se carguen los guardados
   }
 
   Future<void> _initPrefs() async {
@@ -55,7 +56,9 @@ class ThemeNotifier extends _$ThemeNotifier {
   }
 
   Future<void> alternarTema() async {
-    final nuevoModo = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    final nuevoModo = state == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
     await cambiarTema(nuevoModo);
   }
 }

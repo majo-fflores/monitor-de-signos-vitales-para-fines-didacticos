@@ -94,7 +94,9 @@ class ColoresComponentes {
   static const sidebarShadowGlow = Color(0xFF00D4FF);
 
   // Plaqueta informativa de CO2 (Badges)
-  static const co2BadgeBgClaro = Color(0xFFF0F2FA); // Soft indigo-blue tint to complement yellow and match primary theme
+  static const co2BadgeBgClaro = Color(
+    0xFFF0F2FA,
+  ); // Soft indigo-blue tint to complement yellow and match primary theme
   static const co2BadgeBgOscuro = Color(0xFF1E1E26);
 
   // Medidor Gauge Instrumental de CO2
@@ -103,7 +105,9 @@ class ColoresComponentes {
 
   // Fondos de gráficos de ondas y consola
   static const graficoHeaderOscuro = Colors.black;
-  static const graficoHeaderClaro = Color(0xFFF0F2FA); // Soft indigo-blue tint to match primary theme
+  static const graficoHeaderClaro = Color(
+    0xFFF0F2FA,
+  ); // Soft indigo-blue tint to match primary theme
   static const graficoCuerpoOscuro = Color(0xFF0F0F12);
   static const graficoCuerpoClaro = Colors.white;
 

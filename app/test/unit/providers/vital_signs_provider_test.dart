@@ -27,35 +27,42 @@ void main() {
       expect(state.co2Activo, isTrue);
     });
 
-    test('iniciarSimulacion should populate initial points and start ticks', () {
-      fakeAsync((async) {
-        final container = createContainer();
-        final notifier = container.read(notificadorSignosVitalesProvider.notifier);
+    test(
+      'iniciarSimulacion should populate initial points and start ticks',
+      () {
+        fakeAsync((async) {
+          final container = createContainer();
+          final notifier = container.read(
+            notificadorSignosVitalesProvider.notifier,
+          );
 
-        notifier.iniciarSimulacion();
+          notifier.iniciarSimulacion();
 
-        var state = container.read(notificadorSignosVitalesProvider);
-        expect(state.ecgDatos, hasLength(100));
-        expect(state.spo2Datos, hasLength(100));
+          var state = container.read(notificadorSignosVitalesProvider);
+          expect(state.ecgDatos, isEmpty);
+          expect(state.spo2Datos, hasLength(100));
 
-        // Advance 20ms to fire first simulation timer tick
-        async.elapse(const Duration(milliseconds: 20));
+          // Advance 20ms to fire first simulation timer tick
+          async.elapse(const Duration(milliseconds: 20));
 
-        // State should be updated with new points (since timer rotated them)
-        state = container.read(notificadorSignosVitalesProvider);
-        expect(state.ecgDatos, hasLength(100));
-        expect(state.spo2Datos, hasLength(100));
-      });
-    });
+          // State should be updated with new points (since timer rotated them)
+          state = container.read(notificadorSignosVitalesProvider);
+          expect(state.ecgDatos, hasLength(1));
+          expect(state.spo2Datos, hasLength(100));
+        });
+      },
+    );
 
     test('ticks should eventually update numeric metrics and check alarms', () {
       fakeAsync((async) {
         final container = createContainer();
-        
+
         // Listen to alarms provider to keep it alive
         container.listen(notificadorAlarmaProvider, (_, __) {});
-        
-        final notifier = container.read(notificadorSignosVitalesProvider.notifier);
+
+        final notifier = container.read(
+          notificadorSignosVitalesProvider.notifier,
+        );
 
         notifier.iniciarSimulacion();
 
@@ -88,4 +95,5 @@ void main() {
 }
 
 // Custom matcher for range checks
-Matcher isBetween(num min, num max) => allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max));
+Matcher isBetween(num min, num max) =>
+    allOf(greaterThanOrEqualTo(min), lessThanOrEqualTo(max));

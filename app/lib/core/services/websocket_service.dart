@@ -29,17 +29,19 @@ class _IsolateMessage {
 }
 
 /// Servicio de conexión WebSocket de ultra alto rendimiento.
-/// 
+///
 /// Utiliza un Dart Isolate en background para descargar al hilo principal (UI Thread)
 /// de todas las tareas pesadas de red, deserialización JSON y parsing de paquetes.
 class WebSocketService {
   Isolate? _isolate;
   SendPort? _commandPort;
   ReceivePort? _receivePort;
-  
+
   String? _currentUrl;
 
-  final _statusNotifier = ValueNotifier<EstadoConexion>(EstadoConexion.desconectado);
+  final _statusNotifier = ValueNotifier<EstadoConexion>(
+    EstadoConexion.desconectado,
+  );
   final _packetController = StreamController<WsPacket>.broadcast();
 
   /// Estado reactivo de la conexión.
@@ -58,10 +60,13 @@ class WebSocketService {
 
     if (_isolate == null) {
       _receivePort = ReceivePort();
-      
+
       // Spawnear isolate de fondo
-      _isolate = await Isolate.spawn(_backgroundSocketIsolate, _receivePort!.sendPort);
-      
+      _isolate = await Isolate.spawn(
+        _backgroundSocketIsolate,
+        _receivePort!.sendPort,
+      );
+
       if (_receivePort != null) {
         _receivePort!.listen((message) {
           if (message is SendPort) {
@@ -75,14 +80,19 @@ class WebSocketService {
             if (message.packetJson != null) {
               // El JSON ya ha sido procesado o filtrado asíncronamente, lo parseamos directo
               try {
-                final map = jsonDecode(message.packetJson!) as Map<String, dynamic>;
+                final map =
+                    jsonDecode(message.packetJson!) as Map<String, dynamic>;
                 _packetController.add(WsPacket.fromJson(map));
               } catch (e) {
-                debugPrint('[WebSocketService] Error parseando paquete en main thread: $e');
+                debugPrint(
+                  '[WebSocketService] Error parseando paquete en main thread: $e',
+                );
               }
             }
             if (message.error != null) {
-              debugPrint('[WebSocketService] Error en Isolate de red: ${message.error}');
+              debugPrint(
+                '[WebSocketService] Error en Isolate de red: ${message.error}',
+              );
             }
           }
         });
@@ -101,14 +111,14 @@ class WebSocketService {
   /// Libera todos los recursos del Isolate y streams.
   void dispose() {
     _commandPort?.send(_IsolateCommand('dispose'));
-    
+
     _receivePort?.close();
     _isolate?.kill(priority: Isolate.beforeNextEvent);
-    
+
     _isolate = null;
     _receivePort = null;
     _commandPort = null;
-    
+
     _packetController.close();
     _statusNotifier.dispose();
   }
@@ -162,41 +172,55 @@ class WebSocketService {
       try {
         channel = WebSocketChannel.connect(Uri.parse(url));
 
-        channel!.ready.then((_) {
-          mainSendPort.send(_IsolateMessage(status: EstadoConexion.conectado));
-          reconnectAttempts = 0;
+        channel!.ready
+            .then((_) {
+              mainSendPort.send(
+                _IsolateMessage(status: EstadoConexion.conectado),
+              );
+              reconnectAttempts = 0;
 
-          subscription = channel!.stream.listen(
-            (data) {
-              // OPTIMIZACIÓN CLAVE: El Isolate asume la carga de procesamiento JSON y la serialización intermedia.
-              mainSendPort.send(_IsolateMessage(packetJson: data as String));
-            },
-            onError: (err) {
-              mainSendPort.send(_IsolateMessage(
-                status: EstadoConexion.error,
-                error: err.toString(),
-              ));
+              subscription = channel!.stream.listen(
+                (data) {
+                  // OPTIMIZACIÓN CLAVE: El Isolate asume la carga de procesamiento JSON y la serialización intermedia.
+                  mainSendPort.send(
+                    _IsolateMessage(packetJson: data as String),
+                  );
+                },
+                onError: (err) {
+                  mainSendPort.send(
+                    _IsolateMessage(
+                      status: EstadoConexion.error,
+                      error: err.toString(),
+                    ),
+                  );
+                  scheduleReconnect(url);
+                },
+                onDone: () {
+                  mainSendPort.send(
+                    _IsolateMessage(status: EstadoConexion.desconectado),
+                  );
+                  if (!intentionalDisconnect) {
+                    scheduleReconnect(url);
+                  }
+                },
+              );
+            })
+            .catchError((err) {
+              mainSendPort.send(
+                _IsolateMessage(
+                  status: EstadoConexion.error,
+                  error: 'Handshake fallido: $err',
+                ),
+              );
               scheduleReconnect(url);
-            },
-            onDone: () {
-              mainSendPort.send(_IsolateMessage(status: EstadoConexion.desconectado));
-              if (!intentionalDisconnect) {
-                scheduleReconnect(url);
-              }
-            },
-          );
-        }).catchError((err) {
-          mainSendPort.send(_IsolateMessage(
-            status: EstadoConexion.error,
-            error: 'Handshake fallido: $err',
-          ));
-          scheduleReconnect(url);
-        });
+            });
       } catch (e) {
-        mainSendPort.send(_IsolateMessage(
-          status: EstadoConexion.error,
-          error: 'Error al instanciar socket: $e',
-        ));
+        mainSendPort.send(
+          _IsolateMessage(
+            status: EstadoConexion.error,
+            error: 'Error al instanciar socket: $e',
+          ),
+        );
         scheduleReconnect(url);
       }
     };
@@ -213,7 +237,9 @@ class WebSocketService {
           case 'disconnect':
             intentionalDisconnect = true;
             cleanup();
-            mainSendPort.send(_IsolateMessage(status: EstadoConexion.desconectado));
+            mainSendPort.send(
+              _IsolateMessage(status: EstadoConexion.desconectado),
+            );
             break;
           case 'dispose':
             intentionalDisconnect = true;

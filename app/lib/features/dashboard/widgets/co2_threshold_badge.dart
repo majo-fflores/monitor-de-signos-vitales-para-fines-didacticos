@@ -22,7 +22,9 @@ class Co2ThresholdBadge extends StatelessWidget {
       height: 96,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: esOscuro ? ColoresComponentes.co2BadgeBgOscuro : ColoresComponentes.co2BadgeBgClaro,
+        color: esOscuro
+            ? ColoresComponentes.co2BadgeBgOscuro
+            : ColoresComponentes.co2BadgeBgClaro,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
@@ -42,7 +44,10 @@ class Co2ThresholdBadge extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -66,7 +71,9 @@ class Co2ThresholdBadge extends StatelessWidget {
                 fontSize: 16,
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w800,
-                color: esOscuro ? ColoresOscuros.foreground : ColoresClaros.foreground,
+                color: esOscuro
+                    ? ColoresOscuros.foreground
+                    : ColoresClaros.foreground,
               ),
             ),
           ),

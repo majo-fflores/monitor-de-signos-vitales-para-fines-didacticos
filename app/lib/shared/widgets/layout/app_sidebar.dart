@@ -18,12 +18,10 @@ class AppSidebar extends StatelessWidget {
       width: 96,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: esOscuro 
-            ? ColoresOscuros.sidebar
-            : ColoresClaros.sidebar,
+        color: esOscuro ? ColoresOscuros.sidebar : ColoresClaros.sidebar,
         border: Border(
           right: BorderSide(
-            color: esOscuro 
+            color: esOscuro
                 ? ColoresOscuros.sidebarBorder
                 : ColoresClaros.sidebarBorder,
             width: 1,
@@ -35,9 +33,7 @@ class AppSidebar extends StatelessWidget {
         children: [
           const SidebarLogo(),
           const SizedBox(height: 32),
-          Expanded(
-            child: SidebarNav(onClose: onClose),
-          ),
+          Expanded(child: SidebarNav(onClose: onClose)),
         ],
       ),
     );

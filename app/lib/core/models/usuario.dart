@@ -50,17 +50,17 @@ class Usuario {
   factory Usuario.fromBackendJson(Map<String, dynamic> json) {
     final rawId = json['id'];
     final idStr = rawId is int ? rawId.toString() : (rawId?.toString() ?? '');
-    
+
     return Usuario(
       id: idStr,
       nombre: json['name'] as String? ?? json['nombre'] as String? ?? '',
       email: json['email'] as String? ?? '',
       dni: json['dni'] as int?,
-      creadoEn: json['created_at'] != null 
+      creadoEn: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
-          : (json['creadoEn'] != null 
-              ? DateTime.parse(json['creadoEn'] as String) 
-               : DateTime.now()),
+          : (json['creadoEn'] != null
+                ? DateTime.parse(json['creadoEn'] as String)
+                : DateTime.now()),
     );
   }
 
@@ -77,11 +77,7 @@ class Usuario {
 
   /// Convierte a formato JSON compatible con el Backend.
   Map<String, dynamic> toBackendJson() {
-    return {
-      'name': nombre,
-      'email': email,
-      if (dni != null) 'dni': dni,
-    };
+    return {'name': nombre, 'email': email, if (dni != null) 'dni': dni};
   }
 
   /// Obtiene las iniciales del nombre para mostrar en el avatar.

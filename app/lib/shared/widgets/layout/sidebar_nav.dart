@@ -23,11 +23,31 @@ class SidebarNav extends StatelessWidget {
   const SidebarNav({super.key, this.onClose});
 
   static const List<ElementoNav> _items = [
-    ElementoNav(icono: LucideIcons.layoutDashboard, etiqueta: 'Dashboard', ruta: '/'),
-    ElementoNav(icono: LucideIcons.history, etiqueta: 'Historial', ruta: '/historial'),
-    ElementoNav(icono: LucideIcons.clipboardList, etiqueta: 'Sesiones', ruta: '/sesiones'),
-    ElementoNav(icono: LucideIcons.bellRing, etiqueta: 'Alertas', ruta: '/alertas'),
-    ElementoNav(icono: LucideIcons.settings, etiqueta: 'Configuración', ruta: '/configuracion'),
+    ElementoNav(
+      icono: LucideIcons.layoutDashboard,
+      etiqueta: 'Dashboard',
+      ruta: '/',
+    ),
+    ElementoNav(
+      icono: LucideIcons.clipboardList,
+      etiqueta: 'Sesiones',
+      ruta: '/sesiones',
+    ),
+    ElementoNav(
+      icono: LucideIcons.history,
+      etiqueta: 'Reportes',
+      ruta: '/historial',
+    ),
+    ElementoNav(
+      icono: LucideIcons.bellRing,
+      etiqueta: 'Alertas',
+      ruta: '/alertas',
+    ),
+    ElementoNav(
+      icono: LucideIcons.settings,
+      etiqueta: 'Configuración',
+      ruta: '/configuracion',
+    ),
   ];
 
   @override
@@ -42,13 +62,18 @@ class SidebarNav extends StatelessWidget {
 
         // Estilos equivalentes a los condicionales de Tailwind en SidebarNav.tsx
         final colorIcono = esActivo
-            ? (esOscuro ? ColoresOscuros.sidebarPrimary : ColoresClaros.sidebarPrimary)
-            : (esOscuro ? ColoresOscuros.sidebarForeground : ColoresClaros.sidebarForeground).withValues(alpha: 0.4);
+            ? (esOscuro
+                  ? ColoresOscuros.sidebarPrimary
+                  : ColoresClaros.sidebarPrimary)
+            : (esOscuro
+                      ? ColoresOscuros.sidebarForeground
+                      : ColoresClaros.sidebarForeground)
+                  .withValues(alpha: 0.4);
 
         final colorFondo = esActivo
-            ? (esOscuro 
-                ? ColoresOscuros.sidebarPrimary.withValues(alpha: 0.15)
-                : ColoresClaros.sidebarPrimary.withValues(alpha: 0.15))
+            ? (esOscuro
+                  ? ColoresOscuros.sidebarPrimary.withValues(alpha: 0.15)
+                  : ColoresClaros.sidebarPrimary.withValues(alpha: 0.15))
             : Colors.transparent;
 
         return Padding(
@@ -71,18 +96,17 @@ class SidebarNav extends StatelessWidget {
                   boxShadow: esActivo && !esOscuro
                       ? [
                           BoxShadow(
-                            color: ColoresComponentes.sidebarShadowGlow.withValues(alpha: 0.15), // Reemplazado withOpacity
+                            color: ColoresComponentes.sidebarShadowGlow
+                                .withValues(
+                                  alpha: 0.15,
+                                ), // Reemplazado withOpacity
                             blurRadius: 20,
                             offset: const Offset(0, 0),
-                          )
+                          ),
                         ]
                       : null,
                 ),
-                child: Icon(
-                  item.icono,
-                  color: colorIcono,
-                  size: 20,
-                ),
+                child: Icon(item.icono, color: colorIcono, size: 20),
               ),
             ),
           ),

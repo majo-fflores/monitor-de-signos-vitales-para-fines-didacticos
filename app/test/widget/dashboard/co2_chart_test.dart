@@ -17,7 +17,9 @@ class MockVitalSignsNotifier extends NotificadorSignosVitales {
 
 void main() {
   group('GraficoCo2 Widget Tests', () {
-    testWidgets('should render CO2 gauge and labels in normal state', (tester) async {
+    testWidgets('should render CO2 gauge and labels in normal state', (
+      tester,
+    ) async {
       final mockState = EstadoSignosVitales.inicial().copiarCon(
         nivelCo2: 450,
         co2Activo: true,
@@ -26,7 +28,9 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(() => MockVitalSignsNotifier(mockState)),
+            notificadorSignosVitalesProvider.overrideWith(
+              () => MockVitalSignsNotifier(mockState),
+            ),
           ],
           child: const GraficoCo2(),
         ),
@@ -37,7 +41,9 @@ void main() {
       expect(find.text('SENSOR DESCONECTADO'), findsNothing);
     });
 
-    testWidgets('should render warning message when sensor is disconnected', (tester) async {
+    testWidgets('should render warning message when sensor is disconnected', (
+      tester,
+    ) async {
       final mockState = EstadoSignosVitales.inicial().copiarCon(
         nivelCo2: 0,
         co2Activo: false,
@@ -46,7 +52,9 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(() => MockVitalSignsNotifier(mockState)),
+            notificadorSignosVitalesProvider.overrideWith(
+              () => MockVitalSignsNotifier(mockState),
+            ),
           ],
           child: const GraficoCo2(),
         ),

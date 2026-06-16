@@ -15,41 +15,41 @@ void main() {
           ),
           GoRoute(
             path: '/historial',
-            builder: (context, state) => const Scaffold(body: Text('Historial Page')),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Reportes Page')),
           ),
           GoRoute(
             path: '/sesiones',
-            builder: (context, state) => const Scaffold(body: Text('Sesiones Page')),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Sesiones Page')),
           ),
           GoRoute(
             path: '/alertas',
-            builder: (context, state) => const Scaffold(body: Text('Alertas Page')),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Alertas Page')),
           ),
           GoRoute(
             path: '/configuracion',
-            builder: (context, state) => const Scaffold(body: Text('Configuracion Page')),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Configuracion Page')),
           ),
         ],
       );
 
-      await tester.pumpWidget(
-        MaterialApp.router(
-          routerConfig: router,
-        ),
-      );
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
 
       // Verify that all Elements are rendered (tooltips exist)
       expect(find.byType(Tooltip), findsNWidgets(5));
 
-      // Tap on Historial item (index 1)
+      // Tap on Historial item (index 2)
       final items = find.byType(InkWell);
       expect(items, findsNWidgets(5));
-      
-      await tester.tap(items.at(1));
+
+      await tester.tap(items.at(2));
       await tester.pumpAndSettle();
 
       // Should have navigated to /historial
-      expect(find.text('Historial Page'), findsOneWidget);
+      expect(find.text('Reportes Page'), findsOneWidget);
     });
   });
 }

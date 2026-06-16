@@ -142,14 +142,19 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: esOscuro ? 0.3 : 0.05),
+                      color: Colors.black.withValues(
+                        alpha: esOscuro ? 0.3 : 0.05,
+                      ),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 36,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -161,7 +166,10 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                       // ── Segmented Control (sin TabBar) ──
                       SegmentedToggle(
                         selectedIndex: _tabActual,
-                        labels: const ['Seleccionar Usuario', 'Registrar Nuevo'],
+                        labels: const [
+                          'Seleccionar Usuario',
+                          'Registrar Nuevo',
+                        ],
                         onChanged: (i) => setState(() => _tabActual = i),
                       ),
                       const Gap(24),

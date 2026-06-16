@@ -12,9 +12,17 @@ class RegistroMedicion {
   final DateTime fechaRegistro;
   final int duracionSegundos;
   final int frecuenciaCardiaca;
+  final int minFrecuenciaCardiaca;
+  final int maxFrecuenciaCardiaca;
   final int ppgFrecuenciaCardiaca;
+  final int minPpgFrecuenciaCardiaca;
+  final int maxPpgFrecuenciaCardiaca;
   final int nivelSpo2;
+  final int minSpo2;
+  final int maxSpo2;
   final int nivelCo2;
+  final int minCo2;
+  final int maxCo2;
   final int alertasDisparadas;
   final String notasClinicas;
 
@@ -24,9 +32,17 @@ class RegistroMedicion {
     required this.fechaRegistro,
     required this.duracionSegundos,
     required this.frecuenciaCardiaca,
+    required this.minFrecuenciaCardiaca,
+    required this.maxFrecuenciaCardiaca,
     required this.ppgFrecuenciaCardiaca,
+    required this.minPpgFrecuenciaCardiaca,
+    required this.maxPpgFrecuenciaCardiaca,
     required this.nivelSpo2,
+    required this.minSpo2,
+    required this.maxSpo2,
     required this.nivelCo2,
+    required this.minCo2,
+    required this.maxCo2,
     required this.alertasDisparadas,
     required this.notasClinicas,
   });
@@ -36,9 +52,17 @@ class RegistroMedicion {
     required String usuarioId,
     required int duracionSegundos,
     required int frecuenciaCardiaca,
+    int minFrecuenciaCardiaca = 0,
+    int maxFrecuenciaCardiaca = 0,
     required int ppgFrecuenciaCardiaca,
+    int minPpgFrecuenciaCardiaca = 0,
+    int maxPpgFrecuenciaCardiaca = 0,
     required int nivelSpo2,
+    int minSpo2 = 0,
+    int maxSpo2 = 0,
     required int nivelCo2,
+    int minCo2 = 0,
+    int maxCo2 = 0,
     int alertasDisparadas = 0,
     String notasClinicas = '',
   }) {
@@ -50,9 +74,17 @@ class RegistroMedicion {
       fechaRegistro: ahora,
       duracionSegundos: duracionSegundos,
       frecuenciaCardiaca: frecuenciaCardiaca,
+      minFrecuenciaCardiaca: minFrecuenciaCardiaca,
+      maxFrecuenciaCardiaca: maxFrecuenciaCardiaca,
       ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca,
+      minPpgFrecuenciaCardiaca: minPpgFrecuenciaCardiaca,
+      maxPpgFrecuenciaCardiaca: maxPpgFrecuenciaCardiaca,
       nivelSpo2: nivelSpo2,
+      minSpo2: minSpo2,
+      maxSpo2: maxSpo2,
       nivelCo2: nivelCo2,
+      minCo2: minCo2,
+      maxCo2: maxCo2,
       alertasDisparadas: alertasDisparadas,
       notasClinicas: notasClinicas,
     );
@@ -71,11 +103,19 @@ class RegistroMedicion {
       fechaRegistro: session.startTime,
       duracionSegundos: duracion > 0 ? duracion : 0,
       frecuenciaCardiaca: data.avgBpm.round(),
+      minFrecuenciaCardiaca: data.minBpm.round(),
+      maxFrecuenciaCardiaca: data.maxBpm.round(),
       ppgFrecuenciaCardiaca: data.avgBpm.round(),
+      minPpgFrecuenciaCardiaca: data.minBpm.round(),
+      maxPpgFrecuenciaCardiaca: data.maxBpm.round(),
       nivelSpo2: 0, // Sin sensor SpO2 activo por el momento
+      minSpo2: 0,
+      maxSpo2: 0,
       nivelCo2: data.avgAir.round(),
+      minCo2: data.minAir.round(),
+      maxCo2: data.maxAir.round(),
       alertasDisparadas: data.alertCount,
-      notasClinicas: session.notes.isNotEmpty ? session.notes : 'Sesión de monitoreo en backend',
+      notasClinicas: session.notes,
     );
   }
 
@@ -87,33 +127,43 @@ class RegistroMedicion {
     List<Measurement>? air,
     String? notasClinicas,
   }) {
-    final bpmValues = bpm?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
+    final bpmValues =
+        bpm?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
     final fcProm = bpmValues.isEmpty
         ? 70
         : (bpmValues.reduce((a, b) => a + b) / bpmValues.length).round();
 
-    // final spo2Values = spo2?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
-    // final spo2Prom = spo2Values.isEmpty
-    //     ? 98
-    //     : (spo2Values.reduce((a, b) => a + b) / spo2Values.length).round();
+    int fcMin = bpmValues.isEmpty
+        ? 0
+        : bpmValues.reduce((a, b) => a < b ? a : b).round();
+    int fcMax = bpmValues.isEmpty
+        ? 0
+        : bpmValues.reduce((a, b) => a > b ? a : b).round();
 
-    final airValues = air?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
+    final airValues =
+        air?.expand((m) => m.datos).map((s) => s.value).toList() ?? [];
     final co2Prom = airValues.isEmpty
         ? 350
         : (airValues.reduce((a, b) => a + b) / airValues.length).round();
+
+    int co2Min = airValues.isEmpty
+        ? 0
+        : airValues.reduce((a, b) => a < b ? a : b).round();
+    int co2Max = airValues.isEmpty
+        ? 0
+        : airValues.reduce((a, b) => a > b ? a : b).round();
 
     int alertas = 0;
     for (var val in bpmValues) {
       if (val < 60 || val > 100) alertas++;
     }
-    // for (var val in spo2Values) {
-    //   if (val < 95) alertas++;
-    // }
     for (var val in airValues) {
       if (val > 1000) alertas++;
     }
 
-    final duracion = (session.endTime ?? DateTime.now()).difference(session.startTime).inSeconds;
+    final duracion = (session.endTime ?? DateTime.now())
+        .difference(session.startTime)
+        .inSeconds;
 
     return RegistroMedicion(
       id: session.id.toString(),
@@ -121,11 +171,19 @@ class RegistroMedicion {
       fechaRegistro: session.startTime,
       duracionSegundos: duracion > 0 ? duracion : 0,
       frecuenciaCardiaca: fcProm,
+      minFrecuenciaCardiaca: fcMin,
+      maxFrecuenciaCardiaca: fcMax,
       ppgFrecuenciaCardiaca: fcProm,
-      nivelSpo2: 0, // spo2Prom comentado
+      minPpgFrecuenciaCardiaca: fcMin,
+      maxPpgFrecuenciaCardiaca: fcMax,
+      nivelSpo2: 0,
+      minSpo2: 0,
+      maxSpo2: 0,
       nivelCo2: co2Prom,
+      minCo2: co2Min,
+      maxCo2: co2Max,
       alertasDisparadas: alertas,
-      notasClinicas: notasClinicas ?? 'Sesión de monitoreo en backend',
+      notasClinicas: notasClinicas ?? '',
     );
   }
 
@@ -136,10 +194,20 @@ class RegistroMedicion {
       usuarioId: json['usuarioId'] as String,
       fechaRegistro: DateTime.parse(json['fechaRegistro'] as String),
       duracionSegundos: json['duracionSegundos'] as int,
-      frecuenciaCardiaca: json['frecuenciaCardiaca'] as int,
-      ppgFrecuenciaCardiaca: json['ppgFrecuenciaCardiaca'] as int? ?? (json['frecuenciaCardiaca'] as int? ?? 72),
-      nivelSpo2: json['nivelSpo2'] as int,
-      nivelCo2: json['nivelCo2'] as int,
+      frecuenciaCardiaca: json['frecuenciaCardiaca'] as int? ?? 0,
+      minFrecuenciaCardiaca: json['minFrecuenciaCardiaca'] as int? ?? 0,
+      maxFrecuenciaCardiaca: json['maxFrecuenciaCardiaca'] as int? ?? 0,
+      ppgFrecuenciaCardiaca:
+          json['ppgFrecuenciaCardiaca'] as int? ??
+          (json['frecuenciaCardiaca'] as int? ?? 72),
+      minPpgFrecuenciaCardiaca: json['minPpgFrecuenciaCardiaca'] as int? ?? 0,
+      maxPpgFrecuenciaCardiaca: json['maxPpgFrecuenciaCardiaca'] as int? ?? 0,
+      nivelSpo2: json['nivelSpo2'] as int? ?? 0,
+      minSpo2: json['minSpo2'] as int? ?? 0,
+      maxSpo2: json['maxSpo2'] as int? ?? 0,
+      nivelCo2: json['nivelCo2'] as int? ?? 0,
+      minCo2: json['minCo2'] as int? ?? 0,
+      maxCo2: json['maxCo2'] as int? ?? 0,
       alertasDisparadas: json['alertasDisparadas'] as int? ?? 0,
       notasClinicas: json['notasClinicas'] as String? ?? '',
     );
@@ -153,9 +221,17 @@ class RegistroMedicion {
       'fechaRegistro': fechaRegistro.toIso8601String(),
       'duracionSegundos': duracionSegundos,
       'frecuenciaCardiaca': frecuenciaCardiaca,
+      'minFrecuenciaCardiaca': minFrecuenciaCardiaca,
+      'maxFrecuenciaCardiaca': maxFrecuenciaCardiaca,
       'ppgFrecuenciaCardiaca': ppgFrecuenciaCardiaca,
+      'minPpgFrecuenciaCardiaca': minPpgFrecuenciaCardiaca,
+      'maxPpgFrecuenciaCardiaca': maxPpgFrecuenciaCardiaca,
       'nivelSpo2': nivelSpo2,
+      'minSpo2': minSpo2,
+      'maxSpo2': maxSpo2,
       'nivelCo2': nivelCo2,
+      'minCo2': minCo2,
+      'maxCo2': maxCo2,
       'alertasDisparadas': alertasDisparadas,
       'notasClinicas': notasClinicas,
     };

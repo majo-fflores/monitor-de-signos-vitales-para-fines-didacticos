@@ -13,11 +13,7 @@ class AppHeader extends ConsumerWidget {
   final VoidCallback? onMenuClick;
   final bool mostrarBotonMenu;
 
-  const AppHeader({
-    super.key,
-    this.onMenuClick,
-    this.mostrarBotonMenu = false,
-  });
+  const AppHeader({super.key, this.onMenuClick, this.mostrarBotonMenu = false});
 
   Color _obtenerColorAvatar(String nombre) {
     final colores = ColoresComponentes.avatarColores;
@@ -43,9 +39,7 @@ class AppHeader extends ConsumerWidget {
         color: theme.cardTheme.color,
         border: Border(
           bottom: BorderSide(
-            color: esOscuro 
-                ? ColoresOscuros.border
-                : ColoresClaros.border,
+            color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
             width: 1,
           ),
         ),
@@ -80,7 +74,8 @@ class AppHeader extends ConsumerWidget {
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: ColoresSensores.statusConectado, // Emerald green hex value
+                      color: ColoresSensores
+                          .statusConectado, // Emerald green hex value
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -88,7 +83,7 @@ class AppHeader extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Sección derecha: Reloj, Chip de Usuario, ThemeToggle
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -97,7 +92,7 @@ class AppHeader extends ConsumerWidget {
                 const LiveClock(),
                 const SizedBox(width: 16),
               ],
-              
+
               // Chip de Usuario Activo con menú desplegable
               if (usuarioActivo != null) ...[
                 PopupMenuButton<String>(
@@ -105,12 +100,16 @@ class AppHeader extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color: esOscuro ? ColoresComponentes.popupBorderOscuro : ColoresComponentes.popupBorderClaro,
+                      color: esOscuro
+                          ? ColoresComponentes.popupBorderOscuro
+                          : ColoresComponentes.popupBorderClaro,
                     ),
                   ),
                   onSelected: (value) {
                     if (value == 'cambiar') {
-                      ref.read(notificadorUsuariosProvider.notifier).cambiarUsuario();
+                      ref
+                          .read(notificadorUsuariosProvider.notifier)
+                          .cambiarUsuario();
                     }
                   },
                   itemBuilder: (BuildContext context) => [
@@ -128,7 +127,9 @@ class AppHeader extends ConsumerWidget {
                           Text(
                             usuarioActivo.email,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                           const Divider(),
@@ -150,7 +151,10 @@ class AppHeader extends ConsumerWidget {
                     ),
                   ],
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: esOscuro
                           ? Colors.white.withValues(alpha: 0.05)
@@ -189,7 +193,9 @@ class AppHeader extends ConsumerWidget {
                           Icon(
                             LucideIcons.chevronDown,
                             size: 14,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ],
                       ],
@@ -197,7 +203,6 @@ class AppHeader extends ConsumerWidget {
                   ),
                 ),
               ],
-              
             ],
           ),
         ],

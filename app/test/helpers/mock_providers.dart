@@ -8,5 +8,7 @@ class MockWebSocketService extends Mock implements WebSocketService {
   @override
   Stream<WsPacket> get packetStream => const Stream<WsPacket>.empty();
 }
+
 class MockServicioAudio extends Mock implements ServicioAudio {}
+
 class MockUsuarioApiService extends Mock implements UsuarioApiService {}

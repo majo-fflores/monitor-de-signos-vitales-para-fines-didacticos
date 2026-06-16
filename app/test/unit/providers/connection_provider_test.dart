@@ -15,7 +15,9 @@ void main() {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
       mockWsService = MockWebSocketService();
-      when(() => mockWsService.status).thenReturn(ValueNotifier(EstadoConexion.desconectado));
+      when(
+        () => mockWsService.status,
+      ).thenReturn(ValueNotifier(EstadoConexion.desconectado));
       when(() => mockWsService.connect(any())).thenAnswer((_) async {});
       when(() => mockWsService.disconnect()).thenAnswer((_) => {});
     });

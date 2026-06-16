@@ -4,15 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Usuario Model Tests', () {
     test('Usuario.crear should generate a unique ID and correct fields', () {
-      final user = Usuario.crear(
-        nombre: 'John Doe',
-        email: 'john@example.com',
-      );
+      final user = Usuario.crear(nombre: 'John Doe', email: 'john@example.com');
 
       expect(user.id, isNotEmpty);
       expect(user.nombre, equals('John Doe'));
       expect(user.email, equals('john@example.com'));
-      expect(user.creadoEn.isBefore(DateTime.now().add(const Duration(seconds: 1))), isTrue);
+      expect(
+        user.creadoEn.isBefore(DateTime.now().add(const Duration(seconds: 1))),
+        isTrue,
+      );
     });
 
     test('fromJson and toJson should be a faithful roundtrip', () {
@@ -34,28 +34,34 @@ void main() {
       expect(deserialized.creadoEn, equals(original.creadoEn));
     });
 
-    test('fromBackendJson and toBackendJson should correctly parse and serialize backend data', () {
-      final backendJson = {
-        'id': 42,
-        'name': 'Bob Ross',
-        'email': 'bob@joyofpainting.com',
-        'dni': 12345678,
-        'created_at': '2026-06-04T12:00:00.000Z',
-      };
+    test(
+      'fromBackendJson and toBackendJson should correctly parse and serialize backend data',
+      () {
+        final backendJson = {
+          'id': 42,
+          'name': 'Bob Ross',
+          'email': 'bob@joyofpainting.com',
+          'dni': 12345678,
+          'created_at': '2026-06-04T12:00:00.000Z',
+        };
 
-      final user = Usuario.fromBackendJson(backendJson);
-      expect(user.id, equals('42'));
-      expect(user.nombre, equals('Bob Ross'));
-      expect(user.email, equals('bob@joyofpainting.com'));
-      expect(user.dni, equals(12345678));
-      expect(user.creadoEn.toIso8601String(), startsWith('2026-06-04T12:00:00'));
+        final user = Usuario.fromBackendJson(backendJson);
+        expect(user.id, equals('42'));
+        expect(user.nombre, equals('Bob Ross'));
+        expect(user.email, equals('bob@joyofpainting.com'));
+        expect(user.dni, equals(12345678));
+        expect(
+          user.creadoEn.toIso8601String(),
+          startsWith('2026-06-04T12:00:00'),
+        );
 
-      final toBackend = user.toBackendJson();
-      expect(toBackend['name'], equals('Bob Ross'));
-      expect(toBackend['email'], equals('bob@joyofpainting.com'));
-      expect(toBackend['dni'], equals(12345678));
-      expect(toBackend.containsKey('id'), isFalse);
-    });
+        final toBackend = user.toBackendJson();
+        expect(toBackend['name'], equals('Bob Ross'));
+        expect(toBackend['email'], equals('bob@joyofpainting.com'));
+        expect(toBackend['dni'], equals(12345678));
+        expect(toBackend.containsKey('id'), isFalse);
+      },
+    );
 
     test('fromJson with null email should fall back to empty string', () {
       final json = {

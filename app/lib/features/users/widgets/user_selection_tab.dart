@@ -45,7 +45,9 @@ class UserSelectionTab extends StatelessWidget {
               const Gap(12),
               Text(
                 'No hay usuarios creados',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Gap(6),
               Text(
@@ -73,7 +75,10 @@ class UserSelectionTab extends StatelessWidget {
             hintText: 'Buscar por nombre o correo...',
             prefixIcon: const Icon(LucideIcons.search, size: 18),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
           ),
         ),
         const Gap(16),

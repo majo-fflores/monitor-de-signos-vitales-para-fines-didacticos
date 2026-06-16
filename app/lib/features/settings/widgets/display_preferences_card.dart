@@ -15,11 +15,12 @@ class DisplayPreferencesCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DisplayPreferencesCard> createState() => _DisplayPreferencesCardState();
+  ConsumerState<DisplayPreferencesCard> createState() =>
+      _DisplayPreferencesCardState();
 }
 
-class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard> {
-
+class _DisplayPreferencesCardState
+    extends ConsumerState<DisplayPreferencesCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -39,10 +40,7 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
         children: [
           Row(
             children: [
-              Icon(
-                LucideIcons.palette,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(LucideIcons.palette, color: theme.colorScheme.primary),
               const Gap(10),
               Text(
                 'Preferencias de Visualización',
@@ -93,7 +91,9 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
                       ],
                       selected: <ThemeMode>{themeMode},
                       onSelectionChanged: (Set<ThemeMode> newSelection) {
-                        ref.read(themeNotifierProvider.notifier).cambiarTema(newSelection.first);
+                        ref
+                            .read(themeNotifierProvider.notifier)
+                            .cambiarTema(newSelection.first);
                       },
                       style: SegmentedButton.styleFrom(
                         visualDensity: VisualDensity.comfortable,
@@ -106,7 +106,9 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
                           icon: LucideIcons.sun,
                           label: 'Modo Claro',
                           isSelected: themeMode == ThemeMode.light,
-                          onTap: () => ref.read(themeNotifierProvider.notifier).cambiarTema(ThemeMode.light),
+                          onTap: () => ref
+                              .read(themeNotifierProvider.notifier)
+                              .cambiarTema(ThemeMode.light),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),
@@ -115,7 +117,9 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
                           icon: LucideIcons.moon,
                           label: 'Modo Oscuro',
                           isSelected: themeMode == ThemeMode.dark,
-                          onTap: () => ref.read(themeNotifierProvider.notifier).cambiarTema(ThemeMode.dark),
+                          onTap: () => ref
+                              .read(themeNotifierProvider.notifier)
+                              .cambiarTema(ThemeMode.dark),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),
@@ -124,7 +128,9 @@ class _DisplayPreferencesCardState extends ConsumerState<DisplayPreferencesCard>
                           icon: LucideIcons.monitor,
                           label: 'Tema del Sistema',
                           isSelected: themeMode == ThemeMode.system,
-                          onTap: () => ref.read(themeNotifierProvider.notifier).cambiarTema(ThemeMode.system),
+                          onTap: () => ref
+                              .read(themeNotifierProvider.notifier)
+                              .cambiarTema(ThemeMode.system),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),
@@ -166,9 +172,7 @@ class _ThemeOptionTile extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : borderColor,
+            color: isSelected ? theme.colorScheme.primary : borderColor,
             width: isSelected ? 2 : 1,
           ),
           color: isSelected
@@ -180,7 +184,9 @@ class _ThemeOptionTile extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: isSelected ? theme.colorScheme.primary : theme.iconTheme.color,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.iconTheme.color,
             ),
             const Gap(12),
             Text(

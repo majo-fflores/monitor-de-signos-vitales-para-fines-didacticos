@@ -38,8 +38,18 @@ class _LiveClockState extends State<LiveClock> {
   String get _fechaFormateada {
     final dias = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
     final meses = [
-      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sep',
+      'oct',
+      'nov',
+      'dic',
     ];
     final diaSem = dias[_ahora.weekday % 7];
     final mes = meses[_ahora.month - 1];
@@ -66,7 +76,9 @@ class _LiveClockState extends State<LiveClock> {
           _fechaFormateada,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600, // Reemplazado semibold por w600
-            color: isDark ? ColoresOscuros.foreground : ColoresClaros.foreground,
+            color: isDark
+                ? ColoresOscuros.foreground
+                : ColoresClaros.foreground,
           ),
         ),
         const SizedBox(height: 2),
@@ -75,7 +87,9 @@ class _LiveClockState extends State<LiveClock> {
           style: TextStyle(
             fontFamily: 'monospace',
             fontSize: 12,
-            color: isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground,
+            color: isDark
+                ? ColoresOscuros.mutedForeground
+                : ColoresClaros.mutedForeground,
           ),
         ),
       ],

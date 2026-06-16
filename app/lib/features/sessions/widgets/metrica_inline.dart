@@ -39,8 +39,10 @@ class MetricaInline extends StatelessWidget {
         ),
         Text(
           value,
-          style: theme.textTheme.bodySmall
-              ?.copyWith(fontWeight: FontWeight.bold, fontSize: 11),
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
         ),
       ],
     );

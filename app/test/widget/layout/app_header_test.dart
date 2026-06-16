@@ -49,15 +49,21 @@ class MockThemeNotifier extends ThemeNotifier {
 
 void main() {
   group('AppHeader Widget Tests', () {
-    testWidgets('should render title and status without user active', (tester) async {
+    testWidgets('should render title and status without user active', (
+      tester,
+    ) async {
       final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
       final conState = EstadoConexionBackend.inicial();
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConexionNotifier(conState)),
+            notificadorUsuariosProvider.overrideWith(
+              () => MockUsuariosNotifier(usersState),
+            ),
+            notificadorConexionProvider.overrideWith(
+              () => MockConexionNotifier(conState),
+            ),
           ],
           child: const AppHeader(),
         ),
@@ -68,7 +74,9 @@ void main() {
       expect(find.byType(CircleAvatar), findsNothing);
     });
 
-    testWidgets('should render active user initials and handle changing user', (tester) async {
+    testWidgets('should render active user initials and handle changing user', (
+      tester,
+    ) async {
       final user = TestData.usuario1; // John Doe
       final usersState = EstadoUsuarios.inicial().copiarCon(
         cargando: false,
@@ -84,7 +92,9 @@ void main() {
         createTestableWidget(
           overrides: [
             notificadorUsuariosProvider.overrideWith(() => usersNotifier),
-            notificadorConexionProvider.overrideWith(() => MockConexionNotifier(conState)),
+            notificadorConexionProvider.overrideWith(
+              () => MockConexionNotifier(conState),
+            ),
           ],
           child: const AppHeader(),
         ),

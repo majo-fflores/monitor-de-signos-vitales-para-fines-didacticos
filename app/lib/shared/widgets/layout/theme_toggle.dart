@@ -17,24 +17,18 @@ class ThemeToggle extends ConsumerWidget {
         ref.read(themeNotifierProvider.notifier).alternarTema();
       },
       icon: esOscuro
-          ? const Icon(
-              LucideIcons.sun,
-              color: Colors.amber,
-              size: 20,
-            )
-          : const Icon(
-              LucideIcons.moon,
-              color: Colors.grey,
-              size: 20,
-            ),
+          ? const Icon(LucideIcons.sun, color: Colors.amber, size: 20)
+          : const Icon(LucideIcons.moon, color: Colors.grey, size: 20),
       style: IconButton.styleFrom(
         minimumSize: const Size(40, 40),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: esOscuro 
+            color: esOscuro
                 ? Colors.white.withValues(alpha: 0.1) // Reemplazado withOpacity
-                : Colors.black.withValues(alpha: 0.1), // Reemplazado withOpacity
+                : Colors.black.withValues(
+                    alpha: 0.1,
+                  ), // Reemplazado withOpacity
           ),
         ),
       ),

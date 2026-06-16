@@ -51,7 +51,9 @@ class _ThresholdSingleSliderState extends State<ThresholdSingleSlider> {
                   Expanded(
                     child: Text(
                       widget.titulo,
-                      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

@@ -23,20 +23,10 @@ class UmbralesAlerta {
   });
 
   factory UmbralesAlerta.defecto() {
-    return const UmbralesAlerta(
-      fcMin: 60,
-      fcMax: 100,
-      ppgMin: 60,
-      co2Max: 800,
-    );
+    return const UmbralesAlerta(fcMin: 60, fcMax: 100, ppgMin: 60, co2Max: 800);
   }
 
-  UmbralesAlerta copiarCon({
-    int? fcMin,
-    int? fcMax,
-    int? ppgMin,
-    int? co2Max,
-  }) {
+  UmbralesAlerta copiarCon({int? fcMin, int? fcMax, int? ppgMin, int? co2Max}) {
     return UmbralesAlerta(
       fcMin: fcMin ?? this.fcMin,
       fcMax: fcMax ?? this.fcMax,
@@ -107,7 +97,8 @@ class EstadoAlarma {
       habilitada: habilitada ?? this.habilitada,
       sonidoHabilitado: sonidoHabilitado ?? this.sonidoHabilitado,
       sonidoSeleccionado: sonidoSeleccionado ?? this.sonidoSeleccionado,
-      sonidoSilenciadoTemporalmente: sonidoSilenciadoTemporalmente ?? this.sonidoSilenciadoTemporalmente,
+      sonidoSilenciadoTemporalmente:
+          sonidoSilenciadoTemporalmente ?? this.sonidoSilenciadoTemporalmente,
     );
   }
 }
@@ -128,7 +119,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
       // 1. FC
       bool fcEnAlerta = false;
-      final tieneFcAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia Cardíaca');
+      final tieneFcAlerta = state.alertasActivas.any(
+        (a) => a.metrica == 'Frecuencia Cardíaca',
+      );
       if (tieneFcAlerta) {
         if (fc < (u.fcMin + 3) || fc > (u.fcMax - 3)) {
           fcEnAlerta = true;
@@ -141,7 +134,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
       // 2. PPG
       bool ppgEnAlerta = false;
-      final tienePpgAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia de Pulso (PPG)');
+      final tienePpgAlerta = state.alertasActivas.any(
+        (a) => a.metrica == 'Frecuencia de Pulso (PPG)',
+      );
       if (tienePpgAlerta) {
         if (ppg < (u.ppgMin + 3)) {
           ppgEnAlerta = true;
@@ -154,7 +149,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
       // 3. CO2
       bool co2EnAlerta = false;
-      final tieneCo2Alerta = state.alertasActivas.any((a) => a.metrica == 'Dióxido de Carbono');
+      final tieneCo2Alerta = state.alertasActivas.any(
+        (a) => a.metrica == 'Dióxido de Carbono',
+      );
       if (tieneCo2Alerta) {
         if (co2 > (u.co2Max - 20)) {
           co2EnAlerta = true;
@@ -187,8 +184,10 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       final ppgMin = _prefs?.getInt('umbral_ppg_min') ?? 60;
       final co2Max = _prefs?.getInt('umbral_co2_max') ?? 800;
       final habilitada = _prefs?.getBool('alarma_habilitada') ?? true;
-      final sonidoHabilitado = _prefs?.getBool('alarma_sonido_habilitado') ?? true;
-      final sonidoSeleccionado = _prefs?.getString('alarma_sonido_seleccionado') ?? 'alarma_clasica';
+      final sonidoHabilitado =
+          _prefs?.getBool('alarma_sonido_habilitado') ?? true;
+      final sonidoSeleccionado =
+          _prefs?.getString('alarma_sonido_seleccionado') ?? 'alarma_clasica';
 
       state = state.copiarCon(
         habilitada: habilitada,
@@ -252,7 +251,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       co2Max: co2Max,
     );
     state = state.copiarCon(umbrales: nuevosUmbrales);
-    
+
     // Verificar si con los nuevos umbrales, los valores fisiológicos actuales ya son normales
     _verificarValoresActuales();
   }
@@ -298,7 +297,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
     // 1. Evaluar Frecuencia Cardíaca (FC)
     bool fcEnAlerta = false;
-    final tieneFcAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia Cardíaca');
+    final tieneFcAlerta = state.alertasActivas.any(
+      (a) => a.metrica == 'Frecuencia Cardíaca',
+    );
     if (tieneFcAlerta) {
       if (fc < (u.fcMin + fcHysteresis) || fc > (u.fcMax - fcHysteresis)) {
         fcEnAlerta = true;
@@ -314,7 +315,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
     // 2. Evaluar PPG (Frecuencia de Pulso)
     bool ppgEnAlerta = false;
-    final tienePpgAlerta = state.alertasActivas.any((a) => a.metrica == 'Frecuencia de Pulso (PPG)');
+    final tienePpgAlerta = state.alertasActivas.any(
+      (a) => a.metrica == 'Frecuencia de Pulso (PPG)',
+    );
     if (tienePpgAlerta) {
       if (ppg < (u.ppgMin + ppgHysteresis)) {
         ppgEnAlerta = true;
@@ -330,7 +333,9 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
     // 3. Evaluar CO2
     bool co2EnAlerta = false;
-    final tieneCo2Alerta = state.alertasActivas.any((a) => a.metrica == 'Dióxido de Carbono');
+    final tieneCo2Alerta = state.alertasActivas.any(
+      (a) => a.metrica == 'Dióxido de Carbono',
+    );
     if (tieneCo2Alerta) {
       if (co2 > (u.co2Max - co2Hysteresis)) {
         co2EnAlerta = true;
@@ -351,18 +356,22 @@ class NotificadorAlarma extends _$NotificadorAlarma {
         _dispararAlarma(nuevasAlertas);
       } else {
         // Si ya estaba activa, verificamos si hay alertas de sensores que se sumaron recién
-        final metricasPrevias = state.alertasActivas.map((a) => a.metrica).toSet();
-        final alertasNuevasParaLog = nuevasAlertas.where((a) => !metricasPrevias.contains(a.metrica)).toList();
-        
+        final metricasPrevias = state.alertasActivas
+            .map((a) => a.metrica)
+            .toSet();
+        final alertasNuevasParaLog = nuevasAlertas
+            .where((a) => !metricasPrevias.contains(a.metrica))
+            .toList();
+
         if (alertasNuevasParaLog.isNotEmpty) {
           // Registrar en el historial persistente de la app la(s) nueva(s) alerta(s)
-          ref.read(historialAlarmasProvider.notifier).registrarAlarma(alertasNuevasParaLog);
+          ref
+              .read(historialAlarmasProvider.notifier)
+              .registrarAlarma(alertasNuevasParaLog);
         }
 
         // Actualizamos la lista de alertas (por si cambió o se agregaron más)
-        state = state.copiarCon(
-          alertasActivas: nuevasAlertas,
-        );
+        state = state.copiarCon(alertasActivas: nuevasAlertas);
       }
     }
   }
@@ -381,16 +390,12 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
     _timerRegresivo = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (state.segundosRestantes > 1) {
-        state = state.copiarCon(
-          segundosRestantes: state.segundosRestantes - 1,
-        );
+        state = state.copiarCon(segundosRestantes: state.segundosRestantes - 1);
       } else {
         // Si al terminar el ciclo de 15s persisten lecturas críticas,
         // reiniciamos el temporizador a 15s silenciosamente en vez de apagar y reencender
         if (_hayValoresCriticosActuales()) {
-          state = state.copiarCon(
-            segundosRestantes: 15,
-          );
+          state = state.copiarCon(segundosRestantes: 15);
         } else {
           _timerRegresivo?.cancel();
           _limpiarAlarma();

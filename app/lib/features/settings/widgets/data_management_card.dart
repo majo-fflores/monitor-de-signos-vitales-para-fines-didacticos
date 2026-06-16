@@ -16,14 +16,17 @@ class DataManagementCard extends ConsumerWidget {
     required this.borderColor,
   });
 
-  Future<void> _exportarDatos(BuildContext context, List<RegistroAlarma> historial) async {
+  Future<void> _exportarDatos(
+    BuildContext context,
+    List<RegistroAlarma> historial,
+  ) async {
     try {
       final jsonStr = jsonEncode(historial.map((r) => r.toJson()).toList());
-      
+
       // Intentamos escribir en la carpeta de Descargas del usuario
       final homeDir = Platform.environment['HOME'] ?? '/home/lk';
       final descargasDir = Directory('$homeDir/Downloads');
-      
+
       String rutaArchivo;
       if (await descargasDir.exists()) {
         rutaArchivo = '${descargasDir.path}/datavital_alarm_history.json';
@@ -38,7 +41,10 @@ class DataManagementCard extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Historial exportado con éxito a: $rutaArchivo'),
+            content: Text(
+              'Historial exportado con éxito a: $rutaArchivo',
+              style: const TextStyle(color: Colors.white),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
@@ -48,7 +54,10 @@ class DataManagementCard extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al exportar: $e'),
+            content: Text(
+              'Error al exportar: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
@@ -84,7 +93,10 @@ class DataManagementCard extends ConsumerWidget {
                 Navigator.of(ctx).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Historial de alarmas eliminado.'),
+                    content: Text(
+                      'Historial de alarmas eliminado.',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -120,10 +132,7 @@ class DataManagementCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(
-                LucideIcons.database,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(LucideIcons.database, color: theme.colorScheme.primary),
               const Gap(10),
               Text(
                 'Gestión de Datos',
@@ -136,9 +145,7 @@ class DataManagementCard extends ConsumerWidget {
           const Gap(8),
           Text(
             'Administre los registros históricos de alarmas, exporte los eventos a formato JSON o limpie la base de datos.',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
           const Gap(24),
 
@@ -221,7 +228,9 @@ class DataManagementCard extends ConsumerWidget {
                       minimumSize: const Size(double.infinity, 44),
                       foregroundColor: theme.colorScheme.error,
                       side: BorderSide(
-                        color: totalAlarmas > 0 ? theme.colorScheme.error : borderColor,
+                        color: totalAlarmas > 0
+                            ? theme.colorScheme.error
+                            : borderColor,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -234,11 +243,11 @@ class DataManagementCard extends ConsumerWidget {
               return useVertical
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: buttons.map((w) => w is Expanded ? w.child : w).toList(),
+                      children: buttons
+                          .map((w) => w is Expanded ? w.child : w)
+                          .toList(),
                     )
-                  : Row(
-                      children: buttons,
-                    );
+                  : Row(children: buttons);
             },
           ),
         ],

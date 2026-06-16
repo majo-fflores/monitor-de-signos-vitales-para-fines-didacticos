@@ -14,7 +14,8 @@ class WaveCharts extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final esAncho = constraints.maxWidth >= 1050.0; // 1050px para consola ancha
+        final esAncho =
+            constraints.maxWidth >= 1050.0; // 1050px para consola ancha
 
         if (esAncho) {
           return Row(
@@ -29,9 +30,7 @@ class WaveCharts extends StatelessWidget {
                       height: mostrarMax30100 ? 280 : 576,
                       child: Card(
                         clipBehavior: Clip.antiAlias,
-                        child: const GraficoEcg(
-                          expandir: true,
-                        ),
+                        child: const GraficoEcg(expandir: true),
                       ),
                     ),
                     if (mostrarMax30100) ...[
@@ -40,9 +39,7 @@ class WaveCharts extends StatelessWidget {
                         height: 280,
                         child: Card(
                           clipBehavior: Clip.antiAlias,
-                          child: const GraficoSpo2(
-                            expandir: true,
-                          ),
+                          child: const GraficoSpo2(expandir: true),
                         ),
                       ),
                     ],
@@ -57,9 +54,7 @@ class WaveCharts extends StatelessWidget {
                   height: 576, // 280 + 16 + 280
                   child: Card(
                     clipBehavior: Clip.antiAlias,
-                    child: const GraficoCo2(
-                      expandir: true,
-                    ),
+                    child: const GraficoCo2(expandir: true),
                   ),
                 ),
               ),
@@ -68,13 +63,19 @@ class WaveCharts extends StatelessWidget {
         }
 
         // Diseño en columna vertical para tablet y mobile
-        final double alturaGrafico = constraints.maxWidth < Breakpoints.mobile ? 150.0 : 220.0;
-        final double alturaCo2 = constraints.maxWidth < Breakpoints.mobile ? 180.0 : 190.0;
+        final double alturaGrafico = constraints.maxWidth < Breakpoints.mobile
+            ? 150.0
+            : 220.0;
+        final double alturaCo2 = constraints.maxWidth < Breakpoints.mobile
+            ? 180.0
+            : 190.0;
 
         return Column(
           children: [
             SizedBox(
-              height: mostrarMax30100 ? alturaGrafico : (alturaGrafico * 2 + 16),
+              height: mostrarMax30100
+                  ? alturaGrafico
+                  : (alturaGrafico * 2 + 16),
               child: Card(
                 clipBehavior: Clip.antiAlias,
                 child: const GraficoEcg(expandir: true),

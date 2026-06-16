@@ -16,8 +16,12 @@ class AlertsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final titleColor = isDark ? ColoresOscuros.foreground : ColoresClaros.foreground;
-    final subtitleColor = isDark ? ColoresOscuros.mutedForeground : ColoresClaros.mutedForeground;
+    final titleColor = isDark
+        ? ColoresOscuros.foreground
+        : ColoresClaros.foreground;
+    final subtitleColor = isDark
+        ? ColoresOscuros.mutedForeground
+        : ColoresClaros.mutedForeground;
     final borderColor = isDark ? ColoresOscuros.border : ColoresClaros.border;
 
     // Solo observamos umbrales para pasarlos a la tarjeta (no el estado entero)
@@ -38,13 +42,9 @@ class AlertsView extends ConsumerWidget {
           const Gap(4),
           Text(
             'Visualización de estado fisiológico crítico y configuración de umbrales médicos.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: subtitleColor,
-            ),
+            style: theme.textTheme.bodyMedium?.copyWith(color: subtitleColor),
           ),
           const Gap(24),
-
-
 
           // Indicadores adaptativos (Fila en desktop, columna en mobile)
           LayoutBuilder(
@@ -54,11 +54,23 @@ class AlertsView extends ConsumerWidget {
                 return const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaCardiaca)),
+                    Expanded(
+                      child: IndicadorVitalWidget(
+                        tipo: TipoMetrica.frecuenciaCardiaca,
+                      ),
+                    ),
                     Gap(16),
-                    Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaPulsoPPG)),
+                    Expanded(
+                      child: IndicadorVitalWidget(
+                        tipo: TipoMetrica.frecuenciaPulsoPPG,
+                      ),
+                    ),
                     Gap(16),
-                    Expanded(child: IndicadorVitalWidget(tipo: TipoMetrica.dioxidoCarbono)),
+                    Expanded(
+                      child: IndicadorVitalWidget(
+                        tipo: TipoMetrica.dioxidoCarbono,
+                      ),
+                    ),
                   ],
                 );
               } else {

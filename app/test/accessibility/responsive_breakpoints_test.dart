@@ -71,99 +71,121 @@ void main() {
         child: Consumer(
           builder: (context, ref, child) {
             final router = ref.watch(routerProvider);
-            return MaterialApp.router(
-              routerConfig: router,
-            );
+            return MaterialApp.router(routerConfig: router);
           },
         ),
       );
     }
 
-    testWidgets('should render drawer menu button and hide sidebar on mobile layout (< 600)', (tester) async {
-      // 480 width is mobile and triggers esMobileChico (renders compact dot in header)
-      tester.view.physicalSize = const Size(480, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should render drawer menu button and hide sidebar on mobile layout (< 600)',
+      (tester) async {
+        // 480 width is mobile and triggers esMobileChico (renders compact dot in header)
+        tester.view.physicalSize = const Size(480, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      final user = TestData.usuario1;
-      final usersState = EstadoUsuarios.inicial().copiarCon(
-        cargando: false,
-        usuarios: [user],
-        usuarioActivo: user,
-      );
+        final user = TestData.usuario1;
+        final usersState = EstadoUsuarios.inicial().copiarCon(
+          cargando: false,
+          usuarios: [user],
+          usuarioActivo: user,
+        );
 
-      final connectionState = const EstadoConexionBackend(
-        estadoWs: EstadoConexion.desconectado,
-        wsUrl: 'ws://localhost',
-        cargando: false,
-      );
+        final connectionState = const EstadoConexionBackend(
+          estadoWs: EstadoConexion.desconectado,
+          wsUrl: 'ws://localhost',
+          cargando: false,
+        );
 
-      final vitalSignsState = EstadoSignosVitales.inicial();
+        final vitalSignsState = EstadoSignosVitales.inicial();
 
-      await tester.pumpWidget(
-        createRouterScope(
-          overrides: [
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConnectionNotifier(connectionState, mockWebSocketService)),
-            notificadorSignosVitalesProvider.overrideWith(() => MockDashboardVitalSignsNotifier(vitalSignsState)),
-          ],
-        ),
-      );
+        await tester.pumpWidget(
+          createRouterScope(
+            overrides: [
+              notificadorUsuariosProvider.overrideWith(
+                () => MockUsuariosNotifier(usersState),
+              ),
+              notificadorConexionProvider.overrideWith(
+                () => MockConnectionNotifier(
+                  connectionState,
+                  mockWebSocketService,
+                ),
+              ),
+              notificadorSignosVitalesProvider.overrideWith(
+                () => MockDashboardVitalSignsNotifier(vitalSignsState),
+              ),
+            ],
+          ),
+        );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Sidebar should NOT be rendered in the mobile layout body
-      expect(find.byType(AppSidebar), findsNothing);
+        // Sidebar should NOT be rendered in the mobile layout body
+        expect(find.byType(AppSidebar), findsNothing);
 
-      // Drawer menu button should be visible in the header
-      final menuButton = find.byIcon(LucideIcons.menu);
-      expect(menuButton, findsOneWidget);
+        // Drawer menu button should be visible in the header
+        final menuButton = find.byIcon(LucideIcons.menu);
+        expect(menuButton, findsOneWidget);
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
 
-    testWidgets('should render inline sidebar and hide drawer menu button on desktop layout (>= 1200)', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should render inline sidebar and hide drawer menu button on desktop layout (>= 1200)',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      final user = TestData.usuario1;
-      final usersState = EstadoUsuarios.inicial().copiarCon(
-        cargando: false,
-        usuarios: [user],
-        usuarioActivo: user,
-      );
+        final user = TestData.usuario1;
+        final usersState = EstadoUsuarios.inicial().copiarCon(
+          cargando: false,
+          usuarios: [user],
+          usuarioActivo: user,
+        );
 
-      final connectionState = const EstadoConexionBackend(
-        estadoWs: EstadoConexion.desconectado,
-        wsUrl: 'ws://localhost',
-        cargando: false,
-      );
+        final connectionState = const EstadoConexionBackend(
+          estadoWs: EstadoConexion.desconectado,
+          wsUrl: 'ws://localhost',
+          cargando: false,
+        );
 
-      final vitalSignsState = EstadoSignosVitales.inicial();
+        final vitalSignsState = EstadoSignosVitales.inicial();
 
-      await tester.pumpWidget(
-        createRouterScope(
-          overrides: [
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
-            notificadorConexionProvider.overrideWith(() => MockConnectionNotifier(connectionState, mockWebSocketService)),
-            notificadorSignosVitalesProvider.overrideWith(() => MockDashboardVitalSignsNotifier(vitalSignsState)),
-          ],
-        ),
-      );
+        await tester.pumpWidget(
+          createRouterScope(
+            overrides: [
+              notificadorUsuariosProvider.overrideWith(
+                () => MockUsuariosNotifier(usersState),
+              ),
+              notificadorConexionProvider.overrideWith(
+                () => MockConnectionNotifier(
+                  connectionState,
+                  mockWebSocketService,
+                ),
+              ),
+              notificadorSignosVitalesProvider.overrideWith(
+                () => MockDashboardVitalSignsNotifier(vitalSignsState),
+              ),
+            ],
+          ),
+        );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Sidebar SHOULD be rendered inline in the layout body
-      expect(find.byType(AppSidebar), findsOneWidget);
+        // Sidebar SHOULD be rendered inline in the layout body
+        expect(find.byType(AppSidebar), findsOneWidget);
 
-      // Drawer menu button should NOT be rendered
-      final menuButton = find.byIcon(LucideIcons.menu);
-      expect(menuButton, findsNothing);
+        // Drawer menu button should NOT be rendered
+        final menuButton = find.byIcon(LucideIcons.menu);
+        expect(menuButton, findsNothing);
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
   });
 }

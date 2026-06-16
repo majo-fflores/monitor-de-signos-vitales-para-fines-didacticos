@@ -18,7 +18,8 @@ class MainLayout extends ConsumerStatefulWidget {
   ConsumerState<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProviderStateMixin {
+class _MainLayoutState extends ConsumerState<MainLayout>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController _borderAnimationController;
   late Animation<double> _borderOpacityAnimation;
@@ -33,7 +34,10 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
     );
 
     _borderOpacityAnimation = Tween<double>(begin: 0.2, end: 1.0).animate(
-      CurvedAnimation(parent: _borderAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+        parent: _borderAnimationController,
+        curve: Curves.easeInOut,
+      ),
     );
   }
 
@@ -125,7 +129,7 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
     }
 
     final esMobile = MediaQuery.of(context).size.width < Breakpoints.mobile;
-    
+
     if (!alarmaActiva) {
       // Sin alarma, no necesitamos el AnimatedBuilder costoso
       return buildLayout(esMobile);
@@ -137,7 +141,9 @@ class _MainLayoutState extends ConsumerState<MainLayout> with SingleTickerProvid
         return Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.red.withValues(alpha: _borderOpacityAnimation.value),
+              color: Colors.red.withValues(
+                alpha: _borderOpacityAnimation.value,
+              ),
               width: 4,
             ),
           ),

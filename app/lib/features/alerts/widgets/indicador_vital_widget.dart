@@ -37,17 +37,28 @@ class IndicadorVitalWidget extends ConsumerWidget {
 
     switch (tipo) {
       case TipoMetrica.frecuenciaCardiaca:
-        valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca));
-        activo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ecgActivo));
+        valor = ref.watch(
+          notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca),
+        );
+        activo = ref.watch(
+          notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
+        );
         metrica = 'Frecuencia Cardíaca';
         valorFormateado = '$valor BPM';
         rangoNormal = '${umbrales.fcMin} - ${umbrales.fcMax} BPM';
         icono = LucideIcons.heart;
         colorBase = ColoresSensores.ecgVerde;
-        fueraDeRango = (valor < umbrales.fcMin || valor > umbrales.fcMax) && activo;
+        fueraDeRango =
+            (valor < umbrales.fcMin || valor > umbrales.fcMax) && activo;
       case TipoMetrica.frecuenciaPulsoPPG:
-        valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.ppgFrecuenciaCardiaca));
-        activo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.spo2Activo));
+        valor = ref.watch(
+          notificadorSignosVitalesProvider.select(
+            (s) => s.ppgFrecuenciaCardiaca,
+          ),
+        );
+        activo = ref.watch(
+          notificadorSignosVitalesProvider.select((s) => s.spo2Activo),
+        );
         metrica = 'Frecuencia de Pulso (PPG)';
         valorFormateado = '$valor LPM';
         rangoNormal = '≥ ${umbrales.ppgMin} LPM';
@@ -55,8 +66,12 @@ class IndicadorVitalWidget extends ConsumerWidget {
         colorBase = ColoresSensores.spo2Azul;
         fueraDeRango = (valor < umbrales.ppgMin) && activo;
       case TipoMetrica.dioxidoCarbono:
-        valor = ref.watch(notificadorSignosVitalesProvider.select((s) => s.nivelCo2));
-        activo = ref.watch(notificadorSignosVitalesProvider.select((s) => s.co2Activo));
+        valor = ref.watch(
+          notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
+        );
+        activo = ref.watch(
+          notificadorSignosVitalesProvider.select((s) => s.co2Activo),
+        );
         metrica = 'Dióxido de Carbono';
         valorFormateado = '$valor ppm';
         rangoNormal = '≤ ${umbrales.co2Max} ppm';
@@ -87,7 +102,7 @@ class IndicadorVitalWidget extends ConsumerWidget {
                     color: theme.colorScheme.error.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),

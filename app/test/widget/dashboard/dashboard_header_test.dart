@@ -29,35 +29,41 @@ void main() {
       );
 
       expect(find.text('Dashboard de Bioseñales'), findsOneWidget);
-      expect(find.text('Visualización en tiempo real de sensores.'), findsOneWidget);
+      expect(
+        find.text('Visualización en tiempo real de sensores.'),
+        findsOneWidget,
+      );
       expect(find.text('GRABAR SESIÓN'), findsNothing);
     });
 
-    testWidgets('should show grab button when has active user and not recording', (tester) async {
-      bool startCalled = false;
+    testWidgets(
+      'should show grab button when has active user and not recording',
+      (tester) async {
+        bool startCalled = false;
 
-      await tester.pumpWidget(
-        createTestableWidget(
-          child: DashboardHeader(
-            esOscuro: true,
-            tieneUsuarioActivo: true,
-            grabando: false,
-            tiempoFormateado: '00:00',
-            estadoConexion: defaultCon,
-            onStartRecording: () {
-              startCalled = true;
-            },
-            onStopRecording: () {},
+        await tester.pumpWidget(
+          createTestableWidget(
+            child: DashboardHeader(
+              esOscuro: true,
+              tieneUsuarioActivo: true,
+              grabando: false,
+              tiempoFormateado: '00:00',
+              estadoConexion: defaultCon,
+              onStartRecording: () {
+                startCalled = true;
+              },
+              onStopRecording: () {},
+            ),
           ),
-        ),
-      );
+        );
 
-      final button = find.text('GRABAR SESIÓN');
-      expect(button, findsOneWidget);
+        final button = find.text('GRABAR SESIÓN');
+        expect(button, findsOneWidget);
 
-      await tester.tap(button);
-      expect(startCalled, isTrue);
-    });
+        await tester.tap(button);
+        expect(startCalled, isTrue);
+      },
+    );
 
     testWidgets('should show stop button when recording', (tester) async {
       bool stopCalled = false;

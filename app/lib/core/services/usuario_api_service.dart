@@ -19,9 +19,15 @@ class UsuarioApiService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Usuario.fromBackendJson(json as Map<String, dynamic>)).toList();
+        return data
+            .map(
+              (json) => Usuario.fromBackendJson(json as Map<String, dynamic>),
+            )
+            .toList();
       } else {
-        throw Exception('Error al obtener usuarios del backend: Código ${response.statusCode}');
+        throw Exception(
+          'Error al obtener usuarios del backend: Código ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Fallo de conexión al backend de usuarios: $e');
@@ -38,11 +44,7 @@ class UsuarioApiService {
       final response = await client.post(
         Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': nombre,
-          'email': email,
-          'dni': dni,
-        }),
+        body: jsonEncode({'name': nombre, 'email': email, 'dni': dni}),
       );
 
       if (response.statusCode == 201) {
@@ -50,7 +52,10 @@ class UsuarioApiService {
         return Usuario.fromBackendJson(data);
       } else {
         final errorMsg = _obtenerMensajeError(response.body);
-        throw Exception(errorMsg ?? 'Error al crear usuario en el backend: Código ${response.statusCode}');
+        throw Exception(
+          errorMsg ??
+              'Error al crear usuario en el backend: Código ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Fallo al registrar usuario en el backend: $e');
@@ -66,7 +71,9 @@ class UsuarioApiService {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return Usuario.fromBackendJson(data);
       } else {
-        throw Exception('Usuario no encontrado o error en el backend: Código ${response.statusCode}');
+        throw Exception(
+          'Usuario no encontrado o error en el backend: Código ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Fallo al obtener usuario por ID desde el backend: $e');
@@ -79,7 +86,9 @@ class UsuarioApiService {
       final response = await client.delete(Uri.parse('$baseUrl/users/$id'));
 
       if (response.statusCode != 204 && response.statusCode != 200) {
-        throw Exception('Error al eliminar usuario en el backend: Código ${response.statusCode}');
+        throw Exception(
+          'Error al eliminar usuario en el backend: Código ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Fallo al eliminar usuario en el backend: $e');

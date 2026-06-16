@@ -34,31 +34,34 @@ void main() {
         child: Consumer(
           builder: (context, ref, child) {
             final router = ref.watch(routerProvider);
-            return MaterialApp.router(
-              routerConfig: router,
-            );
+            return MaterialApp.router(routerConfig: router);
           },
         ),
       );
     }
 
-    testWidgets('should redirect to /usuarios when starting with no active user', (tester) async {
-      tester.view.physicalSize = const Size(1200, 800);
-      tester.view.devicePixelRatio = 1.0;
+    testWidgets(
+      'should redirect to /usuarios when starting with no active user',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 800);
+        tester.view.devicePixelRatio = 1.0;
 
-      await tester.pumpWidget(createRouterScope());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
+        await tester.pumpWidget(createRouterScope());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
 
-      // Should show the gateway page
-      expect(find.text('Seleccionar Usuario'), findsOneWidget);
-      expect(find.text('Registrar Nuevo'), findsOneWidget);
+        // Should show the gateway page
+        expect(find.text('Seleccionar Usuario'), findsOneWidget);
+        expect(find.text('Registrar Nuevo'), findsOneWidget);
 
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      },
+    );
 
-    testWidgets('should allow navigation when active user is selected', (tester) async {
+    testWidgets('should allow navigation when active user is selected', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
 
@@ -72,7 +75,9 @@ void main() {
       await tester.pumpWidget(
         createRouterScope(
           overrides: [
-            notificadorUsuariosProvider.overrideWith(() => MockUsuariosNotifier(usersState)),
+            notificadorUsuariosProvider.overrideWith(
+              () => MockUsuariosNotifier(usersState),
+            ),
           ],
         ),
       );

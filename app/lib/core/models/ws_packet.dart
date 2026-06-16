@@ -16,8 +16,8 @@ class WsPacket {
 
   /// Factory constructor de mínima asignación para parsing rápido.
   factory WsPacket.fromJson(Map<String, dynamic> json) => WsPacket(
-        type: json['type'] as String,
-        value: (json['value'] as num).toDouble(),
-        timestamp: (json['timestamp'] as num).toInt(),
-      );
+    type: json['type'] as String,
+    value: (json['value'] as num).toDouble(),
+    timestamp: (json['timestamp'] as num).toInt(),
+  );
 }
