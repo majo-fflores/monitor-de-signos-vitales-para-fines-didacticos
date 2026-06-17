@@ -152,13 +152,25 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TabBar(
-              labelColor: theme.colorScheme.primary,
+              labelColor: isDark
+                  ? const Color(0xFF818CF8)
+                  : theme.colorScheme.primary,
               unselectedLabelColor: theme.hintColor,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 14,
+              ),
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: UnderlineTabIndicator(
                 borderSide: BorderSide(
-                  color: theme.colorScheme.primary,
-                  width: 2,
+                  color: isDark
+                      ? const Color(0xFF818CF8)
+                      : theme.colorScheme.primary,
+                  width: 3,
                 ),
               ),
               tabs: const [
@@ -166,8 +178,8 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(LucideIcons.heart, size: 16),
-                      SizedBox(width: 6),
+                      Icon(LucideIcons.heart, size: 18),
+                      SizedBox(width: 8),
                       Text('BPM'),
                     ],
                   ),
@@ -176,8 +188,8 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(LucideIcons.activity, size: 16),
-                      SizedBox(width: 6),
+                      Icon(LucideIcons.activity, size: 18),
+                      SizedBox(width: 8),
                       Text('ECG'),
                     ],
                   ),
@@ -186,8 +198,8 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(LucideIcons.wind, size: 16),
-                      SizedBox(width: 6),
+                      Icon(LucideIcons.wind, size: 18),
+                      SizedBox(width: 8),
                       Text('Aire'),
                     ],
                   ),
@@ -248,7 +260,9 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
             const Gap(8),
             Text(
               'No hay muestras registradas para $label',
-              style: TextStyle(color: theme.disabledColor),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.disabledColor,
+              ),
             ),
           ],
         ),
@@ -268,18 +282,27 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
             ),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Hora de Registro',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                flex: 1,
+                child: Text(
+                  'Hora de Registro',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-              Text(
-                'Valor ($unit)',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                flex: 1,
+                child: Text(
+                  'Valor',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -292,7 +315,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
             child: ListView.builder(
               controller: scrollController,
               itemCount: samples.length,
-              itemExtent: 36,
+              itemExtent: 44,
               padding: EdgeInsets.zero,
               itemBuilder: (context, index) {
                 final sample = samples[index];
@@ -308,35 +331,44 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _formatearTimestamp(sample.timestamp),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          _formatearTimestamp(sample.timestamp),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          if (outOfRange) ...[
-                            const Icon(
-                              LucideIcons.alertCircle,
-                              color: Colors.orange,
-                              size: 14,
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (outOfRange) ...[
+                              const Icon(
+                                LucideIcons.alertCircle,
+                                color: Colors.orange,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Text(
+                              '${sample.value.toStringAsFixed(1)} $unit',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontFamily: 'monospace',
+                                fontSize: 16,
+                                fontWeight: outOfRange
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: outOfRange ? Colors.orange : null,
+                              ),
                             ),
-                            const SizedBox(width: 4),
                           ],
-                          Text(
-                            '${sample.value.toStringAsFixed(1)} $unit',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontFamily: 'monospace',
-                              fontWeight: outOfRange
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: outOfRange ? Colors.orange : null,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -360,6 +392,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
             'Total: ${samples.length} muestras',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.disabledColor,
+              fontSize: 12,
             ),
             textAlign: TextAlign.right,
           ),

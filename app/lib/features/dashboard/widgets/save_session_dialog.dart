@@ -7,9 +7,6 @@ class SaveSessionDialog extends StatefulWidget {
   final int fcProm;
   final int fcMin;
   final int fcMax;
-  final int ppgProm;
-  final int ppgMin;
-  final int ppgMax;
   final int co2Prom;
   final int co2Min;
   final int co2Max;
@@ -23,9 +20,6 @@ class SaveSessionDialog extends StatefulWidget {
     required this.fcProm,
     required this.fcMin,
     required this.fcMax,
-    required this.ppgProm,
-    required this.ppgMin,
-    required this.ppgMax,
     required this.co2Prom,
     required this.co2Min,
     required this.co2Max,
@@ -203,47 +197,7 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
                       ),
                     ],
                   ),
-                  TableRow(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                      ),
-                    ),
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        child: Text('PPG (LPM)'),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        child: Text('${widget.ppgMin}'),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        child: Text('${widget.ppgProm}'),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        child: Text('${widget.ppgMax}'),
-                      ),
-                    ],
-                  ),
+
                   TableRow(
                     decoration: BoxDecoration(
                       border: Border(

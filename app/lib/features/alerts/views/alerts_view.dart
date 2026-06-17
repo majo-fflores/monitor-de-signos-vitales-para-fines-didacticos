@@ -46,57 +46,64 @@ class AlertsView extends ConsumerWidget {
           ),
           const Gap(24),
 
-          // Indicadores adaptativos (Fila en desktop, columna en mobile)
+          // Layout adaptativo para Umbrales y KPI (Fila en desktop, columna en mobile)
           LayoutBuilder(
             builder: (context, constraints) {
               final esDesktop = constraints.maxWidth > 850;
               if (esDesktop) {
-                return const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: IndicadorVitalWidget(
-                        tipo: TipoMetrica.frecuenciaCardiaca,
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 7,
+                        child: BiometricThresholdsCard(
+                          subtitleColor: subtitleColor,
+                          borderColor: borderColor,
+                          isDark: isDark,
+                        ),
                       ),
-                    ),
-                    Gap(16),
-                    Expanded(
-                      child: IndicadorVitalWidget(
-                        tipo: TipoMetrica.frecuenciaPulsoPPG,
+                      const Gap(24),
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: const [
+                            IndicadorVitalWidget(
+                              tipo: TipoMetrica.frecuenciaCardiaca,
+                            ),
+                            IndicadorVitalWidget(
+                              tipo: TipoMetrica.dioxidoCarbono,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Gap(16),
-                    Expanded(
-                      child: IndicadorVitalWidget(
-                        tipo: TipoMetrica.dioxidoCarbono,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               } else {
-                return const Column(
+                return Column(
                   children: [
-                    IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaCardiaca),
-                    Gap(12),
-                    IndicadorVitalWidget(tipo: TipoMetrica.frecuenciaPulsoPPG),
-                    Gap(12),
-                    IndicadorVitalWidget(tipo: TipoMetrica.dioxidoCarbono),
+                    const IndicadorVitalWidget(
+                      tipo: TipoMetrica.frecuenciaCardiaca,
+                    ),
+                    const Gap(16),
+                    const IndicadorVitalWidget(
+                      tipo: TipoMetrica.dioxidoCarbono,
+                    ),
+                    const Gap(24),
+                    BiometricThresholdsCard(
+                      subtitleColor: subtitleColor,
+                      borderColor: borderColor,
+                      isDark: isDark,
+                    ),
                   ],
                 );
               }
             },
           ),
 
-          const Gap(32),
-          const Divider(height: 1, thickness: 1),
-          const Gap(32),
-
-          // Tarjeta de Umbrales reubicada aquí
-          BiometricThresholdsCard(
-            subtitleColor: subtitleColor,
-            borderColor: borderColor,
-            isDark: isDark,
-          ),
           const Gap(32),
           const Divider(height: 1, thickness: 1),
           const Gap(32),

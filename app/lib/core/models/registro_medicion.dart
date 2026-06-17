@@ -14,12 +14,6 @@ class RegistroMedicion {
   final int frecuenciaCardiaca;
   final int minFrecuenciaCardiaca;
   final int maxFrecuenciaCardiaca;
-  final int ppgFrecuenciaCardiaca;
-  final int minPpgFrecuenciaCardiaca;
-  final int maxPpgFrecuenciaCardiaca;
-  final int nivelSpo2;
-  final int minSpo2;
-  final int maxSpo2;
   final int nivelCo2;
   final int minCo2;
   final int maxCo2;
@@ -34,12 +28,6 @@ class RegistroMedicion {
     required this.frecuenciaCardiaca,
     required this.minFrecuenciaCardiaca,
     required this.maxFrecuenciaCardiaca,
-    required this.ppgFrecuenciaCardiaca,
-    required this.minPpgFrecuenciaCardiaca,
-    required this.maxPpgFrecuenciaCardiaca,
-    required this.nivelSpo2,
-    required this.minSpo2,
-    required this.maxSpo2,
     required this.nivelCo2,
     required this.minCo2,
     required this.maxCo2,
@@ -54,12 +42,6 @@ class RegistroMedicion {
     required int frecuenciaCardiaca,
     int minFrecuenciaCardiaca = 0,
     int maxFrecuenciaCardiaca = 0,
-    required int ppgFrecuenciaCardiaca,
-    int minPpgFrecuenciaCardiaca = 0,
-    int maxPpgFrecuenciaCardiaca = 0,
-    required int nivelSpo2,
-    int minSpo2 = 0,
-    int maxSpo2 = 0,
     required int nivelCo2,
     int minCo2 = 0,
     int maxCo2 = 0,
@@ -76,12 +58,6 @@ class RegistroMedicion {
       frecuenciaCardiaca: frecuenciaCardiaca,
       minFrecuenciaCardiaca: minFrecuenciaCardiaca,
       maxFrecuenciaCardiaca: maxFrecuenciaCardiaca,
-      ppgFrecuenciaCardiaca: ppgFrecuenciaCardiaca,
-      minPpgFrecuenciaCardiaca: minPpgFrecuenciaCardiaca,
-      maxPpgFrecuenciaCardiaca: maxPpgFrecuenciaCardiaca,
-      nivelSpo2: nivelSpo2,
-      minSpo2: minSpo2,
-      maxSpo2: maxSpo2,
       nivelCo2: nivelCo2,
       minCo2: minCo2,
       maxCo2: maxCo2,
@@ -105,12 +81,6 @@ class RegistroMedicion {
       frecuenciaCardiaca: data.avgBpm.round(),
       minFrecuenciaCardiaca: data.minBpm.round(),
       maxFrecuenciaCardiaca: data.maxBpm.round(),
-      ppgFrecuenciaCardiaca: data.avgBpm.round(),
-      minPpgFrecuenciaCardiaca: data.minBpm.round(),
-      maxPpgFrecuenciaCardiaca: data.maxBpm.round(),
-      nivelSpo2: 0, // Sin sensor SpO2 activo por el momento
-      minSpo2: 0,
-      maxSpo2: 0,
       nivelCo2: data.avgAir.round(),
       minCo2: data.minAir.round(),
       maxCo2: data.maxAir.round(),
@@ -123,7 +93,6 @@ class RegistroMedicion {
   factory RegistroMedicion.fromBackendSession(
     Session session, {
     List<Measurement>? bpm,
-    List<Measurement>? spo2,
     List<Measurement>? air,
     String? notasClinicas,
   }) {
@@ -173,12 +142,6 @@ class RegistroMedicion {
       frecuenciaCardiaca: fcProm,
       minFrecuenciaCardiaca: fcMin,
       maxFrecuenciaCardiaca: fcMax,
-      ppgFrecuenciaCardiaca: fcProm,
-      minPpgFrecuenciaCardiaca: fcMin,
-      maxPpgFrecuenciaCardiaca: fcMax,
-      nivelSpo2: 0,
-      minSpo2: 0,
-      maxSpo2: 0,
       nivelCo2: co2Prom,
       minCo2: co2Min,
       maxCo2: co2Max,
@@ -197,14 +160,6 @@ class RegistroMedicion {
       frecuenciaCardiaca: json['frecuenciaCardiaca'] as int? ?? 0,
       minFrecuenciaCardiaca: json['minFrecuenciaCardiaca'] as int? ?? 0,
       maxFrecuenciaCardiaca: json['maxFrecuenciaCardiaca'] as int? ?? 0,
-      ppgFrecuenciaCardiaca:
-          json['ppgFrecuenciaCardiaca'] as int? ??
-          (json['frecuenciaCardiaca'] as int? ?? 72),
-      minPpgFrecuenciaCardiaca: json['minPpgFrecuenciaCardiaca'] as int? ?? 0,
-      maxPpgFrecuenciaCardiaca: json['maxPpgFrecuenciaCardiaca'] as int? ?? 0,
-      nivelSpo2: json['nivelSpo2'] as int? ?? 0,
-      minSpo2: json['minSpo2'] as int? ?? 0,
-      maxSpo2: json['maxSpo2'] as int? ?? 0,
       nivelCo2: json['nivelCo2'] as int? ?? 0,
       minCo2: json['minCo2'] as int? ?? 0,
       maxCo2: json['maxCo2'] as int? ?? 0,
@@ -223,12 +178,6 @@ class RegistroMedicion {
       'frecuenciaCardiaca': frecuenciaCardiaca,
       'minFrecuenciaCardiaca': minFrecuenciaCardiaca,
       'maxFrecuenciaCardiaca': maxFrecuenciaCardiaca,
-      'ppgFrecuenciaCardiaca': ppgFrecuenciaCardiaca,
-      'minPpgFrecuenciaCardiaca': minPpgFrecuenciaCardiaca,
-      'maxPpgFrecuenciaCardiaca': maxPpgFrecuenciaCardiaca,
-      'nivelSpo2': nivelSpo2,
-      'minSpo2': minSpo2,
-      'maxSpo2': maxSpo2,
       'nivelCo2': nivelCo2,
       'minCo2': minCo2,
       'maxCo2': maxCo2,

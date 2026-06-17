@@ -17,13 +17,9 @@ void main() {
       final state = container.read(notificadorSignosVitalesProvider);
 
       expect(state.frecuenciaCardiaca, equals(72));
-      expect(state.ppgFrecuenciaCardiaca, equals(72));
-      expect(state.nivelSpo2, equals(98));
       expect(state.nivelCo2, equals(35));
       expect(state.ecgDatos, isEmpty);
-      expect(state.spo2Datos, isEmpty);
       expect(state.ecgActivo, isTrue);
-      expect(state.spo2Activo, isTrue);
       expect(state.co2Activo, isTrue);
     });
 
@@ -40,7 +36,6 @@ void main() {
 
           var state = container.read(notificadorSignosVitalesProvider);
           expect(state.ecgDatos, isEmpty);
-          expect(state.spo2Datos, hasLength(100));
 
           // Advance 20ms to fire first simulation timer tick
           async.elapse(const Duration(milliseconds: 20));
@@ -48,7 +43,6 @@ void main() {
           // State should be updated with new points (since timer rotated them)
           state = container.read(notificadorSignosVitalesProvider);
           expect(state.ecgDatos, hasLength(1));
-          expect(state.spo2Datos, hasLength(100));
         });
       },
     );
@@ -73,7 +67,6 @@ void main() {
         // Numerical values should change/deviate from initial (random variation is added)
         // Check that they are inside realistic ranges
         expect(state.frecuenciaCardiaca, isBetween(70, 74));
-        expect(state.nivelSpo2, isBetween(97, 98));
         expect(state.nivelCo2, isBetween(360, 420));
       });
     });
@@ -82,12 +75,10 @@ void main() {
       final original = EstadoSignosVitales.inicial();
       final copied = original.copiarCon(
         frecuenciaCardiaca: 88,
-        nivelSpo2: 96,
         co2Activo: false,
       );
 
       expect(copied.frecuenciaCardiaca, equals(88));
-      expect(copied.nivelSpo2, equals(96));
       expect(copied.co2Activo, isFalse);
       expect(copied.ecgActivo, isTrue); // unchanged
     });

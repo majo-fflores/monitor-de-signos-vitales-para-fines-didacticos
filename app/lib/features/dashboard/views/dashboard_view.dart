@@ -12,10 +12,11 @@ import '../../../shared/providers/historial_provider.dart';
 import '../../../shared/providers/session_provider.dart';
 import '../../../shared/providers/usuario_provider.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
+import '../widgets/co2_chart.dart';
 import '../widgets/dashboard_header.dart';
-import '../widgets/kpi_panels.dart';
+import '../widgets/ecg_chart.dart';
 import '../widgets/save_session_dialog.dart';
-import '../widgets/wave_charts.dart';
+import '../widgets/vital_kpi_card.dart';
 
 /// Vista principal de monitoreo en tiempo real.
 /// Se suscribe de manera selectiva a los flujos del NotificadorSignosVitales.
@@ -146,9 +147,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             minEcg: 0.0,
             maxEcg: 0.0,
             avgEcg: 0.0,
-            minSpo2: 0.0,
-            maxSpo2: 0.0,
-            avgSpo2: 0.0,
             minAir: 0.0,
             maxAir: 0.0,
             avgAir: 350.0,
@@ -170,9 +168,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               fcProm: summary.avgBpm.round(),
               fcMin: summary.minBpm.round(),
               fcMax: summary.maxBpm.round(),
-              ppgProm: summary.avgBpm.round(),
-              ppgMin: summary.minBpm.round(),
-              ppgMax: summary.maxBpm.round(),
               co2Prom: summary.avgAir.round(),
               co2Min: summary.minAir.round(),
               co2Max: summary.maxAir.round(),
@@ -211,12 +206,6 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                     frecuenciaCardiaca: summary.avgBpm.round(),
                     minFrecuenciaCardiaca: summary.minBpm.round(),
                     maxFrecuenciaCardiaca: summary.maxBpm.round(),
-                    ppgFrecuenciaCardiaca: summary.avgBpm.round(),
-                    minPpgFrecuenciaCardiaca: summary.minBpm.round(),
-                    maxPpgFrecuenciaCardiaca: summary.maxBpm.round(),
-                    nivelSpo2: 0,
-                    minSpo2: 0,
-                    maxSpo2: 0,
                     nivelCo2: summary.avgAir.round(),
                     minCo2: summary.minAir.round(),
                     maxCo2: summary.maxAir.round(),
@@ -306,9 +295,98 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
       }
     });
 
+    final frecuenciaCardiaca = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca),
+    );
+    final nivelCo2 = ref.watch(
+      notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
+    );
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final esMobile = constraints.maxWidth < Breakpoints.tablet;
+
+        final fcCard = TarjetaKpiVital(
+          titulo: 'Frecuencia Cardíaca',
+          valor: frecuenciaCardiaca == 0 ? '-' : '$frecuenciaCardiaca',
+          unidad: 'LPM',
+          colorAcento: ColoresSensores.ecgVerde,
+        );
+
+        final co2Card = TarjetaKpiVital(
+          titulo: 'Dióxido de Carbono',
+          valor: nivelCo2 == 0 ? '-' : '$nivelCo2',
+          unidad: 'ppm',
+          colorAcento: ColoresSensores.co2Amarillo,
+        );
+
+        Widget gridContent;
+
+        if (esMobile) {
+          // Móvil: apilado (stacked) y bien grande
+          gridContent = Column(
+            children: [
+              SizedBox(height: 110, child: fcCard),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 250,
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: const GraficoEcg(expandir: true),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(height: 110, child: co2Card),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 250,
+                child: Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: const GraficoCo2(expandir: true),
+                ),
+              ),
+            ],
+          );
+        } else {
+          // Desktop/Tablet: 70% Gráfico, 30% KPI
+          gridContent = Column(
+            children: [
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 7,
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: const GraficoEcg(expandir: true),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(flex: 3, child: fcCard),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 7,
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: const GraficoCo2(expandir: true),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(flex: 3, child: co2Card),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,22 +406,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
             // Grid adaptativo
             Expanded(
               child: SingleChildScrollView(
-                child: esMobile
-                    ? const Column(
-                        children: [
-                          KpiPanels(esMobile: true),
-                          SizedBox(height: 24),
-                          WaveCharts(),
-                        ],
-                      )
-                    : const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          KpiPanels(esMobile: false),
-                          SizedBox(height: 24),
-                          WaveCharts(),
-                        ],
-                      ),
+                child: SizedBox(
+                  // Forzamos altura fija en desktop para que CrossAxisAlignment.stretch funcione en Row
+                  height: esMobile ? null : 600,
+                  child: gridContent,
+                ),
               ),
             ),
           ],

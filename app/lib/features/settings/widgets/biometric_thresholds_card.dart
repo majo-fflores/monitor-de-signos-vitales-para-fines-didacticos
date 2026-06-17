@@ -58,43 +58,20 @@ class BiometricThresholdsCard extends ConsumerWidget {
             min: 40.0,
             max: 180.0,
           ),
-          const Divider(height: 32, thickness: 1),
-
-          // 2. FRECUENCIA DE PULSO (PPG)
+          const Gap(16),
+          // 2. DIÓXIDO DE CARBONO (ppm)
           ThresholdSingleSlider(
-            titulo: 'Frecuencia de Pulso PPG (Mínimo)',
-            unidad: 'LPM',
-            icono: Icons.favorite_border,
-            colorAcento: ColoresSensores.spo2Azul,
-            min: 45.0,
-            max: 120.0,
-            valorInicial: umbrales.ppgMin.toDouble(),
-            onChanged: (value) {
-              ref
-                  .read(notificadorAlarmaProvider.notifier)
-                  .actualizarUmbralesMemoria(ppgMin: value.round());
-            },
-            onChangeEnd: (_) {
-              ref
-                  .read(notificadorAlarmaProvider.notifier)
-                  .guardarUmbralesEnDisco();
-            },
-          ),
-          const Divider(height: 32, thickness: 1),
-
-          // 3. DIÓXIDO DE CARBONO (CO2)
-          ThresholdSingleSlider(
-            titulo: 'Dióxido de Carbono (Máximo)',
+            titulo: 'Dióxido de Carbono',
             unidad: 'ppm',
-            icono: Icons.cloud,
+            icono: Icons.air,
             colorAcento: ColoresSensores.co2Amarillo,
-            min: 300.0,
-            max: 1200.0,
+            min: 0.0,
+            max: 2000.0,
             valorInicial: umbrales.co2Max.toDouble(),
-            onChanged: (value) {
+            onChanged: (val) {
               ref
                   .read(notificadorAlarmaProvider.notifier)
-                  .actualizarUmbralesMemoria(co2Max: value.round());
+                  .actualizarUmbralesMemoria(co2Max: val.round());
             },
             onChangeEnd: (_) {
               ref

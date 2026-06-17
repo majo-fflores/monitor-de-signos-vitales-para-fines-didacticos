@@ -185,17 +185,25 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                     child: Text(
                       'Duración',
                       style: _headerStyle(theme, esOscuro),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   Expanded(
-                    flex: 2,
-                    child: Text('FC', style: _headerStyle(theme, esOscuro)),
+                    flex: 3,
+                    child: Text(
+                      'MÍN | PROM | MÁX (FC)',
+                      style: _headerStyle(theme, esOscuro),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  // Expanded(
-                  //   flex: 2,
-                  //   child: Text('SpO2',
-                  //       style: _headerStyle(theme, esOscuro)),
-                  // ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'MÍN | PROM | MÁX (CO2)',
+                      style: _headerStyle(theme, esOscuro),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
                 // Mismo ancho que los botones de acción en la fila.
                 const SizedBox(width: 72),
@@ -232,13 +240,12 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
   }
 
   TextStyle? _headerStyle(ThemeData theme, bool esOscuro) {
-    return theme.textTheme.bodySmall?.copyWith(
+    return theme.textTheme.bodyMedium?.copyWith(
       fontWeight: FontWeight.bold,
+      fontSize: 17,
       color: esOscuro
-          ? ColoresOscuros.mutedForeground
-          : ColoresClaros.mutedForeground,
-      fontSize: 11,
-      letterSpacing: 0.5,
+          ? ColoresOscuros.foreground.withValues(alpha: 0.9)
+          : ColoresClaros.foreground.withValues(alpha: 0.9),
     );
   }
 }

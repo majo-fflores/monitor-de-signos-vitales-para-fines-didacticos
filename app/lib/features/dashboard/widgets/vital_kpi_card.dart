@@ -25,39 +25,88 @@ class TarjetaKpiVital extends StatelessWidget {
     this.tituloSecundario,
   });
 
+  Widget _buildKpiContent({
+    required String title,
+    required String value,
+    required String unit,
+    required Color accentColor,
+    required double titleFontSize,
+    required double valueFontSize,
+    required Color borderColor,
+  }) {
+    final displayTitle = unit.isNotEmpty ? '$title ($unit)' : title;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+          child: Text(
+            displayTitle.toUpperCase(),
+            textScaler: TextScaler.noScaling,
+            style: TextStyle(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.w700,
+              color: accentColor,
+              letterSpacing: 1.2,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        Container(height: 1, color: borderColor.withValues(alpha: 0.3)),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 12.0,
+            ),
+            child: FittedBox(
+              fit: BoxFit
+                  .contain, // Escala tanto hacia arriba como hacia abajo para llenar el espacio
+              alignment: Alignment.center,
+              child: Text(
+                value == '-' ? '—' : value,
+                textScaler: TextScaler.noScaling,
+                style: TextStyle(
+                  fontSize: valueFontSize,
+                  fontWeight: value == '-' ? FontWeight.w400 : FontWeight.w800,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
+    final borderColor = esOscuro ? ColoresOscuros.border : ColoresClaros.border;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool esPequeno = constraints.maxWidth < 220;
 
-        final double cardHeight = esPequeno ? 84.0 : 110.0;
-        final double titleFontSize = esPequeno ? 9.0 : 11.0;
-        final double valueFontSize = esPequeno ? 24.0 : 34.0;
-        final double unitFontSize = esPequeno ? 10.0 : 12.0;
-        final double paddingLeftRight = esPequeno ? 8.0 : 16.0;
-        final double paddingTop = esPequeno ? 8.0 : 10.0;
-        final double paddingBottom = esPequeno ? 6.0 : 8.0;
-        final double verticalGap = esPequeno ? 2.0 : 4.0;
+        final double titleFontSize = esPequeno ? 12.0 : 16.0;
+        final double valueFontSize = esPequeno ? 72.0 : 120.0;
 
         return Container(
-          height: cardHeight,
           decoration: BoxDecoration(
             color: theme.cardTheme.color,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
-              width: 1,
-            ),
+            border: Border.all(color: borderColor, width: 1),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Row(
               children: [
-                // Barra decorativa vertical de acento a la izquierda (Sensor color indicator)
+                // Barra decorativa vertical de acento a la izquierda
                 Container(
                   width: 5,
                   height: double.infinity,
@@ -66,192 +115,46 @@ class TarjetaKpiVital extends StatelessWidget {
 
                 // Contenido del KPI
                 Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: paddingLeftRight,
-                      right: paddingLeftRight,
-                      top: paddingTop,
-                      bottom: paddingBottom,
-                    ),
-                    child: valorSecundario != null
-                        ? Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      titulo.toUpperCase(),
-                                      textScaler: TextScaler.noScaling,
-                                      style: TextStyle(
-                                        fontSize: esPequeno ? 9.0 : 10.0,
-                                        fontWeight: FontWeight.w700,
-                                        color: colorAcento,
-                                        letterSpacing: 1.0,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.baseline,
-                                      textBaseline: TextBaseline.alphabetic,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          valor,
-                                          textScaler: TextScaler.noScaling,
-                                          style: TextStyle(
-                                            fontSize: esPequeno ? 22.0 : 32.0,
-                                            fontWeight: FontWeight.w800,
-                                            fontFeatures: const [
-                                              FontFeature.tabularFigures(),
-                                            ], // Evita jitter numérico
-                                            fontFamily: 'monospace',
-                                          ),
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Text(
-                                          unidad,
-                                          textScaler: TextScaler.noScaling,
-                                          style: TextStyle(
-                                            fontSize: esPequeno ? 10.0 : 12.0,
-                                            fontWeight: FontWeight.w600,
-                                            color: esOscuro
-                                                ? ColoresOscuros.mutedForeground
-                                                : ColoresClaros.mutedForeground,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                  child: valorSecundario != null
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: _buildKpiContent(
+                                title: titulo,
+                                value: valor,
+                                unit: unidad,
+                                accentColor: colorAcento,
+                                titleFontSize: titleFontSize,
+                                valueFontSize: valueFontSize,
+                                borderColor: borderColor,
                               ),
-                              Container(
-                                width: 1,
-                                height: 48,
-                                color:
-                                    (esOscuro
-                                            ? ColoresOscuros.border
-                                            : ColoresClaros.border)
-                                        .withValues(alpha: 0.6),
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
+                            ),
+                            Container(
+                              width: 1,
+                              color: borderColor.withValues(alpha: 0.3),
+                            ),
+                            Expanded(
+                              child: _buildKpiContent(
+                                title: tituloSecundario ?? '',
+                                value: valorSecundario!,
+                                unit: unidadSecundaria ?? '',
+                                accentColor: colorAcento,
+                                titleFontSize: titleFontSize,
+                                valueFontSize: valueFontSize,
+                                borderColor: borderColor,
                               ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      (tituloSecundario ?? '').toUpperCase(),
-                                      textScaler: TextScaler.noScaling,
-                                      style: TextStyle(
-                                        fontSize: esPequeno ? 9.0 : 10.0,
-                                        fontWeight: FontWeight.w700,
-                                        color: colorAcento,
-                                        letterSpacing: 1.0,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.baseline,
-                                      textBaseline: TextBaseline.alphabetic,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          valorSecundario!,
-                                          textScaler: TextScaler.noScaling,
-                                          style: TextStyle(
-                                            fontSize: esPequeno ? 22.0 : 32.0,
-                                            fontWeight: FontWeight.w800,
-                                            fontFeatures: const [
-                                              FontFeature.tabularFigures(),
-                                            ],
-                                            fontFamily: 'monospace',
-                                          ),
-                                        ),
-                                        const SizedBox(width: 2),
-                                        Text(
-                                          unidadSecundaria ?? '',
-                                          textScaler: TextScaler.noScaling,
-                                          style: TextStyle(
-                                            fontSize: esPequeno ? 10.0 : 12.0,
-                                            fontWeight: FontWeight.w600,
-                                            color: esOscuro
-                                                ? ColoresOscuros.mutedForeground
-                                                : ColoresClaros.mutedForeground,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                titulo.toUpperCase(),
-                                textScaler: TextScaler.noScaling,
-                                style: TextStyle(
-                                  fontSize: titleFontSize,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorAcento,
-                                  letterSpacing: esPequeno ? 0.8 : 1.1,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: esPequeno ? 1 : 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              SizedBox(height: verticalGap),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    valor,
-                                    textScaler: TextScaler.noScaling,
-                                    style: TextStyle(
-                                      fontSize: valueFontSize,
-                                      fontWeight: FontWeight.w800,
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ], // Evita jitter numérico
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    unidad,
-                                    textScaler: TextScaler.noScaling,
-                                    style: TextStyle(
-                                      fontSize: unitFontSize,
-                                      fontWeight: FontWeight.w600,
-                                      color: esOscuro
-                                          ? ColoresOscuros.mutedForeground
-                                          : ColoresClaros.mutedForeground,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                  ),
+                            ),
+                          ],
+                        )
+                      : _buildKpiContent(
+                          title: titulo,
+                          value: valor,
+                          unit: unidad,
+                          accentColor: colorAcento,
+                          titleFontSize: titleFontSize,
+                          valueFontSize: valueFontSize,
+                          borderColor: borderColor,
+                        ),
                 ),
               ],
             ),

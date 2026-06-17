@@ -8,7 +8,7 @@ import '../../../shared/providers/alarma_state.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
 /// Tipos de métrica soportados por el indicador.
-enum TipoMetrica { frecuenciaCardiaca, frecuenciaPulsoPPG, dioxidoCarbono }
+enum TipoMetrica { frecuenciaCardiaca, dioxidoCarbono }
 
 /// Widget aislado para una sola métrica vital.
 /// Cada instancia hace su propio `ref.watch` selectivo para evitar
@@ -30,7 +30,6 @@ class IndicadorVitalWidget extends ConsumerWidget {
     late final bool activo;
     late final String metrica;
     late final String valorFormateado;
-    late final String rangoNormal;
     late final IconData icono;
     late final Color colorBase;
     late final bool fueraDeRango;
@@ -44,27 +43,13 @@ class IndicadorVitalWidget extends ConsumerWidget {
           notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
         );
         metrica = 'Frecuencia Cardíaca';
-        valorFormateado = '$valor BPM';
-        rangoNormal = '${umbrales.fcMin} - ${umbrales.fcMax} BPM';
+        valorFormateado = valor == 0 ? '-' : '$valor BPM';
         icono = LucideIcons.heart;
         colorBase = ColoresSensores.ecgVerde;
         fueraDeRango =
-            (valor < umbrales.fcMin || valor > umbrales.fcMax) && activo;
-      case TipoMetrica.frecuenciaPulsoPPG:
-        valor = ref.watch(
-          notificadorSignosVitalesProvider.select(
-            (s) => s.ppgFrecuenciaCardiaca,
-          ),
-        );
-        activo = ref.watch(
-          notificadorSignosVitalesProvider.select((s) => s.spo2Activo),
-        );
-        metrica = 'Frecuencia de Pulso (PPG)';
-        valorFormateado = '$valor LPM';
-        rangoNormal = '≥ ${umbrales.ppgMin} LPM';
-        icono = LucideIcons.activity;
-        colorBase = ColoresSensores.spo2Azul;
-        fueraDeRango = (valor < umbrales.ppgMin) && activo;
+            (valor != 0 &&
+                (valor < umbrales.fcMin || valor > umbrales.fcMax)) &&
+            activo;
       case TipoMetrica.dioxidoCarbono:
         valor = ref.watch(
           notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
@@ -73,11 +58,10 @@ class IndicadorVitalWidget extends ConsumerWidget {
           notificadorSignosVitalesProvider.select((s) => s.co2Activo),
         );
         metrica = 'Dióxido de Carbono';
-        valorFormateado = '$valor ppm';
-        rangoNormal = '≤ ${umbrales.co2Max} ppm';
-        icono = LucideIcons.cloud;
+        valorFormateado = valor == 0 ? '-' : '$valor ppm';
+        icono = LucideIcons.wind;
         colorBase = ColoresSensores.co2Amarillo;
-        fueraDeRango = (valor > umbrales.co2Max) && activo;
+        fueraDeRango = (valor != 0 && (valor > umbrales.co2Max)) && activo;
     }
 
     final color = fueraDeRango ? theme.colorScheme.error : colorBase;
@@ -106,65 +90,83 @@ class IndicadorVitalWidget extends ConsumerWidget {
                 ]
               : null,
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icono, color: color, size: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icono, color: color, size: 20),
+                ),
+                const Gap(12),
+                Text(
+                  metrica,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            const Gap(16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            const Gap(12),
+            Container(
+              height: 1,
+              color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+            ),
+            const Gap(12),
+            IntrinsicHeight(
+              child: Row(
                 children: [
-                  Text(
-                    metrica,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          valorFormateado,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: color,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  Text(
-                    'Umbral Normal: $rangoNormal',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.hintColor,
+                  VerticalDivider(
+                    width: 24,
+                    thickness: 1,
+                    color: esOscuro
+                        ? ColoresOscuros.border
+                        : ColoresClaros.border,
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          fueraDeRango ? 'CRÍTICO' : 'NORMAL',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: fueraDeRango
+                                ? theme.colorScheme.error
+                                : ColoresSensores.statusConectado,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  valorFormateado,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                  ),
-                ),
-                if (fueraDeRango)
-                  Text(
-                    'CRÍTICO',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.error,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  )
-                else
-                  Text(
-                    'NORMAL',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: ColoresSensores.statusConectado,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-              ],
             ),
           ],
         ),

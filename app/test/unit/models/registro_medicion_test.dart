@@ -12,8 +12,6 @@ void main() {
           usuarioId: 'user_123',
           duracionSegundos: 30,
           frecuenciaCardiaca: 80,
-          ppgFrecuenciaCardiaca: 82,
-          nivelSpo2: 97,
           nivelCo2: 450,
         );
 
@@ -21,8 +19,6 @@ void main() {
         expect(reg.usuarioId, equals('user_123'));
         expect(reg.duracionSegundos, equals(30));
         expect(reg.frecuenciaCardiaca, equals(80));
-        expect(reg.ppgFrecuenciaCardiaca, equals(82));
-        expect(reg.nivelSpo2, equals(97));
         expect(reg.nivelCo2, equals(450));
         expect(reg.alertasDisparadas, equals(0));
         expect(reg.notasClinicas, isEmpty);
@@ -47,9 +43,6 @@ void main() {
           avgEcg: -0.12,
           minEcg: -1.0,
           maxEcg: 1.0,
-          avgSpo2: 98.0,
-          minSpo2: 95.0,
-          maxSpo2: 100.0,
           avgAir: 450.2,
           minAir: 400.0,
           maxAir: 500.0,
@@ -63,8 +56,6 @@ void main() {
         expect(reg.fechaRegistro, equals(session.startTime));
         expect(reg.duracionSegundos, equals(300)); // 5 minutes in seconds
         expect(reg.frecuenciaCardiaca, equals(78)); // round of 78.4
-        expect(reg.ppgFrecuenciaCardiaca, equals(78));
-        expect(reg.nivelSpo2, equals(0)); // ignored SpO2
         expect(reg.nivelCo2, equals(450)); // round of 450.2
         expect(reg.alertasDisparadas, equals(3));
         expect(reg.notasClinicas, equals('Session notes test'));
@@ -80,12 +71,6 @@ void main() {
         frecuenciaCardiaca: 75,
         minFrecuenciaCardiaca: 60,
         maxFrecuenciaCardiaca: 90,
-        ppgFrecuenciaCardiaca: 76,
-        minPpgFrecuenciaCardiaca: 60,
-        maxPpgFrecuenciaCardiaca: 90,
-        nivelSpo2: 99,
-        minSpo2: 95,
-        maxSpo2: 100,
         nivelCo2: 390,
         minCo2: 350,
         maxCo2: 400,
@@ -104,11 +89,6 @@ void main() {
         deserialized.frecuenciaCardiaca,
         equals(original.frecuenciaCardiaca),
       );
-      expect(
-        deserialized.ppgFrecuenciaCardiaca,
-        equals(original.ppgFrecuenciaCardiaca),
-      );
-      expect(deserialized.nivelSpo2, equals(original.nivelSpo2));
       expect(deserialized.nivelCo2, equals(original.nivelCo2));
       expect(
         deserialized.alertasDisparadas,
@@ -124,16 +104,11 @@ void main() {
         'fechaRegistro': DateTime.now().toIso8601String(),
         'duracionSegundos': 10,
         'frecuenciaCardiaca': 70,
-        'nivelSpo2': 98,
         'nivelCo2': 400,
-        // missing: ppgFrecuenciaCardiaca, alertasDisparadas, notasClinicas
+        // missing: alertasDisparadas, notasClinicas
       };
 
       final reg = RegistroMedicion.fromJson(json);
-      expect(
-        reg.ppgFrecuenciaCardiaca,
-        equals(70),
-      ); // falls back to frecuenciaCardiaca
       expect(reg.alertasDisparadas, equals(0));
       expect(reg.notasClinicas, equals(''));
     });
@@ -144,8 +119,6 @@ void main() {
           usuarioId: '1',
           duracionSegundos: 45,
           frecuenciaCardiaca: 0,
-          ppgFrecuenciaCardiaca: 0,
-          nivelSpo2: 0,
           nivelCo2: 0,
         );
         expect(reg.duracionFormateada, equals('45s'));
@@ -156,8 +129,6 @@ void main() {
           usuarioId: '1',
           duracionSegundos: 125,
           frecuenciaCardiaca: 0,
-          ppgFrecuenciaCardiaca: 0,
-          nivelSpo2: 0,
           nivelCo2: 0,
         );
         expect(reg.duracionFormateada, equals('2m 5s'));
@@ -168,8 +139,6 @@ void main() {
           usuarioId: '1',
           duracionSegundos: 3725,
           frecuenciaCardiaca: 0,
-          ppgFrecuenciaCardiaca: 0,
-          nivelSpo2: 0,
           nivelCo2: 0,
         );
         // 3725 seconds = 1 hour, 2 minutes, 5 seconds
@@ -187,12 +156,6 @@ void main() {
         frecuenciaCardiaca: 0,
         minFrecuenciaCardiaca: 0,
         maxFrecuenciaCardiaca: 0,
-        ppgFrecuenciaCardiaca: 0,
-        minPpgFrecuenciaCardiaca: 0,
-        maxPpgFrecuenciaCardiaca: 0,
-        nivelSpo2: 0,
-        minSpo2: 0,
-        maxSpo2: 0,
         nivelCo2: 0,
         minCo2: 0,
         maxCo2: 0,
@@ -211,12 +174,6 @@ void main() {
         frecuenciaCardiaca: 70,
         minFrecuenciaCardiaca: 0,
         maxFrecuenciaCardiaca: 0,
-        ppgFrecuenciaCardiaca: 70,
-        minPpgFrecuenciaCardiaca: 0,
-        maxPpgFrecuenciaCardiaca: 0,
-        nivelSpo2: 98,
-        minSpo2: 0,
-        maxSpo2: 0,
         nivelCo2: 400,
         minCo2: 0,
         maxCo2: 0,
@@ -231,12 +188,6 @@ void main() {
         frecuenciaCardiaca: 80,
         minFrecuenciaCardiaca: 0,
         maxFrecuenciaCardiaca: 0,
-        ppgFrecuenciaCardiaca: 80,
-        minPpgFrecuenciaCardiaca: 0,
-        maxPpgFrecuenciaCardiaca: 0,
-        nivelSpo2: 99,
-        minSpo2: 0,
-        maxSpo2: 0,
         nivelCo2: 500,
         minCo2: 0,
         maxCo2: 0,

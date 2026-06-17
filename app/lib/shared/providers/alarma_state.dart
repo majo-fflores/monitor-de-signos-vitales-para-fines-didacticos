@@ -12,25 +12,22 @@ part 'alarma_state.g.dart';
 class UmbralesAlerta {
   final int fcMin;
   final int fcMax;
-  final int ppgMin;
   final int co2Max;
 
   const UmbralesAlerta({
     required this.fcMin,
     required this.fcMax,
-    required this.ppgMin,
     required this.co2Max,
   });
 
   factory UmbralesAlerta.defecto() {
-    return const UmbralesAlerta(fcMin: 60, fcMax: 100, ppgMin: 60, co2Max: 800);
+    return const UmbralesAlerta(fcMin: 60, fcMax: 100, co2Max: 1600);
   }
 
-  UmbralesAlerta copiarCon({int? fcMin, int? fcMax, int? ppgMin, int? co2Max}) {
+  UmbralesAlerta copiarCon({int? fcMin, int? fcMax, int? co2Max}) {
     return UmbralesAlerta(
       fcMin: fcMin ?? this.fcMin,
       fcMax: fcMax ?? this.fcMax,
-      ppgMin: ppgMin ?? this.ppgMin,
       co2Max: co2Max ?? this.co2Max,
     );
   }
@@ -114,55 +111,25 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       final u = state.umbrales;
 
       final fc = signos.frecuenciaCardiaca;
-      final ppg = signos.ppgFrecuenciaCardiaca;
-      final co2 = signos.nivelCo2;
 
       // 1. FC
       bool fcEnAlerta = false;
-      final tieneFcAlerta = state.alertasActivas.any(
-        (a) => a.metrica == 'Frecuencia Cardíaca',
-      );
-      if (tieneFcAlerta) {
-        if (fc < (u.fcMin + 3) || fc > (u.fcMax - 3)) {
-          fcEnAlerta = true;
-        }
-      } else {
-        if (fc < u.fcMin || fc > u.fcMax) {
-          fcEnAlerta = true;
-        }
-      }
-
-      // 2. PPG
-      bool ppgEnAlerta = false;
-      final tienePpgAlerta = state.alertasActivas.any(
-        (a) => a.metrica == 'Frecuencia de Pulso (PPG)',
-      );
-      if (tienePpgAlerta) {
-        if (ppg < (u.ppgMin + 3)) {
-          ppgEnAlerta = true;
-        }
-      } else {
-        if (ppg < u.ppgMin) {
-          ppgEnAlerta = true;
+      if (fc != 0) {
+        final tieneFcAlerta = state.alertasActivas.any(
+          (a) => a.metrica == 'Frecuencia Cardíaca',
+        );
+        if (tieneFcAlerta) {
+          if (fc < (u.fcMin + 3) || fc > (u.fcMax - 3)) {
+            fcEnAlerta = true;
+          }
+        } else {
+          if (fc < u.fcMin || fc > u.fcMax) {
+            fcEnAlerta = true;
+          }
         }
       }
 
-      // 3. CO2
-      bool co2EnAlerta = false;
-      final tieneCo2Alerta = state.alertasActivas.any(
-        (a) => a.metrica == 'Dióxido de Carbono',
-      );
-      if (tieneCo2Alerta) {
-        if (co2 > (u.co2Max - 20)) {
-          co2EnAlerta = true;
-        }
-      } else {
-        if (co2 > u.co2Max) {
-          co2EnAlerta = true;
-        }
-      }
-
-      return fcEnAlerta || ppgEnAlerta || co2EnAlerta;
+      return fcEnAlerta;
     } catch (_) {}
     return false;
   }
@@ -181,8 +148,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
       _prefs = await SharedPreferences.getInstance();
       final fcMin = _prefs?.getInt('umbral_fc_min') ?? 60;
       final fcMax = _prefs?.getInt('umbral_fc_max') ?? 100;
-      final ppgMin = _prefs?.getInt('umbral_ppg_min') ?? 60;
-      final co2Max = _prefs?.getInt('umbral_co2_max') ?? 800;
+      final co2Max = _prefs?.getInt('umbral_co2_max') ?? 1600;
       final habilitada = _prefs?.getBool('alarma_habilitada') ?? true;
       final sonidoHabilitado =
           _prefs?.getBool('alarma_sonido_habilitado') ?? true;
@@ -193,12 +159,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
         habilitada: habilitada,
         sonidoHabilitado: sonidoHabilitado,
         sonidoSeleccionado: sonidoSeleccionado,
-        umbrales: UmbralesAlerta(
-          fcMin: fcMin,
-          fcMax: fcMax,
-          ppgMin: ppgMin,
-          co2Max: co2Max,
-        ),
+        umbrales: UmbralesAlerta(fcMin: fcMin, fcMax: fcMax, co2Max: co2Max),
       );
     } catch (e) {
       debugPrint('Error cargando SharedPreferences: $e');
@@ -223,31 +184,15 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     await _prefs?.setString('alarma_sonido_seleccionado', sonido);
   }
 
-  Future<void> actualizarUmbrales({
-    int? fcMin,
-    int? fcMax,
-    int? ppgMin,
-    int? co2Max,
-  }) async {
-    actualizarUmbralesMemoria(
-      fcMin: fcMin,
-      fcMax: fcMax,
-      ppgMin: ppgMin,
-      co2Max: co2Max,
-    );
+  Future<void> actualizarUmbrales({int? fcMin, int? fcMax, int? co2Max}) async {
+    actualizarUmbralesMemoria(fcMin: fcMin, fcMax: fcMax, co2Max: co2Max);
     await guardarUmbralesEnDisco();
   }
 
-  void actualizarUmbralesMemoria({
-    int? fcMin,
-    int? fcMax,
-    int? ppgMin,
-    int? co2Max,
-  }) {
+  void actualizarUmbralesMemoria({int? fcMin, int? fcMax, int? co2Max}) {
     final nuevosUmbrales = state.umbrales.copiarCon(
       fcMin: fcMin,
       fcMax: fcMax,
-      ppgMin: ppgMin,
       co2Max: co2Max,
     );
     state = state.copiarCon(umbrales: nuevosUmbrales);
@@ -260,11 +205,7 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     if (!state.habilitada) return;
     try {
       final signos = ref.read(notificadorSignosVitalesProvider);
-      monitorearValores(
-        fc: signos.frecuenciaCardiaca,
-        ppg: signos.ppgFrecuenciaCardiaca,
-        co2: signos.nivelCo2,
-      );
+      monitorearValores(fc: signos.frecuenciaCardiaca, co2: signos.nivelCo2);
     } catch (_) {
       // Ignorar si el proveedor de signos vitales no está inicializado
     }
@@ -274,17 +215,12 @@ class NotificadorAlarma extends _$NotificadorAlarma {
     final u = state.umbrales;
     await _prefs?.setInt('umbral_fc_min', u.fcMin);
     await _prefs?.setInt('umbral_fc_max', u.fcMax);
-    await _prefs?.setInt('umbral_ppg_min', u.ppgMin);
     await _prefs?.setInt('umbral_co2_max', u.co2Max);
   }
 
   /// Evalúa si los valores actuales están fuera de los umbrales.
   /// Se ejecuta cada vez que el simulador o WS actualiza los datos.
-  void monitorearValores({
-    required int fc,
-    required int ppg,
-    required int co2,
-  }) {
+  void monitorearValores({required int fc, required int co2}) {
     if (!state.habilitada) return;
 
     final u = state.umbrales;
@@ -292,63 +228,47 @@ class NotificadorAlarma extends _$NotificadorAlarma {
 
     // Constantes de histéresis
     const fcHysteresis = 3;
-    const ppgHysteresis = 3;
-    const co2Hysteresis = 20;
 
     // 1. Evaluar Frecuencia Cardíaca (FC)
     bool fcEnAlerta = false;
-    final tieneFcAlerta = state.alertasActivas.any(
-      (a) => a.metrica == 'Frecuencia Cardíaca',
-    );
-    if (tieneFcAlerta) {
-      if (fc < (u.fcMin + fcHysteresis) || fc > (u.fcMax - fcHysteresis)) {
-        fcEnAlerta = true;
-      }
-    } else {
-      if (fc < u.fcMin || fc > u.fcMax) {
-        fcEnAlerta = true;
+    if (fc != 0) {
+      final tieneFcAlerta = state.alertasActivas.any(
+        (a) => a.metrica == 'Frecuencia Cardíaca',
+      );
+      if (tieneFcAlerta) {
+        if (fc < (u.fcMin + fcHysteresis) || fc > (u.fcMax - fcHysteresis)) {
+          fcEnAlerta = true;
+        }
+      } else {
+        if (fc < u.fcMin || fc > u.fcMax) {
+          fcEnAlerta = true;
+        }
       }
     }
     if (fcEnAlerta) {
       nuevasAlertas.add(AlertaCritica('Frecuencia Cardíaca', fc));
     }
 
-    // 2. Evaluar PPG (Frecuencia de Pulso)
-    bool ppgEnAlerta = false;
-    final tienePpgAlerta = state.alertasActivas.any(
-      (a) => a.metrica == 'Frecuencia de Pulso (PPG)',
-    );
-    if (tienePpgAlerta) {
-      if (ppg < (u.ppgMin + ppgHysteresis)) {
-        ppgEnAlerta = true;
-      }
-    } else {
-      if (ppg < u.ppgMin) {
-        ppgEnAlerta = true;
-      }
-    }
-    if (ppgEnAlerta) {
-      nuevasAlertas.add(AlertaCritica('Frecuencia de Pulso (PPG)', ppg));
-    }
-
-    // 3. Evaluar CO2
+    // 2. Evaluar CO2
     bool co2EnAlerta = false;
-    final tieneCo2Alerta = state.alertasActivas.any(
-      (a) => a.metrica == 'Dióxido de Carbono',
-    );
-    if (tieneCo2Alerta) {
-      if (co2 > (u.co2Max - co2Hysteresis)) {
-        co2EnAlerta = true;
-      }
-    } else {
-      if (co2 > u.co2Max) {
-        co2EnAlerta = true;
+    if (co2 != 0) {
+      final tieneCo2Alerta = state.alertasActivas.any(
+        (a) => a.metrica == 'Dióxido de Carbono',
+      );
+      if (tieneCo2Alerta) {
+        if (co2 > (u.co2Max - 50)) {
+          // hysteresis para CO2
+          co2EnAlerta = true;
+        }
+      } else {
+        if (co2 > u.co2Max) {
+          co2EnAlerta = true;
+        }
       }
     }
     if (co2EnAlerta) {
       nuevasAlertas.add(AlertaCritica('Dióxido de Carbono', co2));
     }
-
     final estabaActiva = state.alarmaActiva;
 
     if (nuevasAlertas.isNotEmpty) {

@@ -8,7 +8,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/historial_provider.dart';
 import '../../../../shared/providers/session_provider.dart';
 import '../../../../shared/providers/usuario_provider.dart';
-import 'metrica_inline.dart';
 import 'session_raw_data_table.dart';
 
 class SessionHistoryRow extends ConsumerWidget {
@@ -95,6 +94,18 @@ class SessionHistoryRow extends ConsumerWidget {
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
+                if (registro.alertasDisparadas > 0) ...[
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message:
+                        '${registro.alertasDisparadas} alertas registradas en esta sesión',
+                    child: const Icon(
+                      LucideIcons.alertTriangle,
+                      size: 14,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ],
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 2,
@@ -102,6 +113,7 @@ class SessionHistoryRow extends ConsumerWidget {
                     registro.fechaFormateada,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
+                      fontSize: 17,
                     ),
                   ),
                 ),
@@ -110,12 +122,15 @@ class SessionHistoryRow extends ConsumerWidget {
                     flex: 2,
                     child: Text(
                       registro.duracionFormateada,
-                      style: theme.textTheme.bodyMedium,
+                      style: theme.textTheme.bodyMedium?.copyWith(fontSize: 17),
+                      textAlign: TextAlign.center,
                     ),
                   ),
+                  // Columna FC: MÍN / PROM / MÁX
                   Expanded(
-                    flex: 2,
+                    flex: 3,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                           width: 8,
@@ -125,34 +140,64 @@ class SessionHistoryRow extends ConsumerWidget {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Text(
-                          '${registro.frecuenciaCardiaca} LPM',
-                          style: theme.textTheme.bodyMedium,
+                          '${registro.minFrecuenciaCardiaca} | ${registro.frecuenciaCardiaca} | ${registro.maxFrecuenciaCardiaca}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'LPM',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: esOscuro
+                                ? ColoresOscuros.mutedForeground
+                                : ColoresClaros.mutedForeground,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  // Expanded(
-                  //   flex: 2,
-                  //   child: Row(
-                  //     children: [
-                  //       Container(
-                  //         width: 8,
-                  //         height: 8,
-                  //         decoration: const BoxDecoration(
-                  //           color: ColoresSensores.spo2Azul,
-                  //           shape: BoxShape.circle,
-                  //         ),
-                  //       ),
-                  //       const SizedBox(width: 6),
-                  //       Text(
-                  //         '${registro.nivelSpo2}%',
-                  //         style: theme.textTheme.bodyMedium,
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
+                  // Columna CO2: MÍN / PROM / MÁX
+                  Expanded(
+                    flex: 3,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: ColoresSensores.co2Amarillo,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${registro.minCo2} | ${registro.nivelCo2} | ${registro.maxCo2}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'ppm',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: esOscuro
+                                ? ColoresOscuros.mutedForeground
+                                : ColoresClaros.mutedForeground,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
                 // Acciones
                 SizedBox(
@@ -244,66 +289,12 @@ class SessionHistoryRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Grid compacto de métricas
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  children: [
-                    MetricaInline(
-                      label: 'Frecuencia Cardíaca (ECG)',
-                      value:
-                          'Mín ${registro.minFrecuenciaCardiaca} | Prom ${registro.frecuenciaCardiaca} | Máx ${registro.maxFrecuenciaCardiaca} LPM',
-                      color: ColoresSensores.ecgVerde,
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
-                    MetricaInline(
-                      label: 'Pulso (PPG)',
-                      value:
-                          'Mín ${registro.minPpgFrecuenciaCardiaca} | Prom ${registro.ppgFrecuenciaCardiaca} | Máx ${registro.maxPpgFrecuenciaCardiaca} LPM',
-                      color: ColoresSensores.spo2Azul,
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
-                    // MetricaInline(
-                    //   label: 'SpO2',
-                    //   value: '${registro.nivelSpo2}%',
-                    //   color: ColoresSensores.spo2Azul,
-                    //   theme: theme,
-                    //   esOscuro: esOscuro,
-                    // ),
-                    MetricaInline(
-                      label: 'CO2',
-                      value:
-                          'Mín ${registro.minCo2} | Prom ${registro.nivelCo2} | Máx ${registro.maxCo2} ppm',
-                      color: ColoresSensores.co2Amarillo,
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
-                    MetricaInline(
-                      label: 'Duración',
-                      value: registro.duracionFormateada,
-                      color: const Color(0xFFF59E0B),
-                      theme: theme,
-                      esOscuro: esOscuro,
-                    ),
-                    if (registro.alertasDisparadas > 0)
-                      MetricaInline(
-                        label: 'Alertas',
-                        value: '${registro.alertasDisparadas}',
-                        color: theme.colorScheme.error,
-                        theme: theme,
-                        esOscuro: esOscuro,
-                      ),
-                  ],
-                ),
-                const Gap(16),
                 SessionRawDataTable(sessionId: int.parse(registro.id)),
                 if (registro.notasClinicas.isNotEmpty) ...[
                   const Gap(12),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: esOscuro
                           ? Colors.white.withValues(alpha: 0.02)
@@ -317,7 +308,7 @@ class SessionHistoryRow extends ConsumerWidget {
                     ),
                     child: Text(
                       registro.notasClinicas,
-                      style: theme.textTheme.bodySmall,
+                      style: theme.textTheme.bodyMedium,
                     ),
                   ),
                 ],

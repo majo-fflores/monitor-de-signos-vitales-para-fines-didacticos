@@ -21,20 +21,16 @@ class HistoryStatisticsSummary extends StatelessWidget {
     final total = registros.length;
     double promFC = 0;
     double promCO2 = 0;
-    double promPPG = 0;
 
     if (total > 0) {
       double sFC = 0;
       double sCO2 = 0;
-      double sPPG = 0;
       for (final r in registros) {
         sFC += r.frecuenciaCardiaca;
         sCO2 += r.nivelCo2;
-        sPPG += r.ppgFrecuenciaCardiaca;
       }
       promFC = sFC / total;
       promCO2 = sCO2 / total;
-      promPPG = sPPG / total;
     }
 
     final chips = [
@@ -55,12 +51,6 @@ class HistoryStatisticsSummary extends StatelessWidget {
         valor: '${promCO2.round()} ppm',
         icono: LucideIcons.cloud,
         color: const Color(0xFFF59E0B),
-      ),
-      _KpiData(
-        titulo: 'Prom. Pulso (PPG)',
-        valor: '${promPPG.round()} LPM',
-        icono: LucideIcons.activity,
-        color: const Color(0xFF3B82F6),
       ),
     ];
 

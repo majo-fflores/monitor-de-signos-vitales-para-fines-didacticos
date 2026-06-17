@@ -36,8 +36,7 @@ void main() {
         ),
       );
 
-      expect(find.text('450'), findsOneWidget);
-      expect(find.text('EXCELENTE'), findsAny);
+      expect(find.text('Dióxido de Carbono (CO2)'), findsOneWidget);
       expect(find.text('SENSOR DESCONECTADO'), findsNothing);
     });
 

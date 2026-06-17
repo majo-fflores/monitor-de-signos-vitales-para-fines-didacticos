@@ -12,12 +12,6 @@ class ReporteDatos {
   final int frecuenciaCardiaca;
   final int minFrecuenciaCardiaca;
   final int maxFrecuenciaCardiaca;
-  final int ppgFrecuenciaCardiaca;
-  final int minPpgFrecuenciaCardiaca;
-  final int maxPpgFrecuenciaCardiaca;
-  final int nivelSpo2;
-  final int minSpo2;
-  final int maxSpo2;
   final int nivelCo2;
   final int minCo2;
   final int maxCo2;
@@ -31,12 +25,6 @@ class ReporteDatos {
     required this.frecuenciaCardiaca,
     required this.minFrecuenciaCardiaca,
     required this.maxFrecuenciaCardiaca,
-    required this.ppgFrecuenciaCardiaca,
-    required this.minPpgFrecuenciaCardiaca,
-    required this.maxPpgFrecuenciaCardiaca,
-    required this.nivelSpo2,
-    required this.minSpo2,
-    required this.maxSpo2,
     required this.nivelCo2,
     required this.minCo2,
     required this.maxCo2,
@@ -74,9 +62,6 @@ class ReportPdfHelper {
 
           final isFcCritica =
               datos.frecuenciaCardiaca < 50 || datos.frecuenciaCardiaca > 120;
-          final isPpgFcCritica =
-              datos.ppgFrecuenciaCardiaca < 50 ||
-              datos.ppgFrecuenciaCardiaca > 120;
           final isCo2Critico = datos.nivelCo2 > 800;
 
           final formatoFecha =
@@ -377,67 +362,12 @@ class ReportPdfHelper {
                         ),
                       ],
                     ),
-                    // Fila PPG
+
+                    // Fila CO2
                     pw.TableRow(
                       decoration: const pw.BoxDecoration(
                         color: PdfColors.grey50,
                       ),
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            'Frecuencia de Pulso (PPG)',
-                            style: const pw.TextStyle(fontSize: 9),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            '${datos.minPpgFrecuenciaCardiaca}',
-                            style: const pw.TextStyle(fontSize: 9),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            '${datos.ppgFrecuenciaCardiaca}',
-                            style: pw.TextStyle(
-                              fontSize: 9,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            '${datos.maxPpgFrecuenciaCardiaca}',
-                            style: const pw.TextStyle(fontSize: 9),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            'LPM',
-                            style: const pw.TextStyle(fontSize: 9),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(
-                            isPpgFcCritica
-                                ? 'CRÍTICO / ALTA PRIORIDAD'
-                                : 'NORMAL',
-                            style: pw.TextStyle(
-                              color: isPpgFcCritica ? alertRed : successGreen,
-                              fontWeight: pw.FontWeight.bold,
-                              fontSize: 8,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Fila CO2
-                    pw.TableRow(
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),

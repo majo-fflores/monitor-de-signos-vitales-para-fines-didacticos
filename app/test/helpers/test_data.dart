@@ -25,12 +25,6 @@ class TestData {
     frecuenciaCardiaca: 72,
     minFrecuenciaCardiaca: 60,
     maxFrecuenciaCardiaca: 90,
-    ppgFrecuenciaCardiaca: 73,
-    minPpgFrecuenciaCardiaca: 60,
-    maxPpgFrecuenciaCardiaca: 90,
-    nivelSpo2: 98,
-    minSpo2: 95,
-    maxSpo2: 100,
     nivelCo2: 380,
     minCo2: 350,
     maxCo2: 400,
@@ -46,12 +40,6 @@ class TestData {
     frecuenciaCardiaca: 110,
     minFrecuenciaCardiaca: 90,
     maxFrecuenciaCardiaca: 130,
-    ppgFrecuenciaCardiaca: 109,
-    minPpgFrecuenciaCardiaca: 90,
-    maxPpgFrecuenciaCardiaca: 130,
-    nivelSpo2: 92,
-    minSpo2: 85,
-    maxSpo2: 95,
     nivelCo2: 900,
     minCo2: 800,
     maxCo2: 1000,
@@ -63,12 +51,6 @@ class TestData {
     type: 'ecg',
     value: 0.5,
     timestamp: 1748383032000,
-  );
-
-  static final wsPacketSpo2 = WsPacket(
-    type: 'spo2',
-    value: 98.0,
-    timestamp: 1748383032100,
   );
 
   static final wsPacketBpm = WsPacket(

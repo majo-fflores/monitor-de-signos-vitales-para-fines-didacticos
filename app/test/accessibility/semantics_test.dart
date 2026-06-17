@@ -100,7 +100,10 @@ void main() {
         );
 
         // Verify semantic tree contains the card label and value clearly readable
-        expect(find.bySemanticsLabel('FRECUENCIA CARDÍACA'), findsOneWidget);
+        expect(
+          find.bySemanticsLabel('FRECUENCIA CARDÍACA (LPM)'),
+          findsOneWidget,
+        );
         expect(find.bySemanticsLabel('72'), findsOneWidget);
 
         semantics.dispose();

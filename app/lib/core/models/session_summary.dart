@@ -11,9 +11,6 @@ class SessionWithSummary {
   final double minEcg;
   final double maxEcg;
   final double avgEcg;
-  final double minSpo2;
-  final double maxSpo2;
-  final double avgSpo2;
   final double minAir;
   final double maxAir;
   final double avgAir;
@@ -27,9 +24,6 @@ class SessionWithSummary {
     required this.minEcg,
     required this.maxEcg,
     required this.avgEcg,
-    required this.minSpo2,
-    required this.maxSpo2,
-    required this.avgSpo2,
     required this.minAir,
     required this.maxAir,
     required this.avgAir,
@@ -46,9 +40,6 @@ class SessionWithSummary {
       minEcg: (json['min_ecg'] as num?)?.toDouble() ?? 0.0,
       maxEcg: (json['max_ecg'] as num?)?.toDouble() ?? 0.0,
       avgEcg: (json['avg_ecg'] as num?)?.toDouble() ?? 0.0,
-      minSpo2: (json['min_spo2'] as num?)?.toDouble() ?? 0.0,
-      maxSpo2: (json['max_spo2'] as num?)?.toDouble() ?? 0.0,
-      avgSpo2: (json['avg_spo2'] as num?)?.toDouble() ?? 0.0,
       minAir: (json['min_air'] as num?)?.toDouble() ?? 0.0,
       maxAir: (json['max_air'] as num?)?.toDouble() ?? 0.0,
       avgAir: (json['avg_air'] as num?)?.toDouble() ?? 0.0,
@@ -68,9 +59,6 @@ class SessionSummary {
   final double minEcg;
   final double maxEcg;
   final double avgEcg;
-  final double minSpo2;
-  final double maxSpo2;
-  final double avgSpo2;
   final double minAir;
   final double maxAir;
   final double avgAir;
@@ -85,9 +73,6 @@ class SessionSummary {
     required this.minEcg,
     required this.maxEcg,
     required this.avgEcg,
-    required this.minSpo2,
-    required this.maxSpo2,
-    required this.avgSpo2,
     required this.minAir,
     required this.maxAir,
     required this.avgAir,
@@ -104,9 +89,6 @@ class SessionSummary {
       minEcg: (json['min_ecg'] as num?)?.toDouble() ?? 0.0,
       maxEcg: (json['max_ecg'] as num?)?.toDouble() ?? 0.0,
       avgEcg: (json['avg_ecg'] as num?)?.toDouble() ?? 0.0,
-      minSpo2: (json['min_spo2'] as num?)?.toDouble() ?? 0.0,
-      maxSpo2: (json['max_spo2'] as num?)?.toDouble() ?? 0.0,
-      avgSpo2: (json['avg_spo2'] as num?)?.toDouble() ?? 0.0,
       minAir: (json['min_air'] as num?)?.toDouble() ?? 0.0,
       maxAir: (json['max_air'] as num?)?.toDouble() ?? 0.0,
       avgAir: (json['avg_air'] as num?)?.toDouble() ?? 0.0,

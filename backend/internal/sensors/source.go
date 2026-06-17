@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -20,30 +21,50 @@ type DataSource interface {
 }
 
 type SimulatedArduino struct {
-	types     []string
-	typeIndex int
-	ecgIndex  int
+	types       []string
+	typeIndex   int
+	ecgIndex    int
+	lastBPM     float64
+	lastBPMTime time.Time
+	airSimTime  float64
 }
 
 func NewSimulatedArduino() DataSource {
 	return &SimulatedArduino{
-		types:     []string{"bpm", "ecg", "air"},
-		typeIndex: 0,
-		ecgIndex:  0,
+		types:       []string{"bpm", "ecg", "air"},
+		typeIndex:   0,
+		ecgIndex:    0,
+		lastBPM:     72.0,
+		lastBPMTime: time.Now(),
+		airSimTime:  0.0,
 	}
 }
 
 func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
-	time.Sleep(10 * time.Millisecond) // Simulate delay
-
-	// Pick sequentially to ensure steady rate
+	// Pick sequentially
 	t := s.types[s.typeIndex%len(s.types)]
 	s.typeIndex++
+
+	// Only sleep before sending the first packet in the cycle
+	if t == "bpm" {
+		time.Sleep(10 * time.Millisecond) // Simulate delay
+	}
 
 	var val float64
 	switch t {
 	case "bpm":
-		val = 65 + rand.Float64()*(95-65)
+		now := time.Now()
+		if now.Sub(s.lastBPMTime) >= 1*time.Second {
+			// Fluctuación aleatoria entre -2 y +2
+			s.lastBPM = s.lastBPM + (rand.Float64()*4.0 - 2.0)
+			if s.lastBPM < 60 {
+				s.lastBPM = 60
+			} else if s.lastBPM > 100 {
+				s.lastBPM = 100
+			}
+			s.lastBPMTime = now
+		}
+		val = s.lastBPM
 	case "ecg":
 		ecgTemplate := []float64{
 			0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.05, 0.0,
@@ -53,7 +74,20 @@ func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
 		val = 0.3 + ecgTemplate[s.ecgIndex%len(ecgTemplate)]
 		s.ecgIndex++
 	case "air":
-		val = 350 + rand.Float64()*(500-350)
+		s.airSimTime += 0.01 // advances 10ms per cycle
+		// Ruido real entre 1150 y 1250
+		base := 1150.0 + rand.Float64()*100.0 
+		cycle := math.Mod(s.airSimTime, 4.0) // 4 seconds breathing cycle
+		
+		// Pico para simular la respiración (cae a ~950)
+		if cycle > 2.5 {
+			// Onda sinusoide suave para el pico de respiración
+			dropProgress := math.Sin((cycle - 2.5) / 1.5 * math.Pi)
+			// Base promedio es ~1200. Queremos bajar a ~950 (caída de 250)
+			val = base - (dropProgress * 250.0)
+		} else {
+			val = base
+		}
 	}
 
 	return ArduinoPacket{

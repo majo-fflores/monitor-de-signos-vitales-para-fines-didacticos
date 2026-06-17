@@ -20,9 +20,8 @@ void main() {
         ),
       );
 
-      expect(find.text('ECG'), findsOneWidget);
+      expect(find.text('ECG (BPM)'), findsOneWidget);
       expect(find.text('72'), findsOneWidget);
-      expect(find.text('bpm'), findsOneWidget);
     });
 
     testWidgets('should render dual fields when valorSecundario is provided', (
@@ -42,12 +41,10 @@ void main() {
         ),
       );
 
-      expect(find.text('SPO2'), findsOneWidget);
-      expect(find.text('PPG'), findsOneWidget);
+      expect(find.text('SPO2 (%)'), findsOneWidget);
+      expect(find.text('PPG (BPM)'), findsOneWidget);
       expect(find.text('98'), findsOneWidget);
       expect(find.text('75'), findsOneWidget);
-      expect(find.text('%'), findsOneWidget);
-      expect(find.text('bpm'), findsOneWidget);
     });
   });
 }

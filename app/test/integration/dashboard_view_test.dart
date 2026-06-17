@@ -89,8 +89,6 @@ void main() {
 
         final vitalSignsState = EstadoSignosVitales.inicial().copiarCon(
           frecuenciaCardiaca: 75,
-          ppgFrecuenciaCardiaca: 76,
-          nivelSpo2: 98,
           nivelCo2: 450,
         );
 
@@ -151,7 +149,7 @@ void main() {
 
         // 5. Verify Dialog is shown
         expect(find.text('Guardar Medición'), findsOneWidget);
-        expect(find.textContaining('Duración: 3 segundos'), findsOneWidget);
+        expect(find.text('3 s'), findsOneWidget);
 
         // 6. Enter clinical notes
         await tester.enterText(
@@ -223,9 +221,6 @@ class FakeSessionApiService implements SessionApiService {
       avgEcg: 0.0,
       minEcg: -1.0,
       maxEcg: 1.0,
-      avgSpo2: 0.0,
-      minSpo2: 95.0,
-      maxSpo2: 100.0,
       avgAir: 450.0,
       minAir: 400.0,
       maxAir: 500.0,
