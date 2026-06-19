@@ -3,26 +3,26 @@ import '../../../core/theme/app_colors.dart';
 
 /// Tarjeta biométrica reutilizable mapeada a partir de los paneles de DashboardView.tsx.
 /// Utiliza un borde lateral distintivo de color y tipografía tabular monoespaciada para evitar jittering.
-class TarjetaKpiVital extends StatelessWidget {
-  final String titulo;
-  final String valor;
-  final String unidad;
-  final Color colorAcento;
+class VitalKpiCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String unit;
+  final Color accentColor;
 
   // Opciones para visualización dual (ej. SpO2 y Pulsaciones PPG en un mismo sensor)
-  final String? valorSecundario;
-  final String? unidadSecundaria;
-  final String? tituloSecundario;
+  final String? secondaryValue;
+  final String? secondaryUnit;
+  final String? secondaryTitle;
 
-  const TarjetaKpiVital({
+  const VitalKpiCard({
     super.key,
-    required this.titulo,
-    required this.valor,
-    required this.unidad,
-    required this.colorAcento,
-    this.valorSecundario,
-    this.unidadSecundaria,
-    this.tituloSecundario,
+    required this.title,
+    required this.value,
+    required this.unit,
+    required this.accentColor,
+    this.secondaryValue,
+    this.secondaryUnit,
+    this.secondaryTitle,
   });
 
   Widget _buildKpiContent({
@@ -85,16 +85,16 @@ class TarjetaKpiVital extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
-    final borderColor = esOscuro ? ColoresOscuros.border : ColoresClaros.border;
+    final borderColor = isDark ? DarkColors.border : LightColors.border;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool esPequeno = constraints.maxWidth < 220;
+        final bool isSmall = constraints.maxWidth < 220;
 
-        final double titleFontSize = esPequeno ? 12.0 : 16.0;
-        final double valueFontSize = esPequeno ? 72.0 : 120.0;
+        final double titleFontSize = isSmall ? 14.0 : 24.0;
+        final double valueFontSize = isSmall ? 64.0 : 90.0;
 
         return Container(
           decoration: BoxDecoration(
@@ -110,20 +110,20 @@ class TarjetaKpiVital extends StatelessWidget {
                 Container(
                   width: 5,
                   height: double.infinity,
-                  color: colorAcento,
+                  color: accentColor,
                 ),
 
                 // Contenido del KPI
                 Expanded(
-                  child: valorSecundario != null
+                  child: secondaryValue != null
                       ? Row(
                           children: [
                             Expanded(
                               child: _buildKpiContent(
-                                title: titulo,
-                                value: valor,
-                                unit: unidad,
-                                accentColor: colorAcento,
+                                title: title,
+                                value: value,
+                                unit: unit,
+                                accentColor: accentColor,
                                 titleFontSize: titleFontSize,
                                 valueFontSize: valueFontSize,
                                 borderColor: borderColor,
@@ -135,10 +135,10 @@ class TarjetaKpiVital extends StatelessWidget {
                             ),
                             Expanded(
                               child: _buildKpiContent(
-                                title: tituloSecundario ?? '',
-                                value: valorSecundario!,
-                                unit: unidadSecundaria ?? '',
-                                accentColor: colorAcento,
+                                title: secondaryTitle ?? '',
+                                value: secondaryValue!,
+                                unit: secondaryUnit ?? '',
+                                accentColor: accentColor,
                                 titleFontSize: titleFontSize,
                                 valueFontSize: valueFontSize,
                                 borderColor: borderColor,
@@ -147,10 +147,10 @@ class TarjetaKpiVital extends StatelessWidget {
                           ],
                         )
                       : _buildKpiContent(
-                          title: titulo,
-                          value: valor,
-                          unit: unidad,
-                          accentColor: colorAcento,
+                          title: title,
+                          value: value,
+                          unit: unit,
+                          accentColor: accentColor,
                           titleFontSize: titleFontSize,
                           valueFontSize: valueFontSize,
                           borderColor: borderColor,

@@ -4,44 +4,40 @@ import 'package:gap/gap.dart';
 
 /// Formulario para crear un nuevo usuario.
 /// Puede ser utilizado de forma inline en pantallas grandes o dentro de diálogos/hojas.
-class FormularioCrearUsuario extends StatefulWidget {
-  final Function(String nombre, String email, int dni) onSubmit;
+class CreateUserForm extends StatefulWidget {
+  final Function(String name, String email, int dni) onSubmit;
   final VoidCallback? onCancel;
 
-  const FormularioCrearUsuario({
-    super.key,
-    required this.onSubmit,
-    this.onCancel,
-  });
+  const CreateUserForm({super.key, required this.onSubmit, this.onCancel});
 
   @override
-  State<FormularioCrearUsuario> createState() => _FormularioCrearUsuarioState();
+  State<CreateUserForm> createState() => _CreateUserFormState();
 }
 
-class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
+class _CreateUserFormState extends State<CreateUserForm> {
   final _formKey = GlobalKey<FormState>();
-  final _nombreController = TextEditingController();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _dniController = TextEditingController();
 
   @override
   void dispose() {
-    _nombreController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
     _dniController.dispose();
     super.dispose();
   }
 
-  void _guardar() {
+  void _save() {
     if (_formKey.currentState?.validate() ?? false) {
       final dniVal = int.parse(_dniController.text.trim());
       widget.onSubmit(
-        _nombreController.text.trim(),
+        _nameController.text.trim(),
         _emailController.text.trim(),
         dniVal,
       );
       // Limpiamos los controladores después de guardar
-      _nombreController.clear();
+      _nameController.clear();
       _emailController.clear();
       _dniController.clear();
     }
@@ -65,7 +61,7 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
           ),
           const Gap(16),
           TextFormField(
-            controller: _nombreController,
+            controller: _nameController,
             decoration: InputDecoration(
               labelText: 'Nombre Completo',
               hintText: 'Ej. María Giménez',
@@ -161,7 +157,7 @@ class _FormularioCrearUsuarioState extends State<FormularioCrearUsuario> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  onPressed: _guardar,
+                  onPressed: _save,
                   child: const Text(
                     'CREAR Y SELECCIONAR',
                     style: TextStyle(fontWeight: FontWeight.bold),

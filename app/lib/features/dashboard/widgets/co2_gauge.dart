@@ -8,14 +8,14 @@ class _PremiumGaugePainter extends CustomPainter {
   final double minValue;
   final double maxValue;
   final Color accentColor;
-  final bool esOscuro;
+  final bool isDark;
 
   _PremiumGaugePainter({
     required this.value,
     required this.minValue,
     required this.maxValue,
     required this.accentColor,
-    required this.esOscuro,
+    required this.isDark,
   });
 
   @override
@@ -30,9 +30,9 @@ class _PremiumGaugePainter extends CustomPainter {
 
     // 1. Dibujar el arco de base (Track)
     final trackPaint = Paint()
-      ..color = esOscuro
-          ? ColoresComponentes.co2GaugeTrackOscuro
-          : ColoresComponentes.co2GaugeTrackClaro
+      ..color = isDark
+          ? ComponentColors.co2GaugeTrackDark
+          : ComponentColors.co2GaugeTrackLight
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.round;
@@ -86,7 +86,7 @@ class _PremiumGaugePainter extends CustomPainter {
 
     // 3. Dibujar marcas de escala clínicas (Ticks)
     const int numTicks = 21;
-    final tickColor = esOscuro ? Colors.grey.shade800 : Colors.grey.shade300;
+    final tickColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
     final activeTickColor = accentColor.withValues(alpha: 0.8);
 
     for (int i = 0; i < numTicks; i++) {
@@ -127,7 +127,7 @@ class _PremiumGaugePainter extends CustomPainter {
           fontSize: 12.0,
           fontFamily: 'monospace',
           fontWeight: FontWeight.bold,
-          color: esOscuro ? Colors.grey.shade500 : Colors.grey.shade700,
+          color: isDark ? Colors.grey.shade500 : Colors.grey.shade700,
         ),
       );
       textPainter.layout();
@@ -169,7 +169,7 @@ class _PremiumGaugePainter extends CustomPainter {
   bool shouldRepaint(covariant _PremiumGaugePainter oldDelegate) {
     return oldDelegate.value != value ||
         oldDelegate.accentColor != accentColor ||
-        oldDelegate.esOscuro != esOscuro;
+        oldDelegate.isDark != isDark;
   }
 }
 
@@ -181,7 +181,7 @@ class Co2Gauge extends StatelessWidget {
   final double maxValue;
   final Color accentColor;
   final double size;
-  final bool esOscuro;
+  final bool isDark;
 
   const Co2Gauge({
     super.key,
@@ -190,7 +190,7 @@ class Co2Gauge extends StatelessWidget {
     this.maxValue = 1500.0,
     required this.accentColor,
     required this.size,
-    required this.esOscuro,
+    required this.isDark,
   });
 
   @override
@@ -210,7 +210,7 @@ class Co2Gauge extends StatelessWidget {
               minValue: minValue,
               maxValue: maxValue,
               accentColor: accentColor,
-              esOscuro: esOscuro,
+              isDark: isDark,
             ),
           ),
           Positioned(
@@ -225,7 +225,7 @@ class Co2Gauge extends StatelessWidget {
                     fontSize: sizeInner * 0.20,
                     fontWeight: FontWeight.w900,
                     fontFamily: 'monospace',
-                    color: esOscuro ? Colors.white : Colors.black87,
+                    color: isDark ? Colors.white : Colors.black87,
                     shadows: [
                       Shadow(
                         color: accentColor.withValues(alpha: 0.3),
@@ -239,9 +239,7 @@ class Co2Gauge extends StatelessWidget {
                   textScaler: TextScaler.noScaling,
                   style: TextStyle(
                     fontSize: sizeInner * 0.07,
-                    color: esOscuro
-                        ? Colors.grey.shade400
-                        : Colors.grey.shade600,
+                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,
                   ),

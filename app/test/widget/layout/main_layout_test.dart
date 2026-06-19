@@ -1,7 +1,7 @@
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
-import 'package:datavital_flutter/shared/providers/alarma_state.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
+import 'package:datavital_flutter/shared/providers/alarm_state.dart';
 import 'package:datavital_flutter/shared/providers/connection_provider.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:datavital_flutter/shared/widgets/layout/main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,43 +11,43 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/mock_providers.dart';
 
-class MockAlarmaNotifier extends NotificadorAlarma {
-  final EstadoAlarma _state;
+class MockAlarmaNotifier extends AlarmNotifier {
+  final AlarmState _state;
   MockAlarmaNotifier(this._state);
 
   @override
-  EstadoAlarma build() => _state;
+  AlarmState build() => _state;
 
-  void updateState(EstadoAlarma newState) {
+  void updateState(AlarmState newState) {
     state = newState;
   }
 }
 
-class MockUsuariosNotifier extends NotificadorUsuarios {
-  final EstadoUsuarios _state;
-  MockUsuariosNotifier(this._state);
+class MockUsersNotifier extends UsersNotifier {
+  final UsersState _state;
+  MockUsersNotifier(this._state);
 
   @override
-  EstadoUsuarios build() => _state;
+  UsersState build() => _state;
 }
 
-class MockConexionNotifier extends NotificadorConexion {
-  final EstadoConexionBackend _state;
+class MockConexionNotifier extends ConnectionNotifier {
+  final BackendConnectionState _state;
   MockConexionNotifier(this._state);
 
   @override
-  EstadoConexionBackend build() => _state;
+  BackendConnectionState build() => _state;
 }
 
 void main() {
   group('MainLayout Widget Tests', () {
-    late MockServicioAudio mockAudio;
+    late MockAudioService mockAudio;
 
     setUp(() {
-      mockAudio = MockServicioAudio();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
+      mockAudio = MockAudioService();
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
     });
 
     Widget createLayoutWithRouter({
@@ -76,21 +76,21 @@ void main() {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
 
-      final alarmState = EstadoAlarma.inicial();
-      final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
-      final conState = EstadoConexionBackend.inicial();
+      final alarmState = AlarmState.inicial();
+      final usersState = UsersState.inicial().copiarCon(isLoading: false);
+      final conState = BackendConnectionState.inicial();
 
       await tester.pumpWidget(
         createLayoutWithRouter(
           child: const Text('My Body Child'),
           overrides: [
-            notificadorAlarmaProvider.overrideWith(
+            alarmNotifierProvider.overrideWith(
               () => MockAlarmaNotifier(alarmState),
             ),
-            notificadorUsuariosProvider.overrideWith(
-              () => MockUsuariosNotifier(usersState),
+            usersNotifierProvider.overrideWith(
+              () => MockUsersNotifier(usersState),
             ),
-            notificadorConexionProvider.overrideWith(
+            connectionNotifierProvider.overrideWith(
               () => MockConexionNotifier(conState),
             ),
           ],
@@ -111,9 +111,9 @@ void main() {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
 
-        final initialAlarmState = EstadoAlarma.inicial();
-        final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
-        final conState = EstadoConexionBackend.inicial();
+        final initialAlarmState = AlarmState.inicial();
+        final usersState = UsersState.inicial().copiarCon(isLoading: false);
+        final conState = BackendConnectionState.inicial();
 
         final notifier = MockAlarmaNotifier(initialAlarmState);
 
@@ -121,11 +121,11 @@ void main() {
           createLayoutWithRouter(
             child: const Text('My Body Child'),
             overrides: [
-              notificadorAlarmaProvider.overrideWith(() => notifier),
-              notificadorUsuariosProvider.overrideWith(
-                () => MockUsuariosNotifier(usersState),
+              alarmNotifierProvider.overrideWith(() => notifier),
+              usersNotifierProvider.overrideWith(
+                () => MockUsersNotifier(usersState),
               ),
-              notificadorConexionProvider.overrideWith(
+              connectionNotifierProvider.overrideWith(
                 () => MockConexionNotifier(conState),
               ),
             ],
@@ -135,10 +135,10 @@ void main() {
         expect(find.text('ALARMA CRÍTICA'), findsNothing);
 
         // Transition state
-        final activeAlarmState = EstadoAlarma.inicial().copiarCon(
-          alarmaActiva: true,
-          segundosRestantes: 30,
-          alertasActivas: [const AlertaCritica('Frecuencia Cardíaca', 110)],
+        final activeAlarmState = AlarmState.inicial().copiarCon(
+          alarmActive: true,
+          secondsRemaining: 30,
+          activeAlerts: [const CriticalAlert('Frecuencia Cardíaca', 110)],
         );
         notifier.updateState(activeAlarmState);
         await tester.pump();
@@ -146,7 +146,7 @@ void main() {
         // Banner should be visible
         expect(find.text('ALARMA CRÍTICA'), findsOneWidget);
         // Audio should have been triggered
-        verify(() => mockAudio.iniciarAlarma(any())).called(1);
+        verify(() => mockAudio.startAlarm(any())).called(1);
 
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();

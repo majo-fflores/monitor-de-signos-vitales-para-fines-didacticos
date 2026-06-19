@@ -2,22 +2,22 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class KpiChip extends StatelessWidget {
-  final String titulo;
-  final String valor;
-  final IconData icono;
+  final String title;
+  final String value;
+  final IconData icon;
   final Color color;
   final ThemeData theme;
-  final bool esOscuro;
+  final bool isDark;
   final bool expanded;
 
   const KpiChip({
     super.key,
-    required this.titulo,
-    required this.valor,
-    required this.icono,
+    required this.title,
+    required this.value,
+    required this.icon,
     required this.color,
     required this.theme,
-    required this.esOscuro,
+    required this.isDark,
     this.expanded = false,
   });
 
@@ -29,9 +29,9 @@ class KpiChip extends StatelessWidget {
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: esOscuro
+          color: isDark
               ? color.withValues(alpha: 0.15)
-              : (esOscuro ? ColoresOscuros.border : ColoresClaros.border),
+              : (isDark ? DarkColors.border : LightColors.border),
         ),
         boxShadow: [
           BoxShadow(
@@ -65,15 +65,15 @@ class KpiChip extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(icono, color: color, size: 22),
+                      child: Icon(icon, color: color, size: 22),
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      titulo,
+                      title,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground,
+                        color: isDark
+                            ? DarkColors.mutedForeground
+                            : LightColors.mutedForeground,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -83,7 +83,7 @@ class KpiChip extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  valor,
+                  value,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
@@ -112,7 +112,7 @@ class KpiChip extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icono, color: color, size: 18),
+                child: Icon(icon, color: color, size: 18),
               ),
               const SizedBox(width: 12),
               Flexible(
@@ -121,11 +121,11 @@ class KpiChip extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      titulo,
+                      title,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground,
+                        color: isDark
+                            ? DarkColors.mutedForeground
+                            : LightColors.mutedForeground,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -133,7 +133,7 @@ class KpiChip extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      valor,
+                      value,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

@@ -10,8 +10,8 @@ class SidebarLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sidebarColor = theme.brightness == Brightness.dark
-        ? ColoresOscuros.sidebar
-        : ColoresClaros.sidebar;
+        ? DarkColors.sidebar
+        : LightColors.sidebar;
     final esOscuroSidebar = sidebarColor.computeLuminance() < 0.5;
 
     return SizedBox(

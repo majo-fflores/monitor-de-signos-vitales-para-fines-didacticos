@@ -8,9 +8,9 @@ part 'session_provider.g.dart';
 
 @riverpod
 SessionApiService sessionApiService(SessionApiServiceRef ref) {
-  final conexionState = ref.watch(notificadorConexionProvider);
+  final connectionState = ref.watch(connectionNotifierProvider);
   String httpUrl = 'http://localhost:8080';
-  final wsUrl = conexionState.wsUrl;
+  final wsUrl = connectionState.wsUrl;
 
   if (wsUrl.startsWith('ws://')) {
     httpUrl = wsUrl
@@ -27,9 +27,9 @@ SessionApiService sessionApiService(SessionApiServiceRef ref) {
 
 @riverpod
 MeasurementApiService measurementApiService(MeasurementApiServiceRef ref) {
-  final conexionState = ref.watch(notificadorConexionProvider);
+  final connectionState = ref.watch(connectionNotifierProvider);
   String httpUrl = 'http://localhost:8080';
-  final wsUrl = conexionState.wsUrl;
+  final wsUrl = connectionState.wsUrl;
 
   if (wsUrl.startsWith('ws://')) {
     httpUrl = wsUrl

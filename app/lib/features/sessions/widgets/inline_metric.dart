@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class MetricaInline extends StatelessWidget {
+class InlineMetric extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
   final ThemeData theme;
-  final bool esOscuro;
+  final bool isDark;
 
-  const MetricaInline({
+  const InlineMetric({
     super.key,
     required this.label,
     required this.value,
     required this.color,
     required this.theme,
-    required this.esOscuro,
+    required this.isDark,
   });
 
   @override
@@ -31,9 +31,9 @@ class MetricaInline extends StatelessWidget {
         Text(
           '$label: ',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: esOscuro
-                ? ColoresOscuros.mutedForeground
-                : ColoresClaros.mutedForeground,
+            color: isDark
+                ? DarkColors.mutedForeground
+                : LightColors.mutedForeground,
             fontSize: 11,
           ),
         ),

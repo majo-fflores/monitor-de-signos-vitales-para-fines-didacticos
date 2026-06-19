@@ -1,4 +1,4 @@
-import 'package:datavital_flutter/shared/providers/alarma_state.dart';
+import 'package:datavital_flutter/shared/providers/alarm_state.dart';
 import 'package:datavital_flutter/shared/providers/vital_signs_provider.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,80 +7,70 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  group('NotificadorSignosVitales Tests', () {
+  group('VitalSignsNotifier Tests', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
     });
 
     test('initial state should have correct default values', () {
       final container = createContainer();
-      final state = container.read(notificadorSignosVitalesProvider);
+      final state = container.read(vitalSignsNotifierProvider);
 
-      expect(state.frecuenciaCardiaca, equals(72));
-      expect(state.nivelCo2, equals(35));
-      expect(state.ecgDatos, isEmpty);
-      expect(state.ecgActivo, isTrue);
-      expect(state.co2Activo, isTrue);
+      expect(state.heartRate, equals(72));
+      expect(state.co2Level, equals(35));
+      expect(state.ecgData, isEmpty);
+      expect(state.isEcgActive, isTrue);
+      expect(state.isCo2Active, isTrue);
     });
 
-    test(
-      'iniciarSimulacion should populate initial points and start ticks',
-      () {
-        fakeAsync((async) {
-          final container = createContainer();
-          final notifier = container.read(
-            notificadorSignosVitalesProvider.notifier,
-          );
+    test('startSimulation should populate initial points and start ticks', () {
+      fakeAsync((async) {
+        final container = createContainer();
+        final notifier = container.read(vitalSignsNotifierProvider.notifier);
 
-          notifier.iniciarSimulacion();
+        notifier.startSimulation();
 
-          var state = container.read(notificadorSignosVitalesProvider);
-          expect(state.ecgDatos, isEmpty);
+        var state = container.read(vitalSignsNotifierProvider);
+        expect(state.ecgData, isEmpty);
 
-          // Advance 20ms to fire first simulation timer tick
-          async.elapse(const Duration(milliseconds: 20));
+        // Advance 20ms to fire first simulation timer tick
+        async.elapse(const Duration(milliseconds: 20));
 
-          // State should be updated with new points (since timer rotated them)
-          state = container.read(notificadorSignosVitalesProvider);
-          expect(state.ecgDatos, hasLength(1));
-        });
-      },
-    );
+        // State should be updated with new points (since timer rotated them)
+        state = container.read(vitalSignsNotifierProvider);
+        expect(state.ecgData, hasLength(1));
+      });
+    });
 
     test('ticks should eventually update numeric metrics and check alarms', () {
       fakeAsync((async) {
         final container = createContainer();
 
         // Listen to alarms provider to keep it alive
-        container.listen(notificadorAlarmaProvider, (_, __) {});
+        container.listen(alarmNotifierProvider, (_, __) {});
 
-        final notifier = container.read(
-          notificadorSignosVitalesProvider.notifier,
-        );
+        final notifier = container.read(vitalSignsNotifierProvider.notifier);
 
-        notifier.iniciarSimulacion();
+        notifier.startSimulation();
 
         // 50 ticks at 20ms = 1000ms
         async.elapse(const Duration(milliseconds: 1000));
 
-        final state = container.read(notificadorSignosVitalesProvider);
+        final state = container.read(vitalSignsNotifierProvider);
         // Numerical values should change/deviate from initial (random variation is added)
         // Check that they are inside realistic ranges
-        expect(state.frecuenciaCardiaca, isBetween(70, 74));
-        expect(state.nivelCo2, isBetween(360, 420));
+        expect(state.heartRate, isBetween(70, 74));
+        expect(state.co2Level, isBetween(360, 420));
       });
     });
 
     test('copiarCon copies state fields correctly', () {
-      final original = EstadoSignosVitales.inicial();
-      final copied = original.copiarCon(
-        frecuenciaCardiaca: 88,
-        co2Activo: false,
-      );
+      final original = VitalSignsState.inicial();
+      final copied = original.copiarCon(heartRate: 88, isCo2Active: false);
 
-      expect(copied.frecuenciaCardiaca, equals(88));
-      expect(copied.co2Activo, isFalse);
-      expect(copied.ecgActivo, isTrue); // unchanged
+      expect(copied.heartRate, equals(88));
+      expect(copied.isCo2Active, isFalse);
+      expect(copied.isEcgActive, isTrue); // unchanged
     });
   });
 }

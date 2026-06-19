@@ -37,7 +37,7 @@ class ThemeNotifier extends _$ThemeNotifier {
     }
   }
 
-  Future<void> cambiarTema(ThemeMode modo) async {
+  Future<void> changeTheme(ThemeMode modo) async {
     state = modo;
     _prefs ??= await SharedPreferences.getInstance();
     String modoStr;
@@ -55,10 +55,10 @@ class ThemeNotifier extends _$ThemeNotifier {
     await _prefs?.setString(_themeModeKey, modoStr);
   }
 
-  Future<void> alternarTema() async {
+  Future<void> toggleTheme() async {
     final nuevoModo = state == ThemeMode.dark
         ? ThemeMode.light
         : ThemeMode.dark;
-    await cambiarTema(nuevoModo);
+    await changeTheme(nuevoModo);
   }
 }

@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/breakpoints.dart';
-import '../../../../core/models/registro_medicion.dart';
+import '../../../../core/models/measurement_record.dart';
 import 'kpi_chip.dart';
 
 class HistoryStatisticsSummary extends StatelessWidget {
-  final List<RegistroMedicion> registros;
+  final List<MeasurementRecord> records;
   final ThemeData theme;
-  final bool esOscuro;
+  final bool isDark;
 
   const HistoryStatisticsSummary({
     super.key,
-    required this.registros,
+    required this.records,
     required this.theme,
-    required this.esOscuro,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    final total = registros.length;
-    double promFC = 0;
-    double promCO2 = 0;
+    final total = records.length;
+    double avgHeartRate = 0;
+    double avgCo2 = 0;
 
     if (total > 0) {
       double sFC = 0;
       double sCO2 = 0;
-      for (final r in registros) {
-        sFC += r.frecuenciaCardiaca;
-        sCO2 += r.nivelCo2;
+      for (final r in records) {
+        sFC += r.heartRate;
+        sCO2 += r.co2Level;
       }
-      promFC = sFC / total;
-      promCO2 = sCO2 / total;
+      avgHeartRate = sFC / total;
+      avgCo2 = sCO2 / total;
     }
 
     final chips = [
       _KpiData(
-        titulo: 'Sesiones',
-        valor: '$total',
-        icono: LucideIcons.checkSquare,
+        title: 'Sesiones',
+        value: '$total',
+        icon: LucideIcons.checkSquare,
         color: const Color(0xFF8B5CF6),
       ),
       _KpiData(
-        titulo: 'Prom. FC',
-        valor: '${promFC.round()} LPM',
-        icono: LucideIcons.heart,
+        title: 'Prom. FC',
+        value: '${avgHeartRate.round()} LPM',
+        icon: LucideIcons.heart,
         color: const Color(0xFF10B981),
       ),
       _KpiData(
-        titulo: 'Prom. CO2',
-        valor: '${promCO2.round()} ppm',
-        icono: LucideIcons.cloud,
+        title: 'Prom. CO2',
+        value: '${avgCo2.round()} ppm',
+        icon: LucideIcons.cloud,
         color: const Color(0xFFF59E0B),
       ),
     ];
@@ -67,12 +67,12 @@ class HistoryStatisticsSummary extends StatelessWidget {
               return SizedBox(
                 width: (constraints.maxWidth - 12) / 2,
                 child: KpiChip(
-                  titulo: c.titulo,
-                  valor: c.valor,
-                  icono: c.icono,
+                  title: c.title,
+                  value: c.value,
+                  icon: c.icon,
                   color: c.color,
                   theme: theme,
-                  esOscuro: esOscuro,
+                  isDark: isDark,
                   expanded: true,
                 ),
               );
@@ -87,12 +87,12 @@ class HistoryStatisticsSummary extends StatelessWidget {
               if (i > 0) const SizedBox(width: 12),
               Expanded(
                 child: KpiChip(
-                  titulo: chips[i].titulo,
-                  valor: chips[i].valor,
-                  icono: chips[i].icono,
+                  title: chips[i].title,
+                  value: chips[i].value,
+                  icon: chips[i].icon,
                   color: chips[i].color,
                   theme: theme,
-                  esOscuro: esOscuro,
+                  isDark: isDark,
                   expanded: true,
                 ),
               ),
@@ -105,15 +105,15 @@ class HistoryStatisticsSummary extends StatelessWidget {
 }
 
 class _KpiData {
-  final String titulo;
-  final String valor;
-  final IconData icono;
+  final String title;
+  final String value;
+  final IconData icon;
   final Color color;
 
   const _KpiData({
-    required this.titulo,
-    required this.valor,
-    required this.icono,
+    required this.title,
+    required this.value,
+    required this.icon,
     required this.color,
   });
 }

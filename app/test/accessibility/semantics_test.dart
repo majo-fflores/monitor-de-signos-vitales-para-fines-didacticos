@@ -25,14 +25,14 @@ void main() {
         await tester.pumpWidget(
           createTestableWidget(
             child: DashboardHeader(
-              esOscuro: true,
-              tieneUsuarioActivo: true,
-              grabando: false,
-              tiempoFormateado: '00:00',
-              estadoConexion: const EstadoConexionBackend(
-                estadoWs: EstadoConexion.desconectado,
+              isDark: true,
+              hasActiveUser: true,
+              isRecording: false,
+              formattedTime: '00:00',
+              connectionState: const BackendConnectionState(
+                wsStatus: ConnectionStatus.disconnected,
                 wsUrl: 'ws://localhost',
-                cargando: false,
+                isLoading: false,
               ),
               onStartRecording: () {},
               onStopRecording: () {},
@@ -54,14 +54,14 @@ void main() {
         await tester.pumpWidget(
           createTestableWidget(
             child: DashboardHeader(
-              esOscuro: true,
-              tieneUsuarioActivo: true,
-              grabando: true,
-              tiempoFormateado: '00:05',
-              estadoConexion: const EstadoConexionBackend(
-                estadoWs: EstadoConexion.desconectado,
+              isDark: true,
+              hasActiveUser: true,
+              isRecording: true,
+              formattedTime: '00:05',
+              connectionState: const BackendConnectionState(
+                wsStatus: ConnectionStatus.disconnected,
                 wsUrl: 'ws://localhost',
-                cargando: false,
+                isLoading: false,
               ),
               onStartRecording: () {},
               onStopRecording: () {},
@@ -84,17 +84,17 @@ void main() {
     );
 
     testWidgets(
-      'TarjetaKpiVital should expose values and labels to screen readers',
+      'VitalKpiCard should expose values and labels to screen readers',
       (tester) async {
         final SemanticsHandle semantics = tester.ensureSemantics();
 
         await tester.pumpWidget(
           createTestableWidget(
-            child: const TarjetaKpiVital(
-              titulo: 'Frecuencia Cardíaca',
-              valor: '72',
-              unidad: 'LPM',
-              colorAcento: Colors.red,
+            child: const VitalKpiCard(
+              title: 'Frecuencia Cardíaca',
+              value: '72',
+              unit: 'LPM',
+              accentColor: Colors.red,
             ),
           ),
         );

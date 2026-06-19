@@ -4,21 +4,21 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/connection_provider.dart';
 
 class DashboardHeader extends StatelessWidget {
-  final bool esOscuro;
-  final bool tieneUsuarioActivo;
-  final bool grabando;
-  final String tiempoFormateado;
-  final EstadoConexionBackend estadoConexion;
+  final bool isDark;
+  final bool hasActiveUser;
+  final bool isRecording;
+  final String formattedTime;
+  final BackendConnectionState connectionState;
   final VoidCallback onStartRecording;
   final VoidCallback onStopRecording;
 
   const DashboardHeader({
     super.key,
-    required this.esOscuro,
-    required this.tieneUsuarioActivo,
-    required this.grabando,
-    required this.tiempoFormateado,
-    required this.estadoConexion,
+    required this.isDark,
+    required this.hasActiveUser,
+    required this.isRecording,
+    required this.formattedTime,
+    required this.connectionState,
     required this.onStartRecording,
     required this.onStopRecording,
   });
@@ -32,15 +32,11 @@ class DashboardHeader extends StatelessWidget {
     final titleStyle = esMobile
         ? theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w800,
-            color: esOscuro
-                ? ColoresOscuros.foreground
-                : ColoresClaros.foreground,
+            color: isDark ? DarkColors.foreground : LightColors.foreground,
           )
         : theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w800,
-            color: esOscuro
-                ? ColoresOscuros.foreground
-                : ColoresClaros.foreground,
+            color: isDark ? DarkColors.foreground : LightColors.foreground,
           );
 
     return Row(
@@ -55,9 +51,9 @@ class DashboardHeader extends StatelessWidget {
               Text(
                 'Visualización en tiempo real de sensores.',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: esOscuro
-                      ? ColoresOscuros.mutedForeground
-                      : ColoresClaros.mutedForeground,
+                  color: isDark
+                      ? DarkColors.mutedForeground
+                      : LightColors.mutedForeground,
                 ),
               ),
             ],
@@ -65,8 +61,8 @@ class DashboardHeader extends StatelessWidget {
         ),
 
         // Botón de control de grabación
-        if (tieneUsuarioActivo) ...[
-          grabando
+        if (hasActiveUser) ...[
+          isRecording
               ? OutlinedButton.icon(
                   onPressed: onStopRecording,
                   icon: const Icon(
@@ -75,7 +71,7 @@ class DashboardHeader extends StatelessWidget {
                     color: Colors.red,
                   ),
                   label: Text(
-                    'DETENER ($tiempoFormateado)',
+                    'DETENER ($formattedTime)',
                     style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,

@@ -6,7 +6,7 @@ part of 'session_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sessionApiServiceHash() => r'78f890d0ccd0bdc7a4560a96ae41dba23d570973';
+String _$sessionApiServiceHash() => r'cfee9e9babb7bc028d0a66ec8ef76985ce77ca03';
 
 /// See also [sessionApiService].
 @ProviderFor(sessionApiService)
@@ -25,7 +25,7 @@ final sessionApiServiceProvider =
 // ignore: unused_element
 typedef SessionApiServiceRef = AutoDisposeProviderRef<SessionApiService>;
 String _$measurementApiServiceHash() =>
-    r'6c7d47abf8118a5b4305b2de66c4effc8ae26d25';
+    r'b4eee22594e686c3dee90afdb4cf787fd655b9ec';
 
 /// See also [measurementApiService].
 @ProviderFor(measurementApiService)

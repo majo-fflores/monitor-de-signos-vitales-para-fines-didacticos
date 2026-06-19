@@ -29,7 +29,7 @@ class ReportExportDetails extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
         ),
       ),
       child: Column(
@@ -46,8 +46,8 @@ class ReportExportDetails extends StatelessWidget {
             'Al hacer clic en generar, el sistema recopilará automáticamente las lecturas instantáneas de los biosensores activos (ECG y CO2) y creará un archivo PDF formalizado o un archivo CSV con datos crudos.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: isDark
-                  ? ColoresOscuros.mutedForeground
-                  : ColoresClaros.mutedForeground,
+                  ? DarkColors.mutedForeground
+                  : LightColors.mutedForeground,
               height: 1.5,
             ),
           ),
@@ -115,7 +115,7 @@ class ReportExportDetails extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
         ),
       ),
       child: Column(
@@ -132,8 +132,8 @@ class ReportExportDetails extends StatelessWidget {
             'El sistema recopilará las lecturas de los biosensores activos y creará un PDF formalizado o un CSV crudo.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: isDark
-                  ? ColoresOscuros.mutedForeground
-                  : ColoresClaros.mutedForeground,
+                  ? DarkColors.mutedForeground
+                  : LightColors.mutedForeground,
               height: 1.4,
             ),
           ),
@@ -195,8 +195,8 @@ class ReportExportDetails extends StatelessWidget {
             icon,
             size: 16,
             color: isDark
-                ? ColoresOscuros.mutedForeground
-                : ColoresClaros.mutedForeground,
+                ? DarkColors.mutedForeground
+                : LightColors.mutedForeground,
           ),
           const SizedBox(height: 4),
           Text(
@@ -224,8 +224,8 @@ class ReportExportDetails extends StatelessWidget {
           icon,
           size: 16,
           color: isDark
-              ? ColoresOscuros.mutedForeground
-              : ColoresClaros.mutedForeground,
+              ? DarkColors.mutedForeground
+              : LightColors.mutedForeground,
         ),
         const Gap(8),
         Expanded(

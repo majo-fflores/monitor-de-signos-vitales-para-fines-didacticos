@@ -3,29 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/models/registro_medicion.dart';
+import '../../../../core/models/measurement_record.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/historial_provider.dart';
+import '../../../../shared/providers/history_provider.dart';
 import '../../../../shared/providers/session_provider.dart';
-import '../../../../shared/providers/usuario_provider.dart';
+import '../../../../shared/providers/user_provider.dart';
 import 'session_raw_data_table.dart';
 
 class SessionHistoryRow extends ConsumerWidget {
-  final RegistroMedicion registro;
+  final MeasurementRecord record;
   final bool esMobile;
-  final bool expandida;
+  final bool isExpanded;
   final VoidCallback onTap;
 
   const SessionHistoryRow({
     super.key,
-    required this.registro,
+    required this.record,
     required this.esMobile,
-    required this.expandida,
+    required this.isExpanded,
     required this.onTap,
   });
 
-  Future<void> _exportarCsv(BuildContext context, WidgetRef ref) async {
-    final sessionId = int.tryParse(registro.id);
+  Future<void> _exportCsv(BuildContext context, WidgetRef ref) async {
+    final sessionId = int.tryParse(record.id);
     if (sessionId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -42,7 +42,7 @@ class SessionHistoryRow extends ConsumerWidget {
     try {
       final path = await ref
           .read(sessionApiServiceProvider)
-          .exportarSesionCsv(sessionId);
+          .exportSessionCsv(sessionId);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -72,8 +72,8 @@ class SessionHistoryRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-    final usuarioActivo = ref.watch(notificadorUsuariosProvider).usuarioActivo;
+    final isDark = theme.brightness == Brightness.dark;
+    final activeUser = ref.watch(usersNotifierProvider).activeUser;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -86,7 +86,7 @@ class SessionHistoryRow extends ConsumerWidget {
             child: Row(
               children: [
                 AnimatedRotation(
-                  turns: expandida ? 0.25 : 0,
+                  turns: isExpanded ? 0.25 : 0,
                   duration: const Duration(milliseconds: 150),
                   child: Icon(
                     LucideIcons.chevronRight,
@@ -94,11 +94,11 @@ class SessionHistoryRow extends ConsumerWidget {
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
-                if (registro.alertasDisparadas > 0) ...[
+                if (record.alertsTriggered > 0) ...[
                   const SizedBox(width: 6),
                   Tooltip(
                     message:
-                        '${registro.alertasDisparadas} alertas registradas en esta sesión',
+                        '${record.alertsTriggered} alertas registradas en esta sesión',
                     child: const Icon(
                       LucideIcons.alertTriangle,
                       size: 14,
@@ -110,7 +110,7 @@ class SessionHistoryRow extends ConsumerWidget {
                 Expanded(
                   flex: 2,
                   child: Text(
-                    registro.fechaFormateada,
+                    record.formattedDate,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: 17,
@@ -121,7 +121,7 @@ class SessionHistoryRow extends ConsumerWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      registro.duracionFormateada,
+                      record.formattedDuration,
                       style: theme.textTheme.bodyMedium?.copyWith(fontSize: 17),
                       textAlign: TextAlign.center,
                     ),
@@ -136,13 +136,13 @@ class SessionHistoryRow extends ConsumerWidget {
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                            color: ColoresSensores.ecgVerde,
+                            color: SensorColors.ecgGreen,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${registro.minFrecuenciaCardiaca} | ${registro.frecuenciaCardiaca} | ${registro.maxFrecuenciaCardiaca}',
+                          '${record.minHeartRate} | ${record.heartRate} | ${record.maxHeartRate}',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontFamily: 'monospace',
                             fontWeight: FontWeight.w600,
@@ -153,9 +153,9 @@ class SessionHistoryRow extends ConsumerWidget {
                         Text(
                           'LPM',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: esOscuro
-                                ? ColoresOscuros.mutedForeground
-                                : ColoresClaros.mutedForeground,
+                            color: isDark
+                                ? DarkColors.mutedForeground
+                                : LightColors.mutedForeground,
                             fontSize: 12,
                           ),
                         ),
@@ -172,13 +172,13 @@ class SessionHistoryRow extends ConsumerWidget {
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                            color: ColoresSensores.co2Amarillo,
+                            color: SensorColors.co2Yellow,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${registro.minCo2} | ${registro.nivelCo2} | ${registro.maxCo2}',
+                          '${record.minCo2} | ${record.co2Level} | ${record.maxCo2}',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontFamily: 'monospace',
                             fontWeight: FontWeight.w600,
@@ -189,9 +189,9 @@ class SessionHistoryRow extends ConsumerWidget {
                         Text(
                           'ppm',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: esOscuro
-                                ? ColoresOscuros.mutedForeground
-                                : ColoresClaros.mutedForeground,
+                            color: isDark
+                                ? DarkColors.mutedForeground
+                                : LightColors.mutedForeground,
                             fontSize: 12,
                           ),
                         ),
@@ -218,7 +218,7 @@ class SessionHistoryRow extends ConsumerWidget {
                             width: 32,
                             height: 32,
                           ),
-                          onPressed: () => _exportarCsv(context, ref),
+                          onPressed: () => _exportCsv(context, ref),
                         ),
                       ),
                       Tooltip(
@@ -247,15 +247,14 @@ class SessionHistoryRow extends ConsumerWidget {
                                   FilledButton(
                                     onPressed: () {
                                       Navigator.pop(ctx);
-                                      if (usuarioActivo != null) {
+                                      if (activeUser != null) {
                                         ref
                                             .read(
-                                              notificadorHistorialProvider
-                                                  .notifier,
+                                              historyNotifierProvider.notifier,
                                             )
-                                            .eliminarRegistro(
-                                              registro.id,
-                                              usuarioActivo.id,
+                                            .deleteRecord(
+                                              record.id,
+                                              activeUser.id,
                                             );
                                       }
                                     },
@@ -289,25 +288,23 @@ class SessionHistoryRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SessionRawDataTable(sessionId: int.parse(registro.id)),
-                if (registro.notasClinicas.isNotEmpty) ...[
+                SessionRawDataTable(sessionId: int.parse(record.id)),
+                if (record.clinicalNotes.isNotEmpty) ...[
                   const Gap(12),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: esOscuro
+                      color: isDark
                           ? Colors.white.withValues(alpha: 0.02)
                           : Colors.black.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: esOscuro
-                            ? ColoresOscuros.border
-                            : ColoresClaros.border,
+                        color: isDark ? DarkColors.border : LightColors.border,
                       ),
                     ),
                     child: Text(
-                      registro.notasClinicas,
+                      record.clinicalNotes,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -315,7 +312,7 @@ class SessionHistoryRow extends ConsumerWidget {
               ],
             ),
           ),
-          crossFadeState: expandida
+          crossFadeState: isExpanded
               ? CrossFadeState.showSecond
               : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),

@@ -76,9 +76,7 @@ class _LiveClockState extends State<LiveClock> {
           _fechaFormateada,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600, // Reemplazado semibold por w600
-            color: isDark
-                ? ColoresOscuros.foreground
-                : ColoresClaros.foreground,
+            color: isDark ? DarkColors.foreground : LightColors.foreground,
           ),
         ),
         const SizedBox(height: 2),
@@ -88,8 +86,8 @@ class _LiveClockState extends State<LiveClock> {
             fontFamily: 'monospace',
             fontSize: 12,
             color: isDark
-                ? ColoresOscuros.mutedForeground
-                : ColoresClaros.mutedForeground,
+                ? DarkColors.mutedForeground
+                : LightColors.mutedForeground,
           ),
         ),
       ],

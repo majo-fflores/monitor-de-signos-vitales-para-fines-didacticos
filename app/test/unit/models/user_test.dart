@@ -1,37 +1,37 @@
-import 'package:datavital_flutter/core/models/usuario.dart';
+import 'package:datavital_flutter/core/models/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Usuario Model Tests', () {
-    test('Usuario.crear should generate a unique ID and correct fields', () {
-      final user = Usuario.crear(nombre: 'John Doe', email: 'john@example.com');
+  group('User Model Tests', () {
+    test('User.crear should generate a unique ID and correct fields', () {
+      final user = User.crear(name: 'John Doe', email: 'john@example.com');
 
       expect(user.id, isNotEmpty);
-      expect(user.nombre, equals('John Doe'));
+      expect(user.name, equals('John Doe'));
       expect(user.email, equals('john@example.com'));
       expect(
-        user.creadoEn.isBefore(DateTime.now().add(const Duration(seconds: 1))),
+        user.createdAt.isBefore(DateTime.now().add(const Duration(seconds: 1))),
         isTrue,
       );
     });
 
     test('fromJson and toJson should be a faithful roundtrip', () {
-      final original = Usuario(
+      final original = User(
         id: 'user_123',
-        nombre: 'Jane Smith',
+        name: 'Jane Smith',
         email: 'jane@example.com',
         dni: 12345678,
-        creadoEn: DateTime(2026, 6, 1, 10, 30),
+        createdAt: DateTime(2026, 6, 1, 10, 30),
       );
 
       final json = original.toJson();
-      final deserialized = Usuario.fromJson(json);
+      final deserialized = User.fromJson(json);
 
       expect(deserialized.id, equals(original.id));
-      expect(deserialized.nombre, equals(original.nombre));
+      expect(deserialized.name, equals(original.name));
       expect(deserialized.email, equals(original.email));
       expect(deserialized.dni, equals(original.dni));
-      expect(deserialized.creadoEn, equals(original.creadoEn));
+      expect(deserialized.createdAt, equals(original.createdAt));
     });
 
     test(
@@ -45,13 +45,13 @@ void main() {
           'created_at': '2026-06-04T12:00:00.000Z',
         };
 
-        final user = Usuario.fromBackendJson(backendJson);
+        final user = User.fromBackendJson(backendJson);
         expect(user.id, equals('42'));
-        expect(user.nombre, equals('Bob Ross'));
+        expect(user.name, equals('Bob Ross'));
         expect(user.email, equals('bob@joyofpainting.com'));
         expect(user.dni, equals(12345678));
         expect(
-          user.creadoEn.toIso8601String(),
+          user.createdAt.toIso8601String(),
           startsWith('2026-06-04T12:00:00'),
         );
 
@@ -66,68 +66,68 @@ void main() {
     test('fromJson with null email should fall back to empty string', () {
       final json = {
         'id': 'user_abc',
-        'nombre': 'No Email User',
+        'name': 'No Email User',
         'email': null,
-        'creadoEn': DateTime.now().toIso8601String(),
+        'createdAt': DateTime.now().toIso8601String(),
       };
 
-      final user = Usuario.fromJson(json);
+      final user = User.fromJson(json);
       expect(user.email, equals(''));
     });
 
-    group('iniciales getter', () {
+    group('initials getter', () {
       test('should return uppercase first letters for multiple names', () {
-        final user = Usuario(
+        final user = User(
           id: '1',
-          nombre: 'john fitzgerald kennedy',
+          name: 'john fitzgerald kennedy',
           email: '',
-          creadoEn: DateTime.now(),
+          createdAt: DateTime.now(),
         );
         // "john" -> 'J', "fitzgerald" -> 'F'
-        expect(user.iniciales, equals('JF'));
+        expect(user.initials, equals('JF'));
       });
 
       test('should return first letter uppercase for single name', () {
-        final user = Usuario(
+        final user = User(
           id: '1',
-          nombre: 'alice',
+          name: 'alice',
           email: '',
-          creadoEn: DateTime.now(),
+          createdAt: DateTime.now(),
         );
-        expect(user.iniciales, equals('A'));
+        expect(user.initials, equals('A'));
       });
 
       test('should return ? for empty name', () {
-        final user = Usuario(
+        final user = User(
           id: '1',
-          nombre: '   ',
+          name: '   ',
           email: '',
-          creadoEn: DateTime.now(),
+          createdAt: DateTime.now(),
         );
-        expect(user.iniciales, equals('?'));
+        expect(user.initials, equals('?'));
       });
     });
 
     test('equality should be based on ID only', () {
-      final userA = Usuario(
+      final userA = User(
         id: 'same_id',
-        nombre: 'User A',
+        name: 'User A',
         email: 'a@example.com',
-        creadoEn: DateTime.now(),
+        createdAt: DateTime.now(),
       );
 
-      final userB = Usuario(
+      final userB = User(
         id: 'same_id',
-        nombre: 'User B',
+        name: 'User B',
         email: 'b@example.com',
-        creadoEn: DateTime.now(),
+        createdAt: DateTime.now(),
       );
 
-      final userC = Usuario(
+      final userC = User(
         id: 'diff_id',
-        nombre: 'User A',
+        name: 'User A',
         email: 'a@example.com',
-        creadoEn: DateTime.now(),
+        createdAt: DateTime.now(),
       );
 
       expect(userA, equals(userB));

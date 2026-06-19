@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Colores de tema claro (mapeados de variables CSS en `:root` de index.css)
-class ColoresClaros {
+class LightColors {
   static const background = Color(
     0xFFF1F5F9,
   ); // Slate 100 - Cool, clean background for high contrast with white cards
@@ -42,7 +42,7 @@ class ColoresClaros {
 }
 
 /// Colores de tema oscuro (mapeados de variables CSS en `.dark` de index.css)
-class ColoresOscuros {
+class DarkColors {
   static const background = Color(0xFF0F0F12); // Sleek deep space black
   static const foreground = Color(0xFFFCFCFC);
   static const card = Color(0xFF191921);
@@ -71,56 +71,56 @@ class ColoresOscuros {
 }
 
 /// Colores específicos de biosensores y visualización (ECG, SpO2, CO2, etc.)
-class ColoresSensores {
-  static const ecgVerde = Color(0xFF10B981);
-  static const spo2Azul = Color(0xFF3B82F6);
-  static const co2Amarillo = Color(0xFFEAB308);
-  static const statusConectado = Color(0xFF10B981);
+class SensorColors {
+  static const ecgGreen = Color(0xFF10B981);
+  static const spo2Blue = Color(0xFF3B82F6);
+  static const co2Yellow = Color(0xFFEAB308);
+  static const statusConnected = Color(0xFF10B981);
 
   // Alertas por estado (Semáforo clínico)
-  static const excelenteOscuro = Color(0xFF00E676); // GreenAccent
-  static const excelenteClaro = Color(0xFF16A34A);
+  static const excellentDark = Color(0xFF00E676); // GreenAccent
+  static const excellentLight = Color(0xFF16A34A);
 
-  static const moderadoOscuro = Color(0xFFEAB308); // co2Amarillo
-  static const moderadoClaro = Color(0xFFD97706);
+  static const moderateDark = Color(0xFFEAB308); // co2Yellow
+  static const moderateLight = Color(0xFFD97706);
 
-  static const criticoOscuro = Color(0xFFFF5252); // RedAccent
-  static const criticoClaro = Color(0xFFDC2626);
+  static const criticalDark = Color(0xFFFF5252); // RedAccent
+  static const criticalLight = Color(0xFFDC2626);
 }
 
 /// Colores centralizados para componentes específicos para garantizar cero hardcoding.
-class ColoresComponentes {
+class ComponentColors {
   // Glow de neón para la navegación activa
   static const sidebarShadowGlow = Color(0xFF00D4FF);
 
   // Plaqueta informativa de CO2 (Badges)
-  static const co2BadgeBgClaro = Color(
+  static const co2BadgeBgLight = Color(
     0xFFF0F2FA,
   ); // Soft indigo-blue tint to complement yellow and match primary theme
-  static const co2BadgeBgOscuro = Color(0xFF1E1E26);
+  static const co2BadgeBgDark = Color(0xFF1E1E26);
 
   // Medidor Gauge Instrumental de CO2
-  static const co2GaugeTrackClaro = Color(0xFFE5E7EB);
-  static const co2GaugeTrackOscuro = Color(0xFF1E1E26);
+  static const co2GaugeTrackLight = Color(0xFFE5E7EB);
+  static const co2GaugeTrackDark = Color(0xFF1E1E26);
 
   // Fondos de gráficos de ondas y consola
-  static const graficoHeaderOscuro = Colors.black;
-  static const graficoHeaderClaro = Color(
+  static const chartHeaderDark = Colors.black;
+  static const chartHeaderLight = Color(
     0xFFF0F2FA,
   ); // Soft indigo-blue tint to match primary theme
-  static const graficoCuerpoOscuro = Color(0xFF0F0F12);
-  static const graficoCuerpoClaro = Colors.white;
+  static const chartBodyDark = Color(0xFF0F0F12);
+  static const chartBodyLight = Colors.white;
 
   // Rejillas de gráficos
-  static const graficoRejillaOscuro = Color(0xFF222222);
-  static const graficoRejillaClaro = Color(0xFFE5E7EB);
+  static const chartGridDark = Color(0xFF222222);
+  static const chartGridLight = Color(0xFFE5E7EB);
 
   // Contraste para temas claros de sensores
-  static const sensorEcgClaro = Color(0xFF16A34A);
-  static const sensorSpo2Claro = Color(0xFF2563EB);
+  static const sensorEcgLight = Color(0xFF16A34A);
+  static const sensorSpo2Light = Color(0xFF2563EB);
 
   // Colores para avatares aleatorios de usuarios
-  static const avatarColores = [
+  static const avatarColors = [
     Color(0xFF3B82F6), // Azul
     Color(0xFF10B981), // Verde
     Color(0xFFEC4899), // Rosa
@@ -131,6 +131,6 @@ class ColoresComponentes {
   ];
 
   // Bordes específicos de ventanas popup y selectores
-  static const popupBorderClaro = Color(0x1A000000);
-  static const popupBorderOscuro = Color(0xFF333333);
+  static const popupBorderLight = Color(0x1A000000);
+  static const popupBorderDark = Color(0xFF333333);
 }

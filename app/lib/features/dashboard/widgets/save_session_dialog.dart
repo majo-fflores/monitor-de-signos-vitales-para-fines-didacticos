@@ -3,26 +3,26 @@ import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SaveSessionDialog extends StatefulWidget {
-  final int segundosGrabacion;
-  final int fcProm;
-  final int fcMin;
-  final int fcMax;
-  final int co2Prom;
-  final int co2Min;
-  final int co2Max;
+  final int durationSeconds;
+  final int avgBpm;
+  final int minBpm;
+  final int maxBpm;
+  final int avgCo2;
+  final int minCo2;
+  final int maxCo2;
   final int? alertCount;
   final ValueChanged<String> onSave;
   final VoidCallback onCancel;
 
   const SaveSessionDialog({
     super.key,
-    required this.segundosGrabacion,
-    required this.fcProm,
-    required this.fcMin,
-    required this.fcMax,
-    required this.co2Prom,
-    required this.co2Min,
-    required this.co2Max,
+    required this.durationSeconds,
+    required this.avgBpm,
+    required this.minBpm,
+    required this.maxBpm,
+    required this.avgCo2,
+    required this.minCo2,
+    required this.maxCo2,
     this.alertCount,
     required this.onSave,
     required this.onCancel,
@@ -33,17 +33,17 @@ class SaveSessionDialog extends StatefulWidget {
 }
 
 class _SaveSessionDialogState extends State<SaveSessionDialog> {
-  late TextEditingController _notasController;
+  late TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
-    _notasController = TextEditingController();
+    _notesController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _notasController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -75,7 +75,7 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
                 ),
                 const Gap(6),
                 Text(
-                  '${widget.segundosGrabacion} s',
+                  '${widget.durationSeconds} s',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,
@@ -179,21 +179,21 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.fcMin}'),
+                        child: Text('${widget.minBpm}'),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.fcProm}'),
+                        child: Text('${widget.avgBpm}'),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.fcMax}'),
+                        child: Text('${widget.maxBpm}'),
                       ),
                     ],
                   ),
@@ -221,21 +221,21 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.co2Min}'),
+                        child: Text('${widget.minCo2}'),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.co2Prom}'),
+                        child: Text('${widget.avgCo2}'),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 16,
                         ),
-                        child: Text('${widget.co2Max}'),
+                        child: Text('${widget.maxCo2}'),
                       ),
                     ],
                   ),
@@ -264,7 +264,7 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
             ],
             const Gap(16),
             TextField(
-              controller: _notasController,
+              controller: _notesController,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: 'Notas y Observaciones Clínicas',
@@ -281,7 +281,7 @@ class _SaveSessionDialogState extends State<SaveSessionDialog> {
         TextButton(onPressed: widget.onCancel, child: const Text('Descartar')),
         FilledButton(
           onPressed: () {
-            widget.onSave(_notasController.text.trim());
+            widget.onSave(_notesController.text.trim());
           },
           style: FilledButton.styleFrom(
             backgroundColor: theme.colorScheme.primary,

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../shared/providers/historial_alarmas_provider.dart';
+import '../../../../shared/providers/alarm_history_provider.dart';
 
 class DataManagementCard extends ConsumerWidget {
   final Color subtitleColor;
@@ -16,12 +16,12 @@ class DataManagementCard extends ConsumerWidget {
     required this.borderColor,
   });
 
-  Future<void> _exportarDatos(
+  Future<void> _exportData(
     BuildContext context,
-    List<RegistroAlarma> historial,
+    List<AlarmRecord> history,
   ) async {
     try {
-      final jsonStr = jsonEncode(historial.map((r) => r.toJson()).toList());
+      final jsonStr = jsonEncode(history.map((r) => r.toJson()).toList());
 
       // Intentamos escribir en la carpeta de Descargas del usuario
       final homeDir = Platform.environment['HOME'] ?? '/home/lk';
@@ -89,7 +89,7 @@ class DataManagementCard extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                ref.read(historialAlarmasProvider.notifier).limpiarHistorial();
+                ref.read(alarmHistoryProvider.notifier).clearHistory();
                 Navigator.of(ctx).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -116,8 +116,8 @@ class DataManagementCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final historial = ref.watch(historialAlarmasProvider);
-    final totalAlarmas = historial.length;
+    final history = ref.watch(alarmHistoryProvider);
+    final totalAlarmas = history.length;
 
     return Container(
       width: double.infinity,
@@ -203,7 +203,7 @@ class DataManagementCard extends ConsumerWidget {
                   flex: useVertical ? 0 : 1,
                   child: ElevatedButton.icon(
                     onPressed: totalAlarmas > 0
-                        ? () => _exportarDatos(context, historial)
+                        ? () => _exportData(context, history)
                         : null,
                     icon: const Icon(LucideIcons.download, size: 16),
                     label: const Text('Exportar JSON'),

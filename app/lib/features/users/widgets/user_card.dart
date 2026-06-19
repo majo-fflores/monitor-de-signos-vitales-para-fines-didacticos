@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/models/usuario.dart';
+import '../../../../core/models/user.dart';
 
 /// Tarjeta compacta de usuario para la pantalla de selección.
 /// Layout horizontal: Avatar | Info | Badge de sesiones | Eliminar.
-class TarjetaUsuario extends StatelessWidget {
-  final Usuario usuario;
-  final bool esSeleccionado;
-  final int cantidadSesiones;
+class UserCard extends StatelessWidget {
+  final User user;
+  final bool isSelected;
+  final int sessionCount;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
-  const TarjetaUsuario({
+  const UserCard({
     super.key,
-    required this.usuario,
-    required this.esSeleccionado,
-    required this.cantidadSesiones,
+    required this.user,
+    required this.isSelected,
+    required this.sessionCount,
     required this.onTap,
     required this.onDelete,
   });
 
-  Color _obtenerColorAvatar(String nombre) {
-    const colores = [
+  Color _getAvatarColor(String name) {
+    const colors = [
       Color(0xFF3B82F6),
       Color(0xFF10B981),
       Color(0xFFEC4899),
@@ -30,18 +30,18 @@ class TarjetaUsuario extends StatelessWidget {
       Color(0xFFEF4444),
       Color(0xFF06B6D4),
     ];
-    return colores[nombre.hashCode.abs() % colores.length];
+    return colors[name.hashCode.abs() % colors.length];
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-    final colorAvatar = _obtenerColorAvatar(usuario.nombre);
+    final isDark = theme.brightness == Brightness.dark;
+    final avatarColor = _getAvatarColor(user.name);
 
-    final borderColor = esSeleccionado
+    final borderColor = isSelected
         ? theme.colorScheme.primary
-        : (esOscuro ? const Color(0xFF333333) : const Color(0x1A000000));
+        : (isDark ? const Color(0xFF333333) : const Color(0x1A000000));
 
     return Material(
       color: Colors.transparent,
@@ -53,14 +53,11 @@ class TarjetaUsuario extends StatelessWidget {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: esSeleccionado
+            color: isSelected
                 ? theme.colorScheme.primary.withValues(alpha: 0.06)
                 : theme.cardTheme.color,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: borderColor,
-              width: esSeleccionado ? 2 : 1,
-            ),
+            border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
           ),
           child: Row(
             children: [
@@ -69,15 +66,15 @@ class TarjetaUsuario extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: colorAvatar.withValues(alpha: 0.15),
+                  color: avatarColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  border: Border.all(color: colorAvatar, width: 1.5),
+                  border: Border.all(color: avatarColor, width: 1.5),
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  usuario.iniciales,
+                  user.initials,
                   style: TextStyle(
-                    color: colorAvatar,
+                    color: avatarColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -92,7 +89,7 @@ class TarjetaUsuario extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      usuario.nombre,
+                      user.name,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -101,7 +98,7 @@ class TarjetaUsuario extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      usuario.email,
+                      user.email,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(
                           alpha: 0.5,
@@ -123,7 +120,7 @@ class TarjetaUsuario extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '$cantidadSesiones',
+                  '$sessionCount',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -147,7 +144,7 @@ class TarjetaUsuario extends StatelessWidget {
                       builder: (ctx) => AlertDialog(
                         title: const Text('¿Eliminar usuario?'),
                         content: Text(
-                          'Se eliminará permanentemente a ${usuario.nombre} y todo su historial local.',
+                          'Se eliminará permanentemente a ${user.name} y todo su historial local.',
                         ),
                         actions: [
                           TextButton(

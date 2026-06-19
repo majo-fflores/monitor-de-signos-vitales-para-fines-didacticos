@@ -7,76 +7,76 @@ part 'connection_provider.g.dart';
 
 /// Estado inmutable de la conexión al backend.
 @immutable
-class EstadoConexionBackend {
-  final EstadoConexion estadoWs;
+class BackendConnectionState {
+  final ConnectionStatus wsStatus;
   final String wsUrl;
-  final bool cargando;
+  final bool isLoading;
 
-  const EstadoConexionBackend({
-    required this.estadoWs,
+  const BackendConnectionState({
+    required this.wsStatus,
     required this.wsUrl,
-    required this.cargando,
+    required this.isLoading,
   });
 
-  factory EstadoConexionBackend.inicial() {
+  factory BackendConnectionState.inicial() {
     const String defaultWsUrl = String.fromEnvironment(
       'BACKEND_WS_URL',
       defaultValue: 'ws://localhost:8080/ws/sensors',
     );
 
-    return const EstadoConexionBackend(
-      estadoWs: EstadoConexion.desconectado,
+    return const BackendConnectionState(
+      wsStatus: ConnectionStatus.disconnected,
       wsUrl: defaultWsUrl,
-      cargando: true,
+      isLoading: true,
     );
   }
 
-  EstadoConexionBackend copiarCon({
-    EstadoConexion? estadoWs,
+  BackendConnectionState copiarCon({
+    ConnectionStatus? wsStatus,
     String? wsUrl,
-    bool? cargando,
+    bool? isLoading,
   }) {
-    return EstadoConexionBackend(
-      estadoWs: estadoWs ?? this.estadoWs,
+    return BackendConnectionState(
+      wsStatus: wsStatus ?? this.wsStatus,
       wsUrl: wsUrl ?? this.wsUrl,
-      cargando: cargando ?? this.cargando,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
 
 /// Notifier que administra la conexión WebSocket con el backend o la simulación de pruebas.
 @Riverpod(keepAlive: true)
-class NotificadorConexion extends _$NotificadorConexion {
+class ConnectionNotifier extends _$ConnectionNotifier {
   WebSocketService? _wsService;
 
   @visibleForTesting
   set wsServiceForTesting(WebSocketService service) {
     _wsService = service;
     _wsService!.status.addListener(() {
-      if (state.estadoWs != _wsService!.status.value) {
-        state = state.copiarCon(estadoWs: _wsService!.status.value);
+      if (state.wsStatus != _wsService!.status.value) {
+        state = state.copiarCon(wsStatus: _wsService!.status.value);
       }
     });
   }
 
   @override
-  EstadoConexionBackend build() {
+  BackendConnectionState build() {
     ref.onDispose(() {
       _wsService?.dispose();
     });
-    Future.microtask(() => _cargarConfiguracion());
-    return EstadoConexionBackend.inicial();
+    Future.microtask(() => _loadConfiguration());
+    return BackendConnectionState.inicial();
   }
 
   /// Inicia la conexión con el WebSocket.
-  Future<void> _cargarConfiguracion() async {
+  Future<void> _loadConfiguration() async {
     try {
-      state = state.copiarCon(cargando: false);
+      state = state.copiarCon(isLoading: false);
 
       wsService.connect(state.wsUrl);
     } catch (e) {
-      debugPrint('[NotificadorConexion] Error al conectar: $e');
-      state = state.copiarCon(cargando: false);
+      debugPrint('[ConnectionNotifier] Error al conectar: $e');
+      state = state.copiarCon(isLoading: false);
     }
   }
 
@@ -85,15 +85,15 @@ class NotificadorConexion extends _$NotificadorConexion {
     _wsService ??= WebSocketService();
     // Sincronizar estado de conexión con el notifier
     _wsService!.status.addListener(() {
-      if (state.estadoWs != _wsService!.status.value) {
-        state = state.copiarCon(estadoWs: _wsService!.status.value);
+      if (state.wsStatus != _wsService!.status.value) {
+        state = state.copiarCon(wsStatus: _wsService!.status.value);
       }
     });
     return _wsService!;
   }
 
   /// Fuerza reconexión manual.
-  void reconectar() {
+  void reconnect() {
     wsService.disconnect();
     wsService.connect(state.wsUrl);
   }

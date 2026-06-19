@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/breakpoints.dart';
-import '../../../core/services/servicio_audio.dart';
-import '../../providers/alarma_state.dart';
+import '../../../core/services/audio_service.dart';
+import '../../providers/alarm_state.dart';
 import 'animated_alarm_banner.dart';
 import 'app_header.dart';
 import 'app_sidebar.dart';
-import 'banner_alarma_critica.dart';
+import 'critical_alarm_banner.dart';
 
 class MainLayout extends ConsumerStatefulWidget {
   final Widget child;
@@ -50,24 +50,24 @@ class _MainLayoutState extends ConsumerState<MainLayout>
   @override
   Widget build(BuildContext context) {
     // Selectores granulares: solo nos suscribimos a lo que necesitamos
-    final alarmaActiva = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.alarmaActiva),
+    final alarmActive = ref.watch(
+      alarmNotifierProvider.select((s) => s.alarmActive),
     );
 
     // Escuchar cambios de alarma a nivel global para reproducir o detener el sonido
-    ref.listen<EstadoAlarma>(notificadorAlarmaProvider, (prev, next) {
-      if (next.alarmaActiva &&
-          next.sonidoHabilitado &&
-          next.habilitada &&
-          !next.sonidoSilenciadoTemporalmente) {
-        ServicioAudio.instancia.iniciarAlarma(next.sonidoSeleccionado);
+    ref.listen<AlarmState>(alarmNotifierProvider, (prev, next) {
+      if (next.alarmActive &&
+          next.isSoundEnabled &&
+          next.isEnabled &&
+          !next.isSoundTemporarilyMuted) {
+        AudioService.instance.startAlarm(next.selectedSound);
       } else {
-        ServicioAudio.instancia.detenerAlarma();
+        AudioService.instance.stopAlarm();
       }
     });
 
     // Controlar AnimationController solo cuando la alarma cambia de estado
-    if (alarmaActiva) {
+    if (alarmActive) {
       if (!_borderAnimationController.isAnimating) {
         _borderAnimationController.repeat(reverse: true);
       }
@@ -94,8 +94,8 @@ class _MainLayoutState extends ConsumerState<MainLayout>
             children: [
               // BANNER DE ALERTA MÉDICA CRÍTICA (animado y sin saltos abruptos)
               AnimatedAlarmBanner(
-                visible: alarmaActiva,
-                child: const BannerAlarmaCritica(),
+                visible: alarmActive,
+                child: const CriticalAlarmBanner(),
               ),
               Expanded(
                 child: Row(
@@ -130,7 +130,7 @@ class _MainLayoutState extends ConsumerState<MainLayout>
 
     final esMobile = MediaQuery.of(context).size.width < Breakpoints.mobile;
 
-    if (!alarmaActiva) {
+    if (!alarmActive) {
       // Sin alarma, no necesitamos el AnimatedBuilder costoso
       return buildLayout(esMobile);
     }

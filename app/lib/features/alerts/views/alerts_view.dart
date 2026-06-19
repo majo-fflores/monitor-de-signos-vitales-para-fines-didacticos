@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/alarma_state.dart';
+import '../../../shared/providers/alarm_state.dart';
 import '../../settings/widgets/biometric_thresholds_card.dart';
 import '../widgets/alarm_history_card.dart';
-import '../widgets/indicador_vital_widget.dart';
+import '../widgets/vital_indicator_widget.dart';
 
 class AlertsView extends ConsumerWidget {
   const AlertsView({super.key});
@@ -16,16 +16,14 @@ class AlertsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final titleColor = isDark
-        ? ColoresOscuros.foreground
-        : ColoresClaros.foreground;
+    final titleColor = isDark ? DarkColors.foreground : LightColors.foreground;
     final subtitleColor = isDark
-        ? ColoresOscuros.mutedForeground
-        : ColoresClaros.mutedForeground;
-    final borderColor = isDark ? ColoresOscuros.border : ColoresClaros.border;
+        ? DarkColors.mutedForeground
+        : LightColors.mutedForeground;
+    final borderColor = isDark ? DarkColors.border : LightColors.border;
 
     // Solo observamos umbrales para pasarlos a la tarjeta (no el estado entero)
-    ref.watch(notificadorAlarmaProvider.select((s) => s.umbrales));
+    ref.watch(alarmNotifierProvider.select((s) => s.thresholds));
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -70,12 +68,8 @@ class AlertsView extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: const [
-                            IndicadorVitalWidget(
-                              tipo: TipoMetrica.frecuenciaCardiaca,
-                            ),
-                            IndicadorVitalWidget(
-                              tipo: TipoMetrica.dioxidoCarbono,
-                            ),
+                            VitalIndicatorWidget(type: MetricType.heartRate),
+                            VitalIndicatorWidget(type: MetricType.co2),
                           ],
                         ),
                       ),
@@ -85,13 +79,9 @@ class AlertsView extends ConsumerWidget {
               } else {
                 return Column(
                   children: [
-                    const IndicadorVitalWidget(
-                      tipo: TipoMetrica.frecuenciaCardiaca,
-                    ),
+                    const VitalIndicatorWidget(type: MetricType.heartRate),
                     const Gap(16),
-                    const IndicadorVitalWidget(
-                      tipo: TipoMetrica.dioxidoCarbono,
-                    ),
+                    const VitalIndicatorWidget(type: MetricType.co2),
                     const Gap(24),
                     BiometricThresholdsCard(
                       subtitleColor: subtitleColor,

@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 
 class ThresholdSingleSlider extends StatefulWidget {
-  final String titulo;
-  final String unidad;
-  final IconData icono;
-  final Color colorAcento;
+  final String title;
+  final String unit;
+  final IconData icon;
+  final Color accentColor;
   final double min;
   final double max;
-  final double valorInicial;
+  final double initialValue;
   final ValueChanged<double> onChanged;
   final ValueChanged<double> onChangeEnd;
 
   const ThresholdSingleSlider({
     super.key,
-    required this.titulo,
-    required this.unidad,
-    required this.icono,
-    required this.colorAcento,
+    required this.title,
+    required this.unit,
+    required this.icon,
+    required this.accentColor,
     required this.min,
     required this.max,
-    required this.valorInicial,
+    required this.initialValue,
     required this.onChanged,
     required this.onChangeEnd,
   });
@@ -30,12 +30,12 @@ class ThresholdSingleSlider extends StatefulWidget {
 }
 
 class _ThresholdSingleSliderState extends State<ThresholdSingleSlider> {
-  double? _valorLocal;
+  double? _localValue;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final valorActual = _valorLocal ?? widget.valorInicial;
+    final currentValue = _localValue ?? widget.initialValue;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,11 +46,11 @@ class _ThresholdSingleSliderState extends State<ThresholdSingleSlider> {
             Expanded(
               child: Row(
                 children: [
-                  Icon(widget.icono, color: widget.colorAcento, size: 20),
+                  Icon(widget.icon, color: widget.accentColor, size: 20),
                   const Gap(8),
                   Expanded(
                     child: Text(
-                      widget.titulo,
+                      widget.title,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -61,9 +61,9 @@ class _ThresholdSingleSliderState extends State<ThresholdSingleSlider> {
             ),
             const Gap(16),
             Text(
-              '${valorActual.round()} ${widget.unidad}',
+              '${currentValue.round()} ${widget.unit}',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: widget.colorAcento,
+                color: widget.accentColor,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -71,15 +71,15 @@ class _ThresholdSingleSliderState extends State<ThresholdSingleSlider> {
         ),
         const Gap(8),
         Slider(
-          value: valorActual,
+          value: currentValue,
           min: widget.min,
           max: widget.max,
-          activeColor: widget.colorAcento,
-          inactiveColor: widget.colorAcento.withValues(alpha: 0.2),
-          label: '${valorActual.round()}',
+          activeColor: widget.accentColor,
+          inactiveColor: widget.accentColor.withValues(alpha: 0.2),
+          label: '${currentValue.round()}',
           onChanged: (val) {
             setState(() {
-              _valorLocal = val;
+              _localValue = val;
             });
             widget.onChanged(val);
           },

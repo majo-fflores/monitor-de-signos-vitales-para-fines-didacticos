@@ -14,22 +14,22 @@ void main() {
             builder: (context, state) => const Scaffold(body: SidebarNav()),
           ),
           GoRoute(
-            path: '/historial',
+            path: '/history',
             builder: (context, state) =>
                 const Scaffold(body: Text('Reportes Page')),
           ),
           GoRoute(
-            path: '/sesiones',
+            path: '/sessions',
             builder: (context, state) =>
                 const Scaffold(body: Text('Sesiones Page')),
           ),
           GoRoute(
-            path: '/alertas',
+            path: '/alerts',
             builder: (context, state) =>
                 const Scaffold(body: Text('Alertas Page')),
           ),
           GoRoute(
-            path: '/configuracion',
+            path: '/settings',
             builder: (context, state) =>
                 const Scaffold(body: Text('Configuracion Page')),
           ),

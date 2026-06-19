@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../providers/usuario_provider.dart';
+import '../../providers/user_provider.dart';
 import 'arduino_status.dart';
 import 'live_clock.dart';
 
@@ -15,22 +15,22 @@ class AppHeader extends ConsumerWidget {
 
   const AppHeader({super.key, this.onMenuClick, this.mostrarBotonMenu = false});
 
-  Color _obtenerColorAvatar(String nombre) {
-    final colores = ColoresComponentes.avatarColores;
-    final hash = nombre.hashCode.abs();
+  Color _getAvatarColor(String name) {
+    final colores = ComponentColors.avatarColors;
+    final hash = name.hashCode.abs();
     return colores[hash % colores.length];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
     final anchoPantalla = MediaQuery.of(context).size.width;
     final esMobileChico = anchoPantalla < 500;
 
-    final estadoUsuarios = ref.watch(notificadorUsuariosProvider);
-    final usuarioActivo = estadoUsuarios.usuarioActivo;
+    final usersState = ref.watch(usersNotifierProvider);
+    final activeUser = usersState.activeUser;
 
     return Container(
       height: 80,
@@ -39,7 +39,7 @@ class AppHeader extends ConsumerWidget {
         color: theme.cardTheme.color,
         border: Border(
           bottom: BorderSide(
-            color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+            color: isDark ? DarkColors.border : LightColors.border,
             width: 1,
           ),
         ),
@@ -74,8 +74,8 @@ class AppHeader extends ConsumerWidget {
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: ColoresSensores
-                          .statusConectado, // Emerald green hex value
+                      color: SensorColors
+                          .statusConnected, // Emerald green hex value
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -94,22 +94,20 @@ class AppHeader extends ConsumerWidget {
               ],
 
               // Chip de Usuario Activo con menú desplegable
-              if (usuarioActivo != null) ...[
+              if (activeUser != null) ...[
                 PopupMenuButton<String>(
                   offset: const Offset(0, 56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
-                      color: esOscuro
-                          ? ColoresComponentes.popupBorderOscuro
-                          : ColoresComponentes.popupBorderClaro,
+                      color: isDark
+                          ? ComponentColors.popupBorderDark
+                          : ComponentColors.popupBorderLight,
                     ),
                   ),
                   onSelected: (value) {
                     if (value == 'cambiar') {
-                      ref
-                          .read(notificadorUsuariosProvider.notifier)
-                          .cambiarUsuario();
+                      ref.read(usersNotifierProvider.notifier).changeUser();
                     }
                   },
                   itemBuilder: (BuildContext context) => [
@@ -119,13 +117,13 @@ class AppHeader extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            usuarioActivo.nombre,
+                            activeUser.name,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            usuarioActivo.email,
+                            activeUser.email,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(
                                 alpha: 0.6,
@@ -156,7 +154,7 @@ class AppHeader extends ConsumerWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: esOscuro
+                      color: isDark
                           ? Colors.white.withValues(alpha: 0.05)
                           : Colors.black.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(30),
@@ -168,12 +166,12 @@ class AppHeader extends ConsumerWidget {
                           width: 24,
                           height: 24,
                           decoration: BoxDecoration(
-                            color: _obtenerColorAvatar(usuarioActivo.nombre),
+                            color: _getAvatarColor(activeUser.name),
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            usuarioActivo.iniciales,
+                            activeUser.initials,
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -184,7 +182,7 @@ class AppHeader extends ConsumerWidget {
                         const SizedBox(width: 8),
                         if (anchoPantalla > 500) ...[
                           Text(
-                            usuarioActivo.nombre.split(' ')[0],
+                            activeUser.name.split(' ')[0],
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),

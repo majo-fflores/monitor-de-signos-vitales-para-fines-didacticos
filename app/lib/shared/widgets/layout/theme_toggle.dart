@@ -14,7 +14,7 @@ class ThemeToggle extends ConsumerWidget {
 
     return IconButton(
       onPressed: () {
-        ref.read(themeNotifierProvider.notifier).alternarTema();
+        ref.read(themeNotifierProvider.notifier).toggleTheme();
       },
       icon: esOscuro
           ? const Icon(LucideIcons.sun, color: Colors.amber, size: 20)

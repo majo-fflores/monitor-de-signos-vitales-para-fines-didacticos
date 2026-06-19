@@ -15,27 +15,27 @@ void main() {
       } catch (_) {}
     });
 
-    test('initial state should be desconectado', () {
-      expect(service.status.value, equals(EstadoConexion.desconectado));
+    test('initial state should be disconnected', () {
+      expect(service.status.value, equals(ConnectionStatus.disconnected));
       expect(service.currentUrl, isNull);
     });
 
     test(
-      'connect should update currentUrl and transition to conectando',
+      'connect should update currentUrl and transition to connecting',
       () async {
         await service.connect('ws://localhost:9999');
 
         expect(service.currentUrl, equals('ws://localhost:9999'));
-        expect(service.status.value, equals(EstadoConexion.conectando));
+        expect(service.status.value, equals(ConnectionStatus.connecting));
       },
     );
 
-    test('disconnect should transition state to desconectado', () async {
+    test('disconnect should transition state to disconnected', () async {
       await service.connect('ws://localhost:9999');
-      expect(service.status.value, equals(EstadoConexion.conectando));
+      expect(service.status.value, equals(ConnectionStatus.connecting));
 
       service.disconnect();
-      expect(service.status.value, equals(EstadoConexion.desconectado));
+      expect(service.status.value, equals(ConnectionStatus.disconnected));
     });
 
     test('packetStream should be a broadcast stream', () {

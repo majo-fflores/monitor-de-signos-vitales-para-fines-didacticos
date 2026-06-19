@@ -4,69 +4,67 @@ import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/alarma_state.dart';
+import '../../../shared/providers/alarm_state.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 
 /// Tipos de métrica soportados por el indicador.
-enum TipoMetrica { frecuenciaCardiaca, dioxidoCarbono }
+enum MetricType { heartRate, co2 }
 
 /// Widget aislado para una sola métrica vital.
 /// Cada instancia hace su propio `ref.watch` selectivo para evitar
 /// rebuilds innecesarios cuando cambia otra métrica.
-class IndicadorVitalWidget extends ConsumerWidget {
-  final TipoMetrica tipo;
+class VitalIndicatorWidget extends ConsumerWidget {
+  final MetricType type;
 
-  const IndicadorVitalWidget({super.key, required this.tipo});
+  const VitalIndicatorWidget({super.key, required this.type});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final umbrales = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.umbrales),
+    final thresholds = ref.watch(
+      alarmNotifierProvider.select((s) => s.thresholds),
     );
 
     // Cada tipo solo observa su propio dato
-    late final int valor;
-    late final bool activo;
-    late final String metrica;
-    late final String valorFormateado;
-    late final IconData icono;
-    late final Color colorBase;
-    late final bool fueraDeRango;
+    late final int value;
+    late final bool isActive;
+    late final String metricName;
+    late final String formattedValue;
+    late final IconData icon;
+    late final Color baseColor;
+    late final bool isOutOfRange;
 
-    switch (tipo) {
-      case TipoMetrica.frecuenciaCardiaca:
-        valor = ref.watch(
-          notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca),
+    switch (type) {
+      case MetricType.heartRate:
+        value = ref.watch(
+          vitalSignsNotifierProvider.select((s) => s.heartRate),
         );
-        activo = ref.watch(
-          notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
+        isActive = ref.watch(
+          vitalSignsNotifierProvider.select((s) => s.isEcgActive),
         );
-        metrica = 'Frecuencia Cardíaca';
-        valorFormateado = valor == 0 ? '-' : '$valor BPM';
-        icono = LucideIcons.heart;
-        colorBase = ColoresSensores.ecgVerde;
-        fueraDeRango =
-            (valor != 0 &&
-                (valor < umbrales.fcMin || valor > umbrales.fcMax)) &&
-            activo;
-      case TipoMetrica.dioxidoCarbono:
-        valor = ref.watch(
-          notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
+        metricName = 'Frecuencia Cardíaca';
+        formattedValue = value == 0 ? '-' : '$value BPM';
+        icon = LucideIcons.heart;
+        baseColor = SensorColors.ecgGreen;
+        isOutOfRange =
+            (value != 0 &&
+                (value < thresholds.bpmMin || value > thresholds.bpmMax)) &&
+            isActive;
+      case MetricType.co2:
+        value = ref.watch(vitalSignsNotifierProvider.select((s) => s.co2Level));
+        isActive = ref.watch(
+          vitalSignsNotifierProvider.select((s) => s.isCo2Active),
         );
-        activo = ref.watch(
-          notificadorSignosVitalesProvider.select((s) => s.co2Activo),
-        );
-        metrica = 'Dióxido de Carbono';
-        valorFormateado = valor == 0 ? '-' : '$valor ppm';
-        icono = LucideIcons.wind;
-        colorBase = ColoresSensores.co2Amarillo;
-        fueraDeRango = (valor != 0 && (valor > umbrales.co2Max)) && activo;
+        metricName = 'Dióxido de Carbono';
+        formattedValue = value == 0 ? '-' : '$value ppm';
+        icon = LucideIcons.wind;
+        baseColor = SensorColors.co2Yellow;
+        isOutOfRange = (value != 0 && (value > thresholds.co2Max)) && isActive;
     }
 
-    final color = fueraDeRango ? theme.colorScheme.error : colorBase;
+    final color = isOutOfRange ? theme.colorScheme.error : baseColor;
 
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
     return RepaintBoundary(
       child: Container(
@@ -75,12 +73,12 @@ class IndicadorVitalWidget extends ConsumerWidget {
           color: theme.cardTheme.color,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: fueraDeRango
+            color: isOutOfRange
                 ? theme.colorScheme.error.withValues(alpha: 0.5)
-                : (esOscuro ? ColoresOscuros.border : ColoresClaros.border),
-            width: fueraDeRango ? 1.5 : 1.0,
+                : (isDark ? DarkColors.border : LightColors.border),
+            width: isOutOfRange ? 1.5 : 1.0,
           ),
-          boxShadow: fueraDeRango
+          boxShadow: isOutOfRange
               ? [
                   BoxShadow(
                     color: theme.colorScheme.error.withValues(alpha: 0.08),
@@ -104,11 +102,11 @@ class IndicadorVitalWidget extends ConsumerWidget {
                     color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icono, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 20),
                 ),
                 const Gap(12),
                 Text(
-                  metrica,
+                  metricName,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -119,7 +117,7 @@ class IndicadorVitalWidget extends ConsumerWidget {
             const Gap(12),
             Container(
               height: 1,
-              color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+              color: isDark ? DarkColors.border : LightColors.border,
             ),
             const Gap(12),
             IntrinsicHeight(
@@ -130,7 +128,7 @@ class IndicadorVitalWidget extends ConsumerWidget {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          valorFormateado,
+                          formattedValue,
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w900,
                             color: color,
@@ -144,20 +142,18 @@ class IndicadorVitalWidget extends ConsumerWidget {
                   VerticalDivider(
                     width: 24,
                     thickness: 1,
-                    color: esOscuro
-                        ? ColoresOscuros.border
-                        : ColoresClaros.border,
+                    color: isDark ? DarkColors.border : LightColors.border,
                   ),
                   Expanded(
                     child: Center(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          fueraDeRango ? 'CRÍTICO' : 'NORMAL',
+                          isOutOfRange ? 'CRÍTICO' : 'NORMAL',
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: fueraDeRango
+                            color: isOutOfRange
                                 ? theme.colorScheme.error
-                                : ColoresSensores.statusConectado,
+                                : SensorColors.statusConnected,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.0,
                           ),

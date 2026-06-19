@@ -1,7 +1,7 @@
 import 'package:datavital_flutter/core/services/websocket_service.dart';
 import 'package:datavital_flutter/shared/providers/connection_provider.dart';
 import 'package:datavital_flutter/shared/providers/theme_provider.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:datavital_flutter/shared/widgets/layout/app_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,27 +9,27 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/test_data.dart';
 import '../../helpers/test_helpers.dart';
 
-class MockUsuariosNotifier extends NotificadorUsuarios {
-  final EstadoUsuarios _state;
-  MockUsuariosNotifier(this._state);
+class MockUsersNotifier extends UsersNotifier {
+  final UsersState _state;
+  MockUsersNotifier(this._state);
 
   @override
-  EstadoUsuarios build() => _state;
+  UsersState build() => _state;
 
-  bool cambiarUsuarioCalled = false;
+  bool changeUserCalled = false;
 
   @override
-  Future<void> cambiarUsuario() async {
-    cambiarUsuarioCalled = true;
+  Future<void> changeUser() async {
+    changeUserCalled = true;
   }
 }
 
-class MockConexionNotifier extends NotificadorConexion {
-  final EstadoConexionBackend _state;
+class MockConexionNotifier extends ConnectionNotifier {
+  final BackendConnectionState _state;
   MockConexionNotifier(this._state);
 
   @override
-  EstadoConexionBackend build() => _state;
+  BackendConnectionState build() => _state;
 }
 
 class MockThemeNotifier extends ThemeNotifier {
@@ -39,11 +39,11 @@ class MockThemeNotifier extends ThemeNotifier {
   @override
   ThemeMode build() => _state;
 
-  bool alternarTemaCalled = false;
+  bool toggleThemeCalled = false;
 
   @override
-  Future<void> alternarTema() async {
-    alternarTemaCalled = true;
+  Future<void> toggleTheme() async {
+    toggleThemeCalled = true;
   }
 }
 
@@ -52,16 +52,16 @@ void main() {
     testWidgets('should render title and status without user active', (
       tester,
     ) async {
-      final usersState = EstadoUsuarios.inicial().copiarCon(cargando: false);
-      final conState = EstadoConexionBackend.inicial();
+      final usersState = UsersState.inicial().copiarCon(isLoading: false);
+      final conState = BackendConnectionState.inicial();
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorUsuariosProvider.overrideWith(
-              () => MockUsuariosNotifier(usersState),
+            usersNotifierProvider.overrideWith(
+              () => MockUsersNotifier(usersState),
             ),
-            notificadorConexionProvider.overrideWith(
+            connectionNotifierProvider.overrideWith(
               () => MockConexionNotifier(conState),
             ),
           ],
@@ -77,22 +77,22 @@ void main() {
     testWidgets('should render active user initials and handle changing user', (
       tester,
     ) async {
-      final user = TestData.usuario1; // John Doe
-      final usersState = EstadoUsuarios.inicial().copiarCon(
-        cargando: false,
-        usuarioActivo: user,
+      final user = TestData.user1; // John Doe
+      final usersState = UsersState.inicial().copiarCon(
+        isLoading: false,
+        activeUser: user,
       );
-      final conState = EstadoConexionBackend.inicial().copiarCon(
-        estadoWs: EstadoConexion.conectado,
+      final conState = BackendConnectionState.inicial().copiarCon(
+        wsStatus: ConnectionStatus.connected,
       );
 
-      final usersNotifier = MockUsuariosNotifier(usersState);
+      final usersNotifier = MockUsersNotifier(usersState);
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorUsuariosProvider.overrideWith(() => usersNotifier),
-            notificadorConexionProvider.overrideWith(
+            usersNotifierProvider.overrideWith(() => usersNotifier),
+            connectionNotifierProvider.overrideWith(
               () => MockConexionNotifier(conState),
             ),
           ],
@@ -117,7 +117,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(usersNotifier.cambiarUsuarioCalled, isTrue);
+      expect(usersNotifier.changeUserCalled, isTrue);
     });
   });
 }

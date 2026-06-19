@@ -6,24 +6,24 @@ part of 'connection_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$notificadorConexionHash() =>
-    r'3d912e6ad1467de3f8ab19ada5b7759af92ef005';
+String _$connectionNotifierHash() =>
+    r'9b52eb117ee51df632ec146d918146835aeef3b4';
 
 /// Notifier que administra la conexión WebSocket con el backend o la simulación de pruebas.
 ///
-/// Copied from [NotificadorConexion].
-@ProviderFor(NotificadorConexion)
-final notificadorConexionProvider =
-    NotifierProvider<NotificadorConexion, EstadoConexionBackend>.internal(
-      NotificadorConexion.new,
-      name: r'notificadorConexionProvider',
+/// Copied from [ConnectionNotifier].
+@ProviderFor(ConnectionNotifier)
+final connectionNotifierProvider =
+    NotifierProvider<ConnectionNotifier, BackendConnectionState>.internal(
+      ConnectionNotifier.new,
+      name: r'connectionNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$notificadorConexionHash,
+          : _$connectionNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$NotificadorConexion = Notifier<EstadoConexionBackend>;
+typedef _$ConnectionNotifier = Notifier<BackendConnectionState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -4,58 +4,58 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_helpers.dart';
 
-class MockVitalSignsNotifier extends NotificadorSignosVitales {
-  final EstadoSignosVitales _state;
+class MockVitalSignsNotifier extends VitalSignsNotifier {
+  final VitalSignsState _state;
   MockVitalSignsNotifier(this._state);
 
   @override
-  EstadoSignosVitales build() => _state;
+  VitalSignsState build() => _state;
 
   @override
-  void iniciarSimulacion() {}
+  void startSimulation() {}
 }
 
 void main() {
-  group('GraficoCo2 Widget Tests', () {
+  group('Co2Chart Widget Tests', () {
     testWidgets('should render CO2 gauge and labels in normal state', (
       tester,
     ) async {
-      final mockState = EstadoSignosVitales.inicial().copiarCon(
-        nivelCo2: 450,
-        co2Activo: true,
+      final mockState = VitalSignsState.inicial().copiarCon(
+        co2Level: 450,
+        isCo2Active: true,
       );
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(
+            vitalSignsNotifierProvider.overrideWith(
               () => MockVitalSignsNotifier(mockState),
             ),
           ],
-          child: const GraficoCo2(),
+          child: const Co2Chart(),
         ),
       );
 
-      expect(find.text('Dióxido de Carbono (CO2)'), findsOneWidget);
+      expect(find.text('Respiración del Paciente (CO2)'), findsOneWidget);
       expect(find.text('SENSOR DESCONECTADO'), findsNothing);
     });
 
     testWidgets('should render warning message when sensor is disconnected', (
       tester,
     ) async {
-      final mockState = EstadoSignosVitales.inicial().copiarCon(
-        nivelCo2: 0,
-        co2Activo: false,
+      final mockState = VitalSignsState.inicial().copiarCon(
+        co2Level: 0,
+        isCo2Active: false,
       );
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(
+            vitalSignsNotifierProvider.overrideWith(
               () => MockVitalSignsNotifier(mockState),
             ),
           ],
-          child: const GraficoCo2(),
+          child: const Co2Chart(),
         ),
       );
 

@@ -1,7 +1,7 @@
 import 'package:datavital_flutter/core/router/app_router.dart';
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
-import 'package:datavital_flutter/shared/providers/alarma_state.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
+import 'package:datavital_flutter/shared/providers/alarm_state.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,51 +11,51 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/mock_providers.dart';
 import '../helpers/test_data.dart';
 
-class MockUsuariosNotifier extends NotificadorUsuarios {
-  final EstadoUsuarios _state;
-  MockUsuariosNotifier(this._state);
+class MockUsersNotifier extends UsersNotifier {
+  final UsersState _state;
+  MockUsersNotifier(this._state);
 
   @override
-  EstadoUsuarios build() => _state;
+  UsersState build() => _state;
 }
 
-class TestAlarmaNotifier extends NotificadorAlarma {
-  final EstadoAlarma _state;
+class TestAlarmaNotifier extends AlarmNotifier {
+  final AlarmState _state;
   TestAlarmaNotifier(this._state);
 
   @override
-  EstadoAlarma build() {
+  AlarmState build() {
     ref.onDispose(() {
       // Do nothing
     });
     return _state;
   }
 
-  void updateState(EstadoAlarma newState) {
+  void updateState(AlarmState newState) {
     state = newState;
   }
 
   @override
-  void silenciarAlarma() {
-    state = state.copiarCon(sonidoSilenciadoTemporalmente: true);
+  void muteAlarm() {
+    state = state.copiarCon(isSoundTemporarilyMuted: true);
   }
 
   @override
-  void desactivarSilencioTemporal() {
-    state = state.copiarCon(sonidoSilenciadoTemporalmente: false);
+  void unmuteAlarm() {
+    state = state.copiarCon(isSoundTemporarilyMuted: false);
   }
 }
 
 void main() {
   group('AlertSystemFlow Integration Tests', () {
-    late MockServicioAudio mockAudio;
+    late MockAudioService mockAudio;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockAudio = MockServicioAudio();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
+      mockAudio = MockAudioService();
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
     });
 
     testWidgets(
@@ -64,19 +64,19 @@ void main() {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
 
-        final user = TestData.usuario1;
-        final usersState = EstadoUsuarios.inicial().copiarCon(
-          cargando: false,
-          usuarios: [user],
-          usuarioActivo: user,
+        final user = TestData.user1;
+        final usersState = UsersState.inicial().copiarCon(
+          isLoading: false,
+          users: [user],
+          activeUser: user,
         );
 
-        final initialAlarmState = EstadoAlarma.inicial().copiarCon(
-          habilitada: true,
-          sonidoHabilitado: true,
-          sonidoSeleccionado: 'alarma_clasica',
-          alarmaActiva: false,
-          alertasActivas: [],
+        final initialAlarmState = AlarmState.inicial().copiarCon(
+          isEnabled: true,
+          isSoundEnabled: true,
+          selectedSound: 'alarma_clasica',
+          alarmActive: false,
+          activeAlerts: [],
         );
 
         final alarmNotifier = TestAlarmaNotifier(initialAlarmState);
@@ -84,10 +84,10 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              notificadorUsuariosProvider.overrideWith(
-                () => MockUsuariosNotifier(usersState),
+              usersNotifierProvider.overrideWith(
+                () => MockUsersNotifier(usersState),
               ),
-              notificadorAlarmaProvider.overrideWith(() => alarmNotifier),
+              alarmNotifierProvider.overrideWith(() => alarmNotifier),
             ],
             child: Consumer(
               builder: (context, ref, child) {
@@ -104,15 +104,15 @@ void main() {
         expect(find.text('ALARMA CRÍTICA'), findsNothing);
 
         // Now trigger an alarm state update
-        final activeAlarmState = EstadoAlarma.inicial().copiarCon(
-          habilitada: true,
-          sonidoHabilitado: true,
-          sonidoSeleccionado: 'alarma_clasica',
-          alarmaActiva: true,
-          segundosRestantes: 30,
-          alertasActivas: [
-            const AlertaCritica('Frecuencia Cardíaca', 120),
-            const AlertaCritica('Saturación de Oxígeno', 92),
+        final activeAlarmState = AlarmState.inicial().copiarCon(
+          isEnabled: true,
+          isSoundEnabled: true,
+          selectedSound: 'alarma_clasica',
+          alarmActive: true,
+          secondsRemaining: 30,
+          activeAlerts: [
+            const CriticalAlert('Frecuencia Cardíaca', 120),
+            const CriticalAlert('Saturación de Oxígeno', 92),
           ],
         );
 
@@ -121,7 +121,7 @@ void main() {
             .pump(); // Pump frame to trigger ref.listen in MainLayout and render changes
 
         // Verify that audio alarm started playing
-        verify(() => mockAudio.iniciarAlarma('alarma_clasica')).called(1);
+        verify(() => mockAudio.startAlarm('alarma_clasica')).called(1);
 
         // Verify the alarm banner is visible in the UI
         expect(find.text('ALARMA CRÍTICA'), findsOneWidget);
@@ -139,13 +139,13 @@ void main() {
 
         // Update notifier state to mimic the silenced state in the provider
         final silencedState = activeAlarmState.copiarCon(
-          sonidoSilenciadoTemporalmente: true,
+          isSoundTemporarilyMuted: true,
         );
         alarmNotifier.updateState(silencedState);
         await tester.pump(); // Pump frame to trigger ref.listen and rebuild
 
         // Verify that the audio was stopped/silenced
-        verify(() => mockAudio.detenerAlarma()).called(greaterThanOrEqualTo(1));
+        verify(() => mockAudio.stopAlarm()).called(greaterThanOrEqualTo(1));
 
         // Verify that the banner is still visible (visual alarm active), but now displays option to reactivate sound
         expect(find.text('ALARMA CRÍTICA'), findsOneWidget);

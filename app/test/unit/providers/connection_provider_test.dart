@@ -17,39 +17,39 @@ void main() {
       mockWsService = MockWebSocketService();
       when(
         () => mockWsService.status,
-      ).thenReturn(ValueNotifier(EstadoConexion.desconectado));
+      ).thenReturn(ValueNotifier(ConnectionStatus.disconnected));
       when(() => mockWsService.connect(any())).thenAnswer((_) async {});
       when(() => mockWsService.disconnect()).thenAnswer((_) => {});
     });
 
-    test('initial state has default wsUrl and cargando: true', () {
+    test('initial state has default wsUrl and isLoading: true', () {
       final container = createContainer();
-      final state = container.read(notificadorConexionProvider);
+      final state = container.read(connectionNotifierProvider);
 
       expect(state.wsUrl, contains('ws://'));
-      expect(state.cargando, isTrue);
+      expect(state.isLoading, isTrue);
     });
 
-    test('after loading configuration, cargando is false', () async {
+    test('after loading configuration, isLoading is false', () async {
       final container = createContainer();
-      final notifier = container.read(notificadorConexionProvider.notifier);
+      final notifier = container.read(connectionNotifierProvider.notifier);
       notifier.wsServiceForTesting = mockWsService;
 
       await Future.delayed(Duration.zero);
 
-      final state = container.read(notificadorConexionProvider);
-      expect(state.cargando, isFalse);
+      final state = container.read(connectionNotifierProvider);
+      expect(state.isLoading, isFalse);
       verify(() => mockWsService.connect(state.wsUrl)).called(1);
     });
 
-    test('reconectar reconnects', () async {
+    test('reconnect reconnects', () async {
       final container = createContainer();
-      final notifier = container.read(notificadorConexionProvider.notifier);
+      final notifier = container.read(connectionNotifierProvider.notifier);
       notifier.wsServiceForTesting = mockWsService;
 
       await Future.delayed(Duration.zero);
 
-      notifier.reconectar();
+      notifier.reconnect();
 
       verify(() => mockWsService.disconnect()).called(1);
       verify(() => mockWsService.connect(any())).called(2);

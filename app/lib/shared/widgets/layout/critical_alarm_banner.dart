@@ -3,33 +3,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../providers/alarma_state.dart';
+import '../../providers/alarm_state.dart';
 
 /// Banner de alarma crítica extraído para rendimiento.
 /// Solo se reconstruye cuando cambian sus campos específicos.
-class BannerAlarmaCritica extends ConsumerWidget {
-  const BannerAlarmaCritica({super.key});
+class CriticalAlarmBanner extends ConsumerWidget {
+  const CriticalAlarmBanner({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final alertasActivas = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.alertasActivas),
+    final activeAlerts = ref.watch(
+      alarmNotifierProvider.select((s) => s.activeAlerts),
     );
-    final segundosRestantes = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.segundosRestantes),
+    final secondsRemaining = ref.watch(
+      alarmNotifierProvider.select((s) => s.secondsRemaining),
     );
-    final sonidoHabilitado = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.sonidoHabilitado),
+    final isSoundEnabled = ref.watch(
+      alarmNotifierProvider.select((s) => s.isSoundEnabled),
     );
-    final sonidoSilenciado = ref.watch(
-      notificadorAlarmaProvider.select((s) => s.sonidoSilenciadoTemporalmente),
+    final isSoundMuted = ref.watch(
+      alarmNotifierProvider.select((s) => s.isSoundTemporarilyMuted),
     );
 
     final theme = Theme.of(context);
 
     return LayoutBuilder(
       builder: (context, bannerConstraints) {
-        final esMobileChico = bannerConstraints.maxWidth < 600;
+        final isSmallMobile = bannerConstraints.maxWidth < 600;
 
         final infoAlarma = Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +53,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '${alertasActivas.map((a) => '${a.metrica}: ${a.valor}').join(' | ')} — Ciclo de seguridad en curso',
+                    '${activeAlerts.map((a) => '${a.metric}: ${a.value}').join(' | ')} — Ciclo de seguridad en curso',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
         );
 
         final controlesAlarma = Row(
-          mainAxisAlignment: esMobileChico
+          mainAxisAlignment: isSmallMobile
               ? MainAxisAlignment.end
               : MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -83,7 +83,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
                   const Icon(Icons.timer, color: Colors.white, size: 12),
                   const Gap(4),
                   Text(
-                    '${segundosRestantes}s',
+                    '${secondsRemaining}s',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -109,7 +109,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
                 ),
               ),
               onPressed: () {
-                context.go('/alertas');
+                context.go('/alerts');
               },
               icon: const Icon(Icons.visibility, size: 14, color: Colors.white),
               label: const Text(
@@ -121,7 +121,7 @@ class BannerAlarmaCritica extends ConsumerWidget {
                 ),
               ),
             ),
-            if (sonidoHabilitado) ...[
+            if (isSoundEnabled) ...[
               const Gap(8),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -137,22 +137,18 @@ class BannerAlarmaCritica extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () {
-                  if (sonidoSilenciado) {
-                    ref
-                        .read(notificadorAlarmaProvider.notifier)
-                        .desactivarSilencioTemporal();
+                  if (isSoundMuted) {
+                    ref.read(alarmNotifierProvider.notifier).unmuteAlarm();
                   } else {
-                    ref
-                        .read(notificadorAlarmaProvider.notifier)
-                        .silenciarAlarma();
+                    ref.read(alarmNotifierProvider.notifier).muteAlarm();
                   }
                 },
                 icon: Icon(
-                  sonidoSilenciado ? Icons.volume_up : Icons.volume_off,
+                  isSoundMuted ? Icons.volume_up : Icons.volume_off,
                   size: 14,
                 ),
                 label: Text(
-                  sonidoSilenciado ? 'ACTIVAR SONIDO' : 'SILENCIAR',
+                  isSoundMuted ? 'ACTIVAR SONIDO' : 'SILENCIAR',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
@@ -174,13 +170,13 @@ class BannerAlarmaCritica extends ConsumerWidget {
               ),
               icon: const Icon(Icons.close, size: 14),
               onPressed: () {
-                ref.read(notificadorAlarmaProvider.notifier).descartarAlarma();
+                ref.read(alarmNotifierProvider.notifier).discardAlarm();
               },
             ),
           ],
         );
 
-        if (esMobileChico) {
+        if (isSmallMobile) {
           return Container(
             width: double.infinity,
             color: Colors.red.shade900,

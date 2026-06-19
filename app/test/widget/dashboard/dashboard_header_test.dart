@@ -7,21 +7,21 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   group('DashboardHeader Widget Tests', () {
-    const defaultCon = EstadoConexionBackend(
-      estadoWs: EstadoConexion.desconectado,
+    const defaultCon = BackendConnectionState(
+      wsStatus: ConnectionStatus.disconnected,
       wsUrl: 'ws://test',
-      cargando: false,
+      isLoading: false,
     );
 
     testWidgets('should render titles correctly', (tester) async {
       await tester.pumpWidget(
         createTestableWidget(
           child: DashboardHeader(
-            esOscuro: true,
-            tieneUsuarioActivo: false,
-            grabando: false,
-            tiempoFormateado: '00:00',
-            estadoConexion: defaultCon,
+            isDark: true,
+            hasActiveUser: false,
+            isRecording: false,
+            formattedTime: '00:00',
+            connectionState: defaultCon,
             onStartRecording: () {},
             onStopRecording: () {},
           ),
@@ -44,11 +44,11 @@ void main() {
         await tester.pumpWidget(
           createTestableWidget(
             child: DashboardHeader(
-              esOscuro: true,
-              tieneUsuarioActivo: true,
-              grabando: false,
-              tiempoFormateado: '00:00',
-              estadoConexion: defaultCon,
+              isDark: true,
+              hasActiveUser: true,
+              isRecording: false,
+              formattedTime: '00:00',
+              connectionState: defaultCon,
               onStartRecording: () {
                 startCalled = true;
               },
@@ -71,11 +71,11 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           child: DashboardHeader(
-            esOscuro: true,
-            tieneUsuarioActivo: true,
-            grabando: true,
-            tiempoFormateado: '01:45',
-            estadoConexion: defaultCon,
+            isDark: true,
+            hasActiveUser: true,
+            isRecording: true,
+            formattedTime: '01:45',
+            connectionState: defaultCon,
             onStartRecording: () {},
             onStopRecording: () {
               stopCalled = true;

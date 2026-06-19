@@ -93,7 +93,7 @@ class _DisplayPreferencesCardState
                       onSelectionChanged: (Set<ThemeMode> newSelection) {
                         ref
                             .read(themeNotifierProvider.notifier)
-                            .cambiarTema(newSelection.first);
+                            .changeTheme(newSelection.first);
                       },
                       style: SegmentedButton.styleFrom(
                         visualDensity: VisualDensity.comfortable,
@@ -108,7 +108,7 @@ class _DisplayPreferencesCardState
                           isSelected: themeMode == ThemeMode.light,
                           onTap: () => ref
                               .read(themeNotifierProvider.notifier)
-                              .cambiarTema(ThemeMode.light),
+                              .changeTheme(ThemeMode.light),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),
@@ -119,7 +119,7 @@ class _DisplayPreferencesCardState
                           isSelected: themeMode == ThemeMode.dark,
                           onTap: () => ref
                               .read(themeNotifierProvider.notifier)
-                              .cambiarTema(ThemeMode.dark),
+                              .changeTheme(ThemeMode.dark),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),
@@ -130,7 +130,7 @@ class _DisplayPreferencesCardState
                           isSelected: themeMode == ThemeMode.system,
                           onTap: () => ref
                               .read(themeNotifierProvider.notifier)
-                              .cambiarTema(ThemeMode.system),
+                              .changeTheme(ThemeMode.system),
                           borderColor: widget.borderColor,
                           isDark: isDark,
                         ),

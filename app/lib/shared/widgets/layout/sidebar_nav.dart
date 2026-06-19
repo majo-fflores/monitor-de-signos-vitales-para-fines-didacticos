@@ -3,16 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/theme/app_colors.dart';
 
-class ElementoNav {
-  final IconData icono;
-  final String etiqueta;
-  final String ruta;
+class NavItem {
+  final IconData icon;
+  final String label;
+  final String path;
 
-  const ElementoNav({
-    required this.icono,
-    required this.etiqueta,
-    required this.ruta,
-  });
+  const NavItem({required this.icon, required this.label, required this.path});
 }
 
 /// Menú de navegación lateral mapeado de SidebarNav.tsx.
@@ -22,31 +18,19 @@ class SidebarNav extends StatelessWidget {
 
   const SidebarNav({super.key, this.onClose});
 
-  static const List<ElementoNav> _items = [
-    ElementoNav(
-      icono: LucideIcons.layoutDashboard,
-      etiqueta: 'Dashboard',
-      ruta: '/',
+  static const List<NavItem> _items = [
+    NavItem(icon: LucideIcons.layoutDashboard, label: 'Dashboard', path: '/'),
+    NavItem(
+      icon: LucideIcons.clipboardList,
+      label: 'Sesiones',
+      path: '/sessions',
     ),
-    ElementoNav(
-      icono: LucideIcons.clipboardList,
-      etiqueta: 'Sesiones',
-      ruta: '/sesiones',
-    ),
-    ElementoNav(
-      icono: LucideIcons.history,
-      etiqueta: 'Reportes',
-      ruta: '/historial',
-    ),
-    ElementoNav(
-      icono: LucideIcons.bellRing,
-      etiqueta: 'Alertas',
-      ruta: '/alertas',
-    ),
-    ElementoNav(
-      icono: LucideIcons.settings,
-      etiqueta: 'Configuración',
-      ruta: '/configuracion',
+    NavItem(icon: LucideIcons.history, label: 'Reportes', path: '/history'),
+    NavItem(icon: LucideIcons.bellRing, label: 'Alertas', path: '/alerts'),
+    NavItem(
+      icon: LucideIcons.settings,
+      label: 'Configuración',
+      path: '/settings',
     ),
   ];
 
@@ -54,35 +38,33 @@ class SidebarNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       children: _items.map((item) {
-        final esActivo = location == item.ruta;
+        final isActive = location == item.path;
 
         // Estilos equivalentes a los condicionales de Tailwind en SidebarNav.tsx
-        final colorIcono = esActivo
-            ? (esOscuro
-                  ? ColoresOscuros.sidebarPrimary
-                  : ColoresClaros.sidebarPrimary)
-            : (esOscuro
-                      ? ColoresOscuros.sidebarForeground
-                      : ColoresClaros.sidebarForeground)
+        final iconColor = isActive
+            ? (isDark ? DarkColors.sidebarPrimary : LightColors.sidebarPrimary)
+            : (isDark
+                      ? DarkColors.sidebarForeground
+                      : LightColors.sidebarForeground)
                   .withValues(alpha: 0.4);
 
-        final colorFondo = esActivo
-            ? (esOscuro
-                  ? ColoresOscuros.sidebarPrimary.withValues(alpha: 0.15)
-                  : ColoresClaros.sidebarPrimary.withValues(alpha: 0.15))
+        final bgColor = isActive
+            ? (isDark
+                  ? DarkColors.sidebarPrimary.withValues(alpha: 0.15)
+                  : LightColors.sidebarPrimary.withValues(alpha: 0.15))
             : Colors.transparent;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Tooltip(
-            message: item.etiqueta,
+            message: item.label,
             child: InkWell(
               onTap: () {
-                context.go(item.ruta);
+                context.go(item.path);
                 if (onClose != null) onClose!();
               },
               borderRadius: BorderRadius.circular(16),
@@ -91,22 +73,21 @@ class SidebarNav extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: colorFondo,
+                  color: bgColor,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: esActivo && !esOscuro
+                  boxShadow: isActive && !isDark
                       ? [
                           BoxShadow(
-                            color: ColoresComponentes.sidebarShadowGlow
-                                .withValues(
-                                  alpha: 0.15,
-                                ), // Reemplazado withOpacity
+                            color: ComponentColors.sidebarShadowGlow.withValues(
+                              alpha: 0.15,
+                            ), // Reemplazado withOpacity
                             blurRadius: 20,
                             offset: const Offset(0, 0),
                           ),
                         ]
                       : null,
                 ),
-                child: Icon(item.icono, color: colorIcono, size: 20),
+                child: Icon(item.icon, color: iconColor, size: 20),
               ),
             ),
           ),

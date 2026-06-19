@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/usuario_provider.dart';
+import '../../../../shared/providers/user_provider.dart';
 import 'user_card.dart';
 
 class UserSelectionTab extends StatelessWidget {
   final TextEditingController searchController;
-  final List<dynamic> usuariosFiltrados;
-  final EstadoUsuarios estadoUsuarios;
+  final List<dynamic> filteredUsers;
+  final UsersState usersState;
   final Map<String, int> sessionCounts;
-  final String filtroBusqueda;
-  final ValueChanged<dynamic> onSeleccionarUsuario;
-  final ValueChanged<String> onEliminarUsuario;
+  final String searchFilter;
+  final ValueChanged<dynamic> onSelectUser;
+  final ValueChanged<String> onDeleteUser;
 
   const UserSelectionTab({
     super.key,
     required this.searchController,
-    required this.usuariosFiltrados,
-    required this.estadoUsuarios,
+    required this.filteredUsers,
+    required this.usersState,
     required this.sessionCounts,
-    required this.filtroBusqueda,
-    required this.onSeleccionarUsuario,
-    required this.onEliminarUsuario,
+    required this.searchFilter,
+    required this.onSelectUser,
+    required this.onDeleteUser,
   });
 
   @override
@@ -30,7 +30,7 @@ class UserSelectionTab extends StatelessWidget {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
 
-    if (estadoUsuarios.usuarios.isEmpty) {
+    if (usersState.users.isEmpty) {
       return SizedBox(
         height: 240,
         child: Center(
@@ -55,8 +55,8 @@ class UserSelectionTab extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: esOscuro
-                      ? ColoresOscuros.mutedForeground
-                      : ColoresClaros.mutedForeground,
+                      ? DarkColors.mutedForeground
+                      : LightColors.mutedForeground,
                 ),
               ),
             ],
@@ -85,35 +85,35 @@ class UserSelectionTab extends StatelessWidget {
         // Lista (con altura máxima para no explotar verticalmente)
         ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 340),
-          child: usuariosFiltrados.isEmpty
+          child: filteredUsers.isEmpty
               ? SizedBox(
                   height: 120,
                   child: Center(
                     child: Text(
-                      'Sin resultados para "$filtroBusqueda"',
+                      'Sin resultados para "$searchFilter"',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: esOscuro
-                            ? ColoresOscuros.mutedForeground
-                            : ColoresClaros.mutedForeground,
+                            ? DarkColors.mutedForeground
+                            : LightColors.mutedForeground,
                       ),
                     ),
                   ),
                 )
               : ListView.separated(
                   shrinkWrap: true,
-                  itemCount: usuariosFiltrados.length,
+                  itemCount: filteredUsers.length,
                   separatorBuilder: (_, __) => const Gap(10),
                   itemBuilder: (context, index) {
-                    final u = usuariosFiltrados[index];
-                    final esActivo = estadoUsuarios.usuarioActivo?.id == u.id;
+                    final u = filteredUsers[index];
+                    final esActivo = usersState.activeUser?.id == u.id;
                     final sesiones = sessionCounts[u.id] ?? 0;
 
-                    return TarjetaUsuario(
-                      usuario: u,
-                      esSeleccionado: esActivo,
-                      cantidadSesiones: sesiones,
-                      onTap: () => onSeleccionarUsuario(u),
-                      onDelete: () => onEliminarUsuario(u.id),
+                    return UserCard(
+                      user: u,
+                      isSelected: esActivo,
+                      sessionCount: sesiones,
+                      onTap: () => onSelectUser(u),
+                      onDelete: () => onDeleteUser(u.id),
                     );
                   },
                 ),

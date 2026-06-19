@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/providers/session_provider.dart';
-import '../../../../shared/providers/usuario_provider.dart';
+import '../../../../shared/providers/user_provider.dart';
 import '../widgets/create_user_form.dart';
 import '../widgets/segmented_toggle.dart';
 import '../widgets/user_gateway_header.dart';
@@ -22,17 +22,17 @@ class UserSelectionView extends ConsumerStatefulWidget {
 class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
   final TextEditingController _searchController = TextEditingController();
   Map<String, int> _sessionCounts = {};
-  String _filtroBusqueda = '';
-  int _tabActual = 0;
-  bool _estaCargandoConteos = false;
+  String _searchFilter = '';
+  int _currentTab = 0;
+  bool _isLoadingCounts = false;
 
   @override
   void initState() {
     super.initState();
-    _cargarConteosSesiones();
+    _loadSessionCounts();
     _searchController.addListener(() {
       setState(() {
-        _filtroBusqueda = _searchController.text.trim().toLowerCase();
+        _searchFilter = _searchController.text.trim().toLowerCase();
       });
     });
   }
@@ -43,17 +43,17 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
     super.dispose();
   }
 
-  Future<void> _cargarConteosSesiones() async {
-    if (_estaCargandoConteos) return;
-    _estaCargandoConteos = true;
+  Future<void> _loadSessionCounts() async {
+    if (_isLoadingCounts) return;
+    _isLoadingCounts = true;
     try {
-      final usuarios = ref.read(notificadorUsuariosProvider).usuarios;
+      final users = ref.read(usersNotifierProvider).users;
       final Map<String, int> counts = {};
       final sessionApi = ref.read(sessionApiServiceProvider);
-      for (final u in usuarios) {
+      for (final u in users) {
         final uId = int.tryParse(u.id);
         if (uId != null) {
-          final sessions = await sessionApi.obtenerSesionesDeUsuario(uId);
+          final sessions = await sessionApi.getSessionsByUser(uId);
           counts[u.id] = sessions.length;
         } else {
           counts[u.id] = 0;
@@ -67,49 +67,49 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
     } catch (_) {
       // Ignorar errores al cargar conteos
     } finally {
-      _estaCargandoConteos = false;
+      _isLoadingCounts = false;
     }
   }
 
-  void _crearUsuario(String nombre, String email, int dni) async {
+  void _createUser(String nombre, String email, int dni) async {
     await ref
-        .read(notificadorUsuariosProvider.notifier)
-        .crearUsuario(nombre: nombre, email: email, dni: dni);
-    await _cargarConteosSesiones();
+        .read(usersNotifierProvider.notifier)
+        .createUser(name: nombre, email: email, dni: dni);
+    await _loadSessionCounts();
     if (mounted) {
       context.go('/');
     }
   }
 
-  void _seleccionarUsuario(dynamic usuario) {
-    ref.read(notificadorUsuariosProvider.notifier).seleccionarUsuario(usuario);
+  void _selectUser(dynamic usuario) {
+    ref.read(usersNotifierProvider.notifier).selectUser(usuario);
     context.go('/');
   }
 
-  void _eliminarUsuario(String id) async {
-    await ref.read(notificadorUsuariosProvider.notifier).eliminarUsuario(id);
-    _cargarConteosSesiones();
+  void _deleteUser(String id) async {
+    await ref.read(usersNotifierProvider.notifier).deleteUser(id);
+    _loadSessionCounts();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final esOscuro = theme.brightness == Brightness.dark;
-    final estadoUsuarios = ref.watch(notificadorUsuariosProvider);
+    final usersState = ref.watch(usersNotifierProvider);
 
-    ref.listen<EstadoUsuarios>(notificadorUsuariosProvider, (prev, next) {
-      if (prev?.usuarios.length != next.usuarios.length) {
-        _cargarConteosSesiones();
+    ref.listen<UsersState>(usersNotifierProvider, (prev, next) {
+      if (prev?.users.length != next.users.length) {
+        _loadSessionCounts();
       }
     });
 
-    if (estadoUsuarios.cargando) {
+    if (usersState.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final usuariosFiltrados = estadoUsuarios.usuarios.where((u) {
-      return u.nombre.toLowerCase().contains(_filtroBusqueda) ||
-          u.email.toLowerCase().contains(_filtroBusqueda);
+    final filteredUsers = usersState.users.where((u) {
+      return u.name.toLowerCase().contains(_searchFilter) ||
+          u.email.toLowerCase().contains(_searchFilter);
     }).toList();
 
     return Scaffold(
@@ -160,17 +160,17 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // ── Header principal componentizado ──
-                      UserGatewayHeader(esOscuro: esOscuro),
+                      UserGatewayHeader(isDark: esOscuro),
                       const Gap(32),
 
                       // ── Segmented Control (sin TabBar) ──
                       SegmentedToggle(
-                        selectedIndex: _tabActual,
+                        selectedIndex: _currentTab,
                         labels: const [
                           'Seleccionar Usuario',
                           'Registrar Nuevo',
                         ],
-                        onChanged: (i) => setState(() => _tabActual = i),
+                        onChanged: (i) => setState(() => _currentTab = i),
                       ),
                       const Gap(24),
 
@@ -179,17 +179,17 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeOut,
                         alignment: Alignment.topCenter,
-                        child: _tabActual == 0
+                        child: _currentTab == 0
                             ? UserSelectionTab(
                                 searchController: _searchController,
-                                usuariosFiltrados: usuariosFiltrados,
-                                estadoUsuarios: estadoUsuarios,
+                                filteredUsers: filteredUsers,
+                                usersState: usersState,
                                 sessionCounts: _sessionCounts,
-                                filtroBusqueda: _filtroBusqueda,
-                                onSeleccionarUsuario: _seleccionarUsuario,
-                                onEliminarUsuario: _eliminarUsuario,
+                                searchFilter: _searchFilter,
+                                onSelectUser: _selectUser,
+                                onDeleteUser: _deleteUser,
                               )
-                            : FormularioCrearUsuario(onSubmit: _crearUsuario),
+                            : CreateUserForm(onSubmit: _createUser),
                       ),
                     ],
                   ),

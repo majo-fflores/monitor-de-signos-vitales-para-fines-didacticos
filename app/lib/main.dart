@@ -13,7 +13,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final modoTema = ref.watch(themeNotifierProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
@@ -22,7 +22,7 @@ class MyApp extends ConsumerWidget {
       routerConfig: router,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: modoTema,
+      themeMode: themeMode,
       themeAnimationDuration: Duration
           .zero, // Elimina la costosa interpolación de temas de 200ms a 60fps
     );

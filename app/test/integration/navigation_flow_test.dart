@@ -1,6 +1,6 @@
 import 'package:datavital_flutter/core/router/app_router.dart';
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,23 +12,23 @@ import '../helpers/test_data.dart';
 
 void main() {
   group('NavigationFlow Integration Tests', () {
-    late MockServicioAudio mockAudio;
+    late MockAudioService mockAudio;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockAudio = MockServicioAudio();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
+      mockAudio = MockAudioService();
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
     });
 
     Widget createRouterScope({List<Override> overrides = const []}) {
-      final mockApi = MockUsuarioApiService();
-      when(() => mockApi.obtenerUsuarios()).thenAnswer((_) async => []);
+      final mockApi = MockUserApiService();
+      when(() => mockApi.getUsers()).thenAnswer((_) async => []);
 
       return ProviderScope(
         overrides: [
-          usuarioApiServiceProvider.overrideWithValue(mockApi),
+          userApiServiceProvider.overrideWithValue(mockApi),
           ...overrides,
         ],
         child: Consumer(
@@ -40,24 +40,23 @@ void main() {
       );
     }
 
-    testWidgets(
-      'should redirect to /usuarios when starting with no active user',
-      (tester) async {
-        tester.view.physicalSize = const Size(1200, 800);
-        tester.view.devicePixelRatio = 1.0;
+    testWidgets('should redirect to /users when starting with no active user', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
 
-        await tester.pumpWidget(createRouterScope());
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpWidget(createRouterScope());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-        // Should show the gateway page
-        expect(find.text('Seleccionar Usuario'), findsOneWidget);
-        expect(find.text('Registrar Nuevo'), findsOneWidget);
+      // Should show the gateway page
+      expect(find.text('Seleccionar Usuario'), findsOneWidget);
+      expect(find.text('Registrar Nuevo'), findsOneWidget);
 
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      },
-    );
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     testWidgets('should allow navigation when active user is selected', (
       tester,
@@ -65,18 +64,18 @@ void main() {
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
 
-      final user = TestData.usuario1;
-      final usersState = EstadoUsuarios.inicial().copiarCon(
-        cargando: false,
-        usuarios: [user],
-        usuarioActivo: user,
+      final user = TestData.user1;
+      final usersState = UsersState.inicial().copiarCon(
+        isLoading: false,
+        users: [user],
+        activeUser: user,
       );
 
       await tester.pumpWidget(
         createRouterScope(
           overrides: [
-            notificadorUsuariosProvider.overrideWith(
-              () => MockUsuariosNotifier(usersState),
+            usersNotifierProvider.overrideWith(
+              () => MockUsersNotifier(usersState),
             ),
           ],
         ),
@@ -96,10 +95,10 @@ void main() {
   });
 }
 
-class MockUsuariosNotifier extends NotificadorUsuarios {
-  final EstadoUsuarios _state;
-  MockUsuariosNotifier(this._state);
+class MockUsersNotifier extends UsersNotifier {
+  final UsersState _state;
+  MockUsersNotifier(this._state);
 
   @override
-  EstadoUsuarios build() => _state;
+  UsersState build() => _state;
 }

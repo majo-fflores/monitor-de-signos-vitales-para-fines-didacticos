@@ -19,17 +19,15 @@ class _Co2ChartData {
   const _Co2ChartData({required this.spots, required this.scale});
 }
 
-_Co2ChartData _prepararDatosCo2(List<PuntoBiometrico> datos) {
-  if (datos.isEmpty) {
+_Co2ChartData _prepareCo2Data(List<BiometricPoint> data) {
+  if (data.isEmpty) {
     return const _Co2ChartData(
       spots: [],
       scale: _Co2Scale(minY: 900, maxY: 1300),
     );
   }
 
-  final puntosValidos = datos
-      .where((p) => p.y.isFinite)
-      .toList(growable: false);
+  final puntosValidos = data.where((p) => p.y.isFinite).toList(growable: false);
 
   if (puntosValidos.isEmpty) {
     return const _Co2ChartData(
@@ -59,7 +57,8 @@ _Co2ChartData _prepararDatosCo2(List<PuntoBiometrico> datos) {
     double avgY = sum / count;
 
     // El valor directo: 1200 es la base, y al soplar baja a ~950.
-    final finalY = avgY;
+    // Lo invertimos para que el pico vaya hacia arriba (1250.0 - avgY)
+    final finalY = 1250.0 - avgY;
 
     double pointTime = puntosValidos[i].x;
     double xMod = pointTime % 15000;
@@ -81,33 +80,31 @@ _Co2ChartData _prepararDatosCo2(List<PuntoBiometrico> datos) {
 }
 
 /// Widget de gráfico de Dióxido de Carbono (CO2) en tiempo real.
-class GraficoCo2 extends ConsumerWidget {
-  final bool expandir;
-  const GraficoCo2({super.key, this.expandir = false});
+class Co2Chart extends ConsumerWidget {
+  final bool expand;
+  const Co2Chart({super.key, this.expand = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final datos = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.co2Datos),
+    final data = ref.watch(vitalSignsNotifierProvider.select((s) => s.co2Data));
+    final co2Active = ref.watch(
+      vitalSignsNotifierProvider.select((s) => s.isCo2Active),
     );
-    final co2Activo = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.co2Activo),
-    );
-    final chartData = _prepararDatosCo2(datos);
+    final chartData = _prepareCo2Data(data);
 
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
-    final colorFondoHeader = esOscuro
-        ? ColoresComponentes.graficoHeaderOscuro
-        : ColoresComponentes.graficoHeaderClaro;
-    final colorFondoGrafico = esOscuro
-        ? ColoresComponentes.graficoCuerpoOscuro
-        : ColoresComponentes.graficoCuerpoClaro;
-    final colorRejilla = esOscuro
-        ? ColoresComponentes.graficoRejillaOscuro
-        : ColoresComponentes.graficoRejillaClaro;
-    final colorLinea = ColoresSensores.co2Amarillo;
+    final colorFondoHeader = isDark
+        ? ComponentColors.chartHeaderDark
+        : ComponentColors.chartHeaderLight;
+    final colorFondoGrafico = isDark
+        ? ComponentColors.chartBodyDark
+        : ComponentColors.chartBodyLight;
+    final colorRejilla = isDark
+        ? ComponentColors.chartGridDark
+        : ComponentColors.chartGridLight;
+    final colorLinea = SensorColors.co2Yellow;
 
     final chartWidget = Container(
       width: double.infinity,
@@ -148,23 +145,23 @@ class GraficoCo2 extends ConsumerWidget {
                       barWidth: 2,
                       isStrokeCapRound: true,
                       dotData: const FlDotData(show: false),
-                      aboveBarData: BarAreaData(
+                      aboveBarData: BarAreaData(show: false),
+                      belowBarData: BarAreaData(
                         show: true,
                         color: colorLinea.withValues(
                           alpha: 0.4,
-                        ), // Relleno hacia arriba
+                        ), // Relleno hacia abajo
                       ),
-                      belowBarData: BarAreaData(show: false),
                     ),
                 ],
               ),
               duration: Duration.zero,
             ),
           ),
-          if (!co2Activo)
+          if (!co2Active)
             Positioned.fill(
               child: Container(
-                color: esOscuro
+                color: isDark
                     ? Colors.black87.withValues(alpha: 0.8)
                     : Colors.white.withValues(alpha: 0.9),
                 child: Center(
@@ -224,10 +221,10 @@ class GraficoCo2 extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Dióxido de Carbono (CO2)',
+                  'Respiración del Paciente (CO2)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18.0,
+                    fontSize: 24.0,
                     fontWeight: FontWeight.bold,
                     color: colorLinea,
                   ),
@@ -237,7 +234,7 @@ class GraficoCo2 extends ConsumerWidget {
           ),
         ),
         // Área del gráfico
-        expandir
+        expand
             ? Expanded(child: chartWidget)
             : SizedBox(height: 110, child: chartWidget),
       ],

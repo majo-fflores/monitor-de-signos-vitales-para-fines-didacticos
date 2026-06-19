@@ -2,14 +2,14 @@ import 'package:datavital_flutter/core/models/measurement.dart';
 import 'package:datavital_flutter/core/models/session.dart';
 import 'package:datavital_flutter/core/models/session_summary.dart';
 import 'package:datavital_flutter/core/models/ws_packet.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
 import 'package:datavital_flutter/core/services/measurement_api_service.dart';
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
 import 'package:datavital_flutter/core/services/session_api_service.dart';
 import 'package:datavital_flutter/core/services/websocket_service.dart';
 import 'package:datavital_flutter/features/dashboard/views/dashboard_view.dart';
 import 'package:datavital_flutter/shared/providers/connection_provider.dart';
 import 'package:datavital_flutter/shared/providers/session_provider.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:datavital_flutter/shared/providers/vital_signs_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,36 +25,36 @@ class MockSessionApiService extends Mock implements SessionApiService {}
 
 class MockMeasurementApiService extends Mock implements MeasurementApiService {}
 
-class MockUsuariosNotifier extends NotificadorUsuarios {
-  final EstadoUsuarios _state;
-  MockUsuariosNotifier(this._state);
+class MockUsersNotifier extends UsersNotifier {
+  final UsersState _state;
+  MockUsersNotifier(this._state);
 
   @override
-  EstadoUsuarios build() => _state;
+  UsersState build() => _state;
 }
 
-class MockDashboardVitalSignsNotifier extends NotificadorSignosVitales {
-  final EstadoSignosVitales _state;
+class MockDashboardVitalSignsNotifier extends VitalSignsNotifier {
+  final VitalSignsState _state;
   MockDashboardVitalSignsNotifier(this._state);
 
   @override
-  EstadoSignosVitales build() => _state;
+  VitalSignsState build() => _state;
 
   @override
-  void iniciarSimulacion() {}
+  void startSimulation() {}
 
   @override
-  void iniciarConWebSocket(Stream<WsPacket> stream) {}
+  void startWithWebSocket(Stream<WsPacket> stream) {}
 }
 
-class MockConnectionNotifier extends NotificadorConexion {
-  final EstadoConexionBackend _state;
+class MockConnectionNotifier extends ConnectionNotifier {
+  final BackendConnectionState _state;
   final WebSocketService _mockWs;
 
   MockConnectionNotifier(this._state, this._mockWs);
 
   @override
-  EstadoConexionBackend build() => _state;
+  BackendConnectionState build() => _state;
 
   @override
   WebSocketService get wsService => _mockWs;
@@ -62,16 +62,16 @@ class MockConnectionNotifier extends NotificadorConexion {
 
 void main() {
   group('DashboardView Integration Tests', () {
-    late MockServicioAudio mockAudio;
+    late MockAudioService mockAudio;
     late MockWebSocketService mockWebSocketService;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockAudio = MockServicioAudio();
+      mockAudio = MockAudioService();
       mockWebSocketService = MockWebSocketService();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
     });
 
     testWidgets(
@@ -80,37 +80,37 @@ void main() {
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
 
-        final user = TestData.usuario1;
-        final usersState = EstadoUsuarios.inicial().copiarCon(
-          cargando: false,
-          usuarios: [user],
-          usuarioActivo: user,
+        final user = TestData.user1;
+        final usersState = UsersState.inicial().copiarCon(
+          isLoading: false,
+          users: [user],
+          activeUser: user,
         );
 
-        final vitalSignsState = EstadoSignosVitales.inicial().copiarCon(
-          frecuenciaCardiaca: 75,
-          nivelCo2: 450,
+        final vitalSignsState = VitalSignsState.inicial().copiarCon(
+          heartRate: 75,
+          co2Level: 450,
         );
 
-        final connectionState = const EstadoConexionBackend(
-          estadoWs: EstadoConexion.desconectado,
+        final connectionState = const BackendConnectionState(
+          wsStatus: ConnectionStatus.disconnected,
           wsUrl: 'ws://localhost',
-          cargando: false,
+          isLoading: false,
         );
 
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              notificadorUsuariosProvider.overrideWith(
-                () => MockUsuariosNotifier(usersState),
+              usersNotifierProvider.overrideWith(
+                () => MockUsersNotifier(usersState),
               ),
-              notificadorConexionProvider.overrideWith(
+              connectionNotifierProvider.overrideWith(
                 () => MockConnectionNotifier(
                   connectionState,
                   mockWebSocketService,
                 ),
               ),
-              notificadorSignosVitalesProvider.overrideWith(
+              vitalSignsNotifierProvider.overrideWith(
                 () => MockDashboardVitalSignsNotifier(vitalSignsState),
               ),
               sessionApiServiceProvider.overrideWithValue(
@@ -185,33 +185,33 @@ class FakeSessionApiService implements SessionApiService {
   http.Client get client => http.Client();
 
   @override
-  Future<Session> crearSesion(int userId) async {
+  Future<Session> createSession(int userId) async {
     return Session(id: 42, userId: userId, startTime: DateTime.now());
   }
 
   @override
-  Future<Session> obtenerSesion(int id) async {
+  Future<Session> getSession(int id) async {
     return Session(id: id, userId: 1, startTime: DateTime.now());
   }
 
   @override
-  Future<List<Session>> obtenerSesionesDeUsuario(int userId) async {
+  Future<List<Session>> getSessionsByUser(int userId) async {
     return [];
   }
 
   @override
-  Future<void> finalizarSesion(int id, {String notes = ''}) async {}
+  Future<void> endSession(int id, {String notes = ''}) async {}
 
   @override
-  Future<void> eliminarSesion(int id) async {}
+  Future<void> deleteSession(int id) async {}
 
   @override
-  Future<List<SessionWithSummary>> obtenerResumenesSesiones(int userId) async {
+  Future<List<SessionWithSummary>> getSessionSummaries(int userId) async {
     return [];
   }
 
   @override
-  Future<SessionSummary> obtenerResumenSesion(int sessionId) async {
+  Future<SessionSummary> getSessionSummary(int sessionId) async {
     return SessionSummary(
       sessionId: sessionId,
       notes: '',
@@ -229,7 +229,7 @@ class FakeSessionApiService implements SessionApiService {
   }
 
   @override
-  Future<String> exportarSesionCsv(int sessionId) async {
+  Future<String> exportSessionCsv(int sessionId) async {
     return '';
   }
 }
@@ -242,21 +242,21 @@ class FakeMeasurementApiService implements MeasurementApiService {
   http.Client get client => http.Client();
 
   @override
-  Future<Measurement> guardarMedicion(
+  Future<Measurement> saveMeasurement(
     String tipo,
     int sessionId,
-    List<Sample> datos,
+    List<Sample> samples,
   ) async {
     return Measurement(
       id: 1,
       sessionId: sessionId,
-      datos: datos,
+      samples: samples,
       createdAt: DateTime.now(),
     );
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorUsuario(
+  Future<List<Measurement>> getMeasurementsByUser(
     String tipo,
     int userId,
   ) async {
@@ -264,7 +264,7 @@ class FakeMeasurementApiService implements MeasurementApiService {
   }
 
   @override
-  Future<List<Measurement>> obtenerMedicionesPorSesion(
+  Future<List<Measurement>> getMeasurementsBySession(
     String tipo,
     int sessionId,
   ) async {
@@ -272,5 +272,5 @@ class FakeMeasurementApiService implements MeasurementApiService {
   }
 
   @override
-  Future<void> eliminarMedicion(String tipo, int id) async {}
+  Future<void> deleteMeasurement(String tipo, int id) async {}
 }

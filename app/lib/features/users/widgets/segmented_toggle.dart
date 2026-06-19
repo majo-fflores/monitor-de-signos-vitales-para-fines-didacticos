@@ -26,7 +26,7 @@ class SegmentedToggle extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+          color: esOscuro ? DarkColors.border : LightColors.border,
         ),
       ),
       padding: const EdgeInsets.all(4),
@@ -54,8 +54,8 @@ class SegmentedToggle extends StatelessWidget {
                     color: esActivo
                         ? theme.colorScheme.onPrimary
                         : (esOscuro
-                              ? ColoresOscuros.mutedForeground
-                              : ColoresClaros.mutedForeground),
+                              ? DarkColors.mutedForeground
+                              : LightColors.mutedForeground),
                   ),
                 ),
               ),

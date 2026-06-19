@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:datavital_flutter/core/services/usuario_api_service.dart';
+import 'package:datavital_flutter/core/services/user_api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
@@ -11,17 +11,17 @@ void main() {
     registerFallbackValue(Uri());
   });
 
-  group('UsuarioApiService Tests', () {
+  group('UserApiService Tests', () {
     late MockHttpClient client;
-    late UsuarioApiService service;
+    late UserApiService service;
 
     setUp(() {
       client = MockHttpClient();
-      service = UsuarioApiService(baseUrl: 'http://test.local', client: client);
+      service = UserApiService(baseUrl: 'http://test.local', client: client);
     });
 
     test(
-      'obtenerUsuarios should fetch and return list of users on success (200)',
+      'getUsers should fetch and return list of users on success (200)',
       () async {
         final backendResponse = jsonEncode([
           {
@@ -42,27 +42,27 @@ void main() {
           () => client.get(any()),
         ).thenAnswer((_) async => http.Response(backendResponse, 200));
 
-        final result = await service.obtenerUsuarios();
+        final result = await service.getUsers();
 
         expect(result, hasLength(2));
         expect(result[0].id, equals('1'));
-        expect(result[0].nombre, equals('Alice'));
+        expect(result[0].name, equals('Alice'));
         expect(result[0].email, equals('alice@example.com'));
         expect(result[1].id, equals('2'));
-        expect(result[1].nombre, equals('Bob'));
+        expect(result[1].name, equals('Bob'));
       },
     );
 
-    test('obtenerUsuarios should throw exception on error (500)', () async {
+    test('getUsers should throw exception on error (500)', () async {
       when(
         () => client.get(any()),
       ).thenAnswer((_) async => http.Response('Server Error', 500));
 
-      expect(() => service.obtenerUsuarios(), throwsException);
+      expect(() => service.getUsers(), throwsException);
     });
 
     test(
-      'crearUsuario should post and return new user on success (201)',
+      'createUser should post and return new user on success (201)',
       () async {
         final backendResponse = jsonEncode({
           'id': 3,
@@ -80,21 +80,21 @@ void main() {
           ),
         ).thenAnswer((_) async => http.Response(backendResponse, 201));
 
-        final result = await service.crearUsuario(
-          nombre: 'Charlie',
+        final result = await service.createUser(
+          name: 'Charlie',
           email: 'charlie@example.com',
           dni: 12345678,
         );
 
         expect(result.id, equals('3'));
-        expect(result.nombre, equals('Charlie'));
+        expect(result.name, equals('Charlie'));
         expect(result.email, equals('charlie@example.com'));
         expect(result.dni, equals(12345678));
       },
     );
 
     test(
-      'crearUsuario should throw exception with error message on bad request (400)',
+      'createUser should throw exception with error message on bad request (400)',
       () async {
         final backendResponse = jsonEncode({'error': 'El email ya existe'});
 
@@ -107,8 +107,8 @@ void main() {
         ).thenAnswer((_) async => http.Response(backendResponse, 400));
 
         expect(
-          () => service.crearUsuario(
-            nombre: 'Charlie',
+          () => service.createUser(
+            name: 'Charlie',
             email: 'charlie@example.com',
             dni: 12345678,
           ),
@@ -124,7 +124,7 @@ void main() {
     );
 
     test(
-      'obtenerUsuarioPorId should fetch and return specific user on success (200)',
+      'getUserById should fetch and return specific user on success (200)',
       () async {
         final backendResponse = jsonEncode({
           'id': 5,
@@ -137,10 +137,10 @@ void main() {
           () => client.get(any()),
         ).thenAnswer((_) async => http.Response(backendResponse, 200));
 
-        final result = await service.obtenerUsuarioPorId('5');
+        final result = await service.getUserById('5');
 
         expect(result.id, equals('5'));
-        expect(result.nombre, equals('David'));
+        expect(result.name, equals('David'));
         expect(result.email, equals('david@example.com'));
       },
     );

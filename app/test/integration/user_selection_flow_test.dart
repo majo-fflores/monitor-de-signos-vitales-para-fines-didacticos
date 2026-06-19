@@ -1,7 +1,7 @@
-import 'package:datavital_flutter/core/models/usuario.dart';
+import 'package:datavital_flutter/core/models/user.dart';
 import 'package:datavital_flutter/core/router/app_router.dart';
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
-import 'package:datavital_flutter/shared/providers/usuario_provider.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
+import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,24 +12,24 @@ import '../helpers/mock_providers.dart';
 
 void main() {
   group('UserSelectionFlow Integration Tests', () {
-    late MockServicioAudio mockAudio;
-    late MockUsuarioApiService mockApi;
+    late MockAudioService mockAudio;
+    late MockUserApiService mockApi;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockAudio = MockServicioAudio();
-      mockApi = MockUsuarioApiService();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
+      mockAudio = MockAudioService();
+      mockApi = MockUserApiService();
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
 
       // Default stub for obtaining users
-      when(() => mockApi.obtenerUsuarios()).thenAnswer((_) async => []);
+      when(() => mockApi.getUsers()).thenAnswer((_) async => []);
     });
 
     Widget createRouterScope() {
       return ProviderScope(
-        overrides: [usuarioApiServiceProvider.overrideWithValue(mockApi)],
+        overrides: [userApiServiceProvider.overrideWithValue(mockApi)],
         child: Consumer(
           builder: (context, ref, child) {
             final router = ref.watch(routerProvider);
@@ -46,16 +46,16 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
 
         // Mock user creation response
-        final expectedUser = Usuario(
+        final expectedUser = User(
           id: '123',
-          nombre: 'Maria Gimenez',
+          name: 'Maria Gimenez',
           email: 'maria@correo.com',
           dni: 12345678,
-          creadoEn: DateTime.now(),
+          createdAt: DateTime.now(),
         );
         when(
-          () => mockApi.crearUsuario(
-            nombre: 'Maria Gimenez',
+          () => mockApi.createUser(
+            name: 'Maria Gimenez',
             email: 'maria@correo.com',
             dni: 12345678,
           ),

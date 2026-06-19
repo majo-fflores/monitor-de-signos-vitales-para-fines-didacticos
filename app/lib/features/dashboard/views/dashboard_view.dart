@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/breakpoints.dart';
-import '../../../core/models/registro_medicion.dart';
+import '../../../core/models/measurement_record.dart';
 import '../../../core/models/session_summary.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/connection_provider.dart';
-import '../../../shared/providers/historial_provider.dart';
+import '../../../shared/providers/history_provider.dart';
 import '../../../shared/providers/session_provider.dart';
-import '../../../shared/providers/usuario_provider.dart';
+import '../../../shared/providers/user_provider.dart';
 import '../../../shared/providers/vital_signs_provider.dart';
 import '../widgets/co2_chart.dart';
 import '../widgets/dashboard_header.dart';
@@ -28,9 +28,9 @@ class DashboardView extends ConsumerStatefulWidget {
 }
 
 class _DashboardViewState extends ConsumerState<DashboardView> {
-  bool _grabando = false;
-  int _segundosGrabacion = 0;
-  Timer? _timerGrabacion;
+  bool _isRecording = false;
+  int _recordingSeconds = 0;
+  Timer? _recordingTimer;
   int? _sessionId;
 
   @override
@@ -38,57 +38,57 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     super.initState();
     // Si la configuración ya terminó de cargar al entrar (ej: navegación posterior), inicializamos de inmediato.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final configConexion = ref.read(notificadorConexionProvider);
-      if (!configConexion.cargando) {
-        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-        notifier.iniciarConWebSocket(ws.packetStream);
+      final connectionConfig = ref.read(connectionNotifierProvider);
+      if (!connectionConfig.isLoading) {
+        final notifier = ref.read(vitalSignsNotifierProvider.notifier);
+        final ws = ref.read(connectionNotifierProvider.notifier).wsService;
+        notifier.startWithWebSocket(ws.packetStream);
       }
     });
   }
 
   @override
   void dispose() {
-    _timerGrabacion?.cancel();
+    _recordingTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _iniciarGrabacion() async {
-    final usuarioActivo = ref.read(notificadorUsuariosProvider).usuarioActivo;
-    if (usuarioActivo == null) return;
+  Future<void> _startRecording() async {
+    final activeUser = ref.read(usersNotifierProvider).activeUser;
+    if (activeUser == null) return;
 
     try {
       final session = await ref
           .read(sessionApiServiceProvider)
-          .crearSesion(int.parse(usuarioActivo.id));
+          .createSession(int.parse(activeUser.id));
       _sessionId = session.id;
     } catch (e) {
       debugPrint('Error al crear sesión en backend: $e');
       _sessionId = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     }
 
-    ref.read(notificadorSignosVitalesProvider.notifier).startBuffering();
+    ref.read(vitalSignsNotifierProvider.notifier).startBuffering();
 
     setState(() {
-      _grabando = true;
-      _segundosGrabacion = 0;
+      _isRecording = true;
+      _recordingSeconds = 0;
     });
 
-    _timerGrabacion = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        _segundosGrabacion++;
+        _recordingSeconds++;
       });
     });
   }
 
-  Future<void> _detenerYGuardar() async {
-    _timerGrabacion?.cancel();
-    _timerGrabacion = null;
+  Future<void> _stopAndSave() async {
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
 
-    setState(() => _grabando = false);
+    setState(() => _isRecording = false);
 
-    final usuarioActivo = ref.read(notificadorUsuariosProvider).usuarioActivo;
-    if (usuarioActivo == null) return;
+    final activeUser = ref.read(usersNotifierProvider).activeUser;
+    if (activeUser == null) return;
 
     // Mostrar un indicador de carga mientras se guardan los datos y se obtiene el resumen
     if (!mounted) return;
@@ -100,7 +100,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
     final activeSessionId = _sessionId;
     final buffers = ref
-        .read(notificadorSignosVitalesProvider.notifier)
+        .read(vitalSignsNotifierProvider.notifier)
         .stopBuffering();
 
     try {
@@ -109,7 +109,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
         // Congelar el EndTime en el backend inmediatamente
         try {
-          await sessionApi.finalizarSesion(activeSessionId);
+          await sessionApi.endSession(activeSessionId);
         } catch (e) {
           debugPrint('Error al pre-finalizar sesión: $e');
         }
@@ -120,11 +120,11 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         try {
           await Future.wait([
             if (buffers['ecg']?.isNotEmpty ?? false)
-              measApi.guardarMedicion('ecg', activeSessionId, buffers['ecg']!),
+              measApi.saveMeasurement('ecg', activeSessionId, buffers['ecg']!),
             if (buffers['bpm']?.isNotEmpty ?? false)
-              measApi.guardarMedicion('bpm', activeSessionId, buffers['bpm']!),
+              measApi.saveMeasurement('bpm', activeSessionId, buffers['bpm']!),
             if (buffers['air']?.isNotEmpty ?? false)
-              measApi.guardarMedicion('air', activeSessionId, buffers['air']!),
+              measApi.saveMeasurement('air', activeSessionId, buffers['air']!),
           ]);
         } catch (e) {
           debugPrint('Error al guardar mediciones en backend: $e');
@@ -133,7 +133,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
         // Obtener el summary real del backend
         SessionSummary summary;
         try {
-          summary = await sessionApi.obtenerResumenSesion(activeSessionId);
+          summary = await sessionApi.getSessionSummary(activeSessionId);
         } catch (e) {
           debugPrint(
             'Error al obtener resumen de sesión del backend: $e. Usando valores por defecto.',
@@ -164,17 +164,17 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           barrierDismissible: false,
           builder: (dialogCtx) {
             return SaveSessionDialog(
-              segundosGrabacion: _segundosGrabacion,
-              fcProm: summary.avgBpm.round(),
-              fcMin: summary.minBpm.round(),
-              fcMax: summary.maxBpm.round(),
-              co2Prom: summary.avgAir.round(),
-              co2Min: summary.minAir.round(),
-              co2Max: summary.maxAir.round(),
+              durationSeconds: _recordingSeconds,
+              avgBpm: summary.avgBpm.round(),
+              minBpm: summary.minBpm.round(),
+              maxBpm: summary.maxBpm.round(),
+              avgCo2: summary.avgAir.round(),
+              minCo2: summary.minAir.round(),
+              maxCo2: summary.maxAir.round(),
               alertCount: summary.alertCount,
               onCancel: () async {
                 try {
-                  await sessionApi.eliminarSesion(activeSessionId);
+                  await sessionApi.deleteSession(activeSessionId);
                 } catch (e) {
                   debugPrint('Error al descartar sesión: $e');
                 }
@@ -192,29 +192,26 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                         const Center(child: CircularProgressIndicator()),
                   );
 
-                  await sessionApi.finalizarSesion(
-                    activeSessionId,
-                    notes: notas,
-                  );
+                  await sessionApi.endSession(activeSessionId, notes: notas);
 
-                  // Construir el RegistroMedicion con datos reales
-                  final registro = RegistroMedicion(
+                  // Construir el MeasurementRecord con datos reales
+                  final record = MeasurementRecord(
                     id: activeSessionId.toString(),
-                    usuarioId: usuarioActivo.id,
-                    fechaRegistro: DateTime.now(),
-                    duracionSegundos: _segundosGrabacion,
-                    frecuenciaCardiaca: summary.avgBpm.round(),
-                    minFrecuenciaCardiaca: summary.minBpm.round(),
-                    maxFrecuenciaCardiaca: summary.maxBpm.round(),
-                    nivelCo2: summary.avgAir.round(),
+                    userId: activeUser.id,
+                    registeredAt: DateTime.now(),
+                    durationSeconds: _recordingSeconds,
+                    heartRate: summary.avgBpm.round(),
+                    minHeartRate: summary.minBpm.round(),
+                    maxHeartRate: summary.maxBpm.round(),
+                    co2Level: summary.avgAir.round(),
                     minCo2: summary.minAir.round(),
                     maxCo2: summary.maxAir.round(),
-                    alertasDisparadas: summary.alertCount,
-                    notasClinicas: notas,
+                    alertsTriggered: summary.alertCount,
+                    clinicalNotes: notas,
                   );
                   await ref
-                      .read(notificadorHistorialProvider.notifier)
-                      .guardarRegistro(registro);
+                      .read(historyNotifierProvider.notifier)
+                      .saveRecord(record);
 
                   if (dialogCtx.mounted) {
                     Navigator.of(
@@ -233,7 +230,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           'Sesión de medición guardada con éxito',
                           style: TextStyle(color: Colors.white),
                         ),
-                        backgroundColor: ColoresSensores.statusConectado,
+                        backgroundColor: SensorColors.statusConnected,
                       ),
                     );
                   }
@@ -246,7 +243,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                     ).pop(); // Quitar loading en error
                   }
                 } finally {
-                  // _grabando = false is handled at start
+                  // _isRecording = false is handled at start
                 }
               },
             );
@@ -270,7 +267,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     }
   }
 
-  String _formatearTiempo(int segs) {
+  String _formatTime(int segs) {
     final minutos = segs ~/ 60;
     final segundos = segs % 60;
     return '${minutos.toString().padLeft(2, '0')}:${segundos.toString().padLeft(2, '0')}';
@@ -279,45 +276,45 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-    final usuarioActivo = ref.watch(notificadorUsuariosProvider).usuarioActivo;
-    final estadoConexion = ref.watch(notificadorConexionProvider);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeUser = ref.watch(usersNotifierProvider).activeUser;
+    final connectionState = ref.watch(connectionNotifierProvider);
 
     // Escuchamos reactivamente los cambios de conexión para inicializar el origen de datos adecuado
-    ref.listen<EstadoConexionBackend>(notificadorConexionProvider, (
+    ref.listen<BackendConnectionState>(connectionNotifierProvider, (
       prev,
       next,
     ) {
-      if ((prev == null || prev.cargando) && !next.cargando) {
-        final notifier = ref.read(notificadorSignosVitalesProvider.notifier);
-        final ws = ref.read(notificadorConexionProvider.notifier).wsService;
-        notifier.iniciarConWebSocket(ws.packetStream);
+      if ((prev == null || prev.isLoading) && !next.isLoading) {
+        final notifier = ref.read(vitalSignsNotifierProvider.notifier);
+        final ws = ref.read(connectionNotifierProvider.notifier).wsService;
+        notifier.startWithWebSocket(ws.packetStream);
       }
     });
 
     final frecuenciaCardiaca = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.frecuenciaCardiaca),
+      vitalSignsNotifierProvider.select((s) => s.heartRate),
     );
     final nivelCo2 = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.nivelCo2),
+      vitalSignsNotifierProvider.select((s) => s.co2Level),
     );
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final esMobile = constraints.maxWidth < Breakpoints.tablet;
 
-        final fcCard = TarjetaKpiVital(
-          titulo: 'Frecuencia Cardíaca',
-          valor: frecuenciaCardiaca == 0 ? '-' : '$frecuenciaCardiaca',
-          unidad: 'LPM',
-          colorAcento: ColoresSensores.ecgVerde,
+        final fcCard = VitalKpiCard(
+          title: 'Frecuencia Cardíaca',
+          value: frecuenciaCardiaca == 0 ? '-' : '$frecuenciaCardiaca',
+          unit: 'LPM',
+          accentColor: SensorColors.ecgGreen,
         );
 
-        final co2Card = TarjetaKpiVital(
-          titulo: 'Dióxido de Carbono',
-          valor: nivelCo2 == 0 ? '-' : '$nivelCo2',
-          unidad: 'ppm',
-          colorAcento: ColoresSensores.co2Amarillo,
+        final co2Card = VitalKpiCard(
+          title: 'Dióxido de Carbono',
+          value: nivelCo2 == 0 ? '-' : '$nivelCo2',
+          unit: 'ppm',
+          accentColor: SensorColors.co2Yellow,
         );
 
         Widget gridContent;
@@ -332,7 +329,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 height: 250,
                 child: Card(
                   clipBehavior: Clip.antiAlias,
-                  child: const GraficoEcg(expandir: true),
+                  child: const EcgChart(expand: true),
                 ),
               ),
               const SizedBox(height: 24),
@@ -342,7 +339,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                 height: 250,
                 child: Card(
                   clipBehavior: Clip.antiAlias,
-                  child: const GraficoCo2(expandir: true),
+                  child: const Co2Chart(expand: true),
                 ),
               ),
             ],
@@ -359,7 +356,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       flex: 7,
                       child: Card(
                         clipBehavior: Clip.antiAlias,
-                        child: const GraficoEcg(expandir: true),
+                        child: const EcgChart(expand: true),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -376,7 +373,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       flex: 7,
                       child: Card(
                         clipBehavior: Clip.antiAlias,
-                        child: const GraficoCo2(expandir: true),
+                        child: const Co2Chart(expand: true),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -393,13 +390,13 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           children: [
             // Header componentizado
             DashboardHeader(
-              esOscuro: esOscuro,
-              tieneUsuarioActivo: usuarioActivo != null,
-              grabando: _grabando,
-              tiempoFormateado: _formatearTiempo(_segundosGrabacion),
-              estadoConexion: estadoConexion,
-              onStartRecording: _iniciarGrabacion,
-              onStopRecording: _detenerYGuardar,
+              isDark: isDark,
+              hasActiveUser: activeUser != null,
+              isRecording: _isRecording,
+              formattedTime: _formatTime(_recordingSeconds),
+              connectionState: connectionState,
+              onStartRecording: _startRecording,
+              onStopRecording: _stopAndSave,
             ),
             const SizedBox(height: 24),
 

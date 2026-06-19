@@ -19,14 +19,14 @@ class _EcgChartData {
   const _EcgChartData({required this.spots, required this.scale});
 }
 
-double _mediana(List<double> valores) {
+double _median(List<double> valores) {
   final ordenados = List<double>.of(valores)..sort();
   final medio = ordenados.length ~/ 2;
   if (ordenados.length.isOdd) return ordenados[medio];
   return (ordenados[medio - 1] + ordenados[medio]) / 2;
 }
 
-_EcgScale _calcularEscalaNormalizada(List<FlSpot> spots) {
+_EcgScale _calculateNormalizedScale(List<FlSpot> spots) {
   const escalaNormalizada = _EcgScale(minY: -30, maxY: 100);
   if (spots.isEmpty) return escalaNormalizada;
 
@@ -53,12 +53,12 @@ _EcgScale _calcularEscalaNormalizada(List<FlSpot> spots) {
   return _EcgScale(minY: minY, maxY: maxY);
 }
 
-_EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
-  final primerDatoAdc = datos.indexWhere((punto) => punto.y.abs() > 200);
+_EcgChartData _prepareEcgData(List<BiometricPoint> data) {
+  final primerDatoAdc = data.indexWhere((punto) => punto.y.abs() > 200);
   final ecgCrudoAdc = primerDatoAdc >= 0;
   final datosGrafico = ecgCrudoAdc && primerDatoAdc > 0
-      ? datos.sublist(primerDatoAdc)
-      : datos;
+      ? data.sublist(primerDatoAdc)
+      : data;
 
   if (!ecgCrudoAdc) {
     final spots = datosGrafico
@@ -66,10 +66,7 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
         .toList();
     spots.sort((a, b) => a.x.compareTo(b.x));
 
-    return _EcgChartData(
-      spots: spots,
-      scale: _calcularEscalaNormalizada(spots),
-    );
+    return _EcgChartData(spots: spots, scale: _calculateNormalizedScale(spots));
   }
 
   final puntosValidos = datosGrafico
@@ -82,7 +79,7 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
     );
   }
 
-  final lineaBase = _mediana(
+  final lineaBase = _median(
     puntosValidos.map((p) => p.y).toList(growable: false),
   );
   final spots = <FlSpot>[];
@@ -104,35 +101,33 @@ _EcgChartData _prepararDatosEcg(List<PuntoBiometrico> datos) {
 }
 
 /// Widget de gráfico de Frecuencia Cardíaca (ECG) en tiempo real.
-class GraficoEcg extends ConsumerWidget {
-  final bool expandir;
-  const GraficoEcg({super.key, this.expandir = false});
+class EcgChart extends ConsumerWidget {
+  final bool expand;
+  const EcgChart({super.key, this.expand = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final datos = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.ecgDatos),
+    final data = ref.watch(vitalSignsNotifierProvider.select((s) => s.ecgData));
+    final ecgActive = ref.watch(
+      vitalSignsNotifierProvider.select((s) => s.isEcgActive),
     );
-    final ecgActivo = ref.watch(
-      notificadorSignosVitalesProvider.select((s) => s.ecgActivo),
-    );
-    final chartData = _prepararDatosEcg(datos);
+    final chartData = _prepareEcgData(data);
 
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == Brightness.dark;
 
-    final colorFondoHeader = esOscuro
-        ? ColoresComponentes.graficoHeaderOscuro
-        : ColoresComponentes.graficoHeaderClaro;
-    final colorFondoGrafico = esOscuro
-        ? ColoresComponentes.graficoCuerpoOscuro
-        : ColoresComponentes.graficoCuerpoClaro;
-    final colorRejilla = esOscuro
-        ? ColoresComponentes.graficoRejillaOscuro
-        : ColoresComponentes.graficoRejillaClaro;
-    final colorLinea = esOscuro
-        ? ColoresSensores.ecgVerde
-        : ColoresComponentes.sensorEcgClaro;
+    final colorFondoHeader = isDark
+        ? ComponentColors.chartHeaderDark
+        : ComponentColors.chartHeaderLight;
+    final colorFondoGrafico = isDark
+        ? ComponentColors.chartBodyDark
+        : ComponentColors.chartBodyLight;
+    final colorRejilla = isDark
+        ? ComponentColors.chartGridDark
+        : ComponentColors.chartGridLight;
+    final colorLinea = isDark
+        ? SensorColors.spo2Blue
+        : ComponentColors.sensorSpo2Light;
 
     final chartWidget = Container(
       width: double.infinity,
@@ -179,10 +174,10 @@ class GraficoEcg extends ConsumerWidget {
               duration: Duration.zero,
             ),
           ),
-          if (!ecgActivo)
+          if (!ecgActive)
             Positioned.fill(
               child: Container(
-                color: esOscuro
+                color: isDark
                     ? Colors.black87.withValues(alpha: 0.8)
                     : Colors.white.withValues(alpha: 0.9),
                 child: Center(
@@ -242,10 +237,10 @@ class GraficoEcg extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Frecuencia Cardíaca (ECG)',
+                  'Electrocardiograma (ECG)',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18.0,
+                    fontSize: 24.0,
                     fontWeight: FontWeight.bold,
                     color: colorLinea,
                   ),
@@ -256,7 +251,7 @@ class GraficoEcg extends ConsumerWidget {
         ),
 
         // Área del gráfico
-        expandir
+        expand
             ? Expanded(child: chartWidget)
             : SizedBox(height: 110, child: chartWidget),
       ],

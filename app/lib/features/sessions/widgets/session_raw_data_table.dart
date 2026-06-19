@@ -18,7 +18,7 @@ class SessionRawDataTable extends ConsumerStatefulWidget {
 }
 
 class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
-  bool _cargando = true;
+  bool _isLoading = true;
   String? _error;
   List<Sample> _bpmSamples = [];
   List<Sample> _ecgSamples = [];
@@ -34,7 +34,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
     _bpmScrollController = ScrollController();
     _ecgScrollController = ScrollController();
     _airScrollController = ScrollController();
-    _cargarDatos();
+    _loadData();
   }
 
   @override
@@ -45,9 +45,9 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
     super.dispose();
   }
 
-  Future<void> _cargarDatos() async {
+  Future<void> _loadData() async {
     setState(() {
-      _cargando = true;
+      _isLoading = true;
       _error = null;
     });
 
@@ -55,18 +55,18 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
       final measApi = ref.read(measurementApiServiceProvider);
 
       final results = await Future.wait([
-        measApi.obtenerMedicionesPorSesion('bpm', widget.sessionId),
-        measApi.obtenerMedicionesPorSesion('ecg', widget.sessionId),
-        measApi.obtenerMedicionesPorSesion('air', widget.sessionId),
+        measApi.getMeasurementsBySession('bpm', widget.sessionId),
+        measApi.getMeasurementsBySession('ecg', widget.sessionId),
+        measApi.getMeasurementsBySession('air', widget.sessionId),
       ]);
 
       final bpmMeasurements = results[0];
       final ecgMeasurements = results[1];
       final airMeasurements = results[2];
 
-      final bpmSamples = bpmMeasurements.expand((m) => m.datos).toList();
-      final ecgSamples = ecgMeasurements.expand((m) => m.datos).toList();
-      final airSamples = airMeasurements.expand((m) => m.datos).toList();
+      final bpmSamples = bpmMeasurements.expand((m) => m.samples).toList();
+      final ecgSamples = ecgMeasurements.expand((m) => m.samples).toList();
+      final airSamples = airMeasurements.expand((m) => m.samples).toList();
 
       // Ordenar por timestamp cronológicamente
       bpmSamples.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -78,20 +78,20 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
           _bpmSamples = bpmSamples;
           _ecgSamples = ecgSamples;
           _airSamples = airSamples;
-          _cargando = false;
+          _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _error = 'Error al cargar datos crudos: $e';
-          _cargando = false;
+          _isLoading = false;
         });
       }
     }
   }
 
-  String _formatearTimestamp(int timestamp) {
+  String _formatTimestamp(int timestamp) {
     final dt = DateTime.fromMillisecondsSinceEpoch(
       timestamp < 1000000000000 ? timestamp * 1000 : timestamp,
     ).toLocal();
@@ -103,7 +103,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    if (_cargando) {
+    if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
         child: Center(child: CircularProgressIndicator()),
@@ -126,7 +126,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
               ),
               const Gap(8),
               TextButton.icon(
-                onPressed: _cargarDatos,
+                onPressed: _loadData,
                 icon: const Icon(LucideIcons.refreshCw, size: 16),
                 label: const Text('Reintentar'),
               ),
@@ -335,7 +335,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                       Expanded(
                         flex: 1,
                         child: Text(
-                          _formatearTimestamp(sample.timestamp),
+                          _formatTimestamp(sample.timestamp),
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontFamily: 'monospace',

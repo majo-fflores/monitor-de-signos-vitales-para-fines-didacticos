@@ -17,8 +17,8 @@ void main() {
     group('Light Theme Contrast Ratios', () {
       test('Background vs Foreground contrast should meet WCAG AA (>= 4.5)', () {
         final ratio = calculateContrastRatio(
-          ColoresClaros.background,
-          ColoresClaros.foreground,
+          LightColors.background,
+          LightColors.foreground,
         );
         expect(
           ratio,
@@ -30,8 +30,8 @@ void main() {
 
       test('Card vs CardForeground contrast should meet WCAG AA (>= 4.5)', () {
         final ratio = calculateContrastRatio(
-          ColoresClaros.card,
-          ColoresClaros.cardForeground,
+          LightColors.card,
+          LightColors.cardForeground,
         );
         expect(
           ratio,
@@ -45,8 +45,8 @@ void main() {
         'Primary vs PrimaryForeground contrast should meet WCAG AA (>= 4.5)',
         () {
           final ratio = calculateContrastRatio(
-            ColoresClaros.primary,
-            ColoresClaros.primaryForeground,
+            LightColors.primary,
+            LightColors.primaryForeground,
           );
           expect(
             ratio,
@@ -61,8 +61,8 @@ void main() {
         'Sidebar vs SidebarForeground contrast should meet WCAG AA (>= 4.5)',
         () {
           final ratio = calculateContrastRatio(
-            ColoresClaros.sidebar,
-            ColoresClaros.sidebarForeground,
+            LightColors.sidebar,
+            LightColors.sidebarForeground,
           );
           expect(
             ratio,
@@ -77,8 +77,8 @@ void main() {
     group('Dark Theme Contrast Ratios', () {
       test('Background vs Foreground contrast should meet WCAG AA (>= 4.5)', () {
         final ratio = calculateContrastRatio(
-          ColoresOscuros.background,
-          ColoresOscuros.foreground,
+          DarkColors.background,
+          DarkColors.foreground,
         );
         expect(
           ratio,
@@ -90,8 +90,8 @@ void main() {
 
       test('Card vs CardForeground contrast should meet WCAG AA (>= 4.5)', () {
         final ratio = calculateContrastRatio(
-          ColoresOscuros.card,
-          ColoresOscuros.cardForeground,
+          DarkColors.card,
+          DarkColors.cardForeground,
         );
         expect(
           ratio,
@@ -105,8 +105,8 @@ void main() {
         'Primary vs PrimaryForeground contrast should meet WCAG AA (>= 4.5)',
         () {
           final ratio = calculateContrastRatio(
-            ColoresOscuros.primary,
-            ColoresOscuros.primaryForeground,
+            DarkColors.primary,
+            DarkColors.primaryForeground,
           );
           expect(
             ratio,
@@ -121,8 +121,8 @@ void main() {
         'Sidebar vs SidebarForeground contrast should meet WCAG AA (>= 4.5)',
         () {
           final ratio = calculateContrastRatio(
-            ColoresOscuros.sidebar,
-            ColoresOscuros.sidebarForeground,
+            DarkColors.sidebar,
+            DarkColors.sidebarForeground,
           );
           expect(
             ratio,
@@ -139,7 +139,7 @@ void main() {
         'Green Clinical Status vs White Background contrast should be readable',
         () {
           final ratio = calculateContrastRatio(
-            ColoresSensores.statusConectado,
+            SensorColors.statusConnected,
             Colors.white,
           );
           // Note: green on white is usually at least 2.5:1
@@ -156,7 +156,7 @@ void main() {
         'Red Critical Status vs White Background contrast should meet WCAG AA (>= 4.5)',
         () {
           final ratio = calculateContrastRatio(
-            ColoresSensores.criticoClaro,
+            SensorColors.criticalLight,
             Colors.white,
           );
           expect(

@@ -13,7 +13,7 @@ void main() {
             value: 450.0,
             accentColor: Colors.amber,
             size: 200.0,
-            esOscuro: true,
+            isDark: true,
           ),
         ),
       );
@@ -29,7 +29,7 @@ void main() {
             value: 800.0,
             accentColor: Colors.amber,
             size: 150.0,
-            esOscuro: false,
+            isDark: false,
           ),
         ),
       );

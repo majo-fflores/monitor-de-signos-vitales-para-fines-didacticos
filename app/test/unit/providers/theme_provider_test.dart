@@ -49,7 +49,7 @@ void main() {
       },
     );
 
-    test('cambiarTema should update state and persist value', () async {
+    test('changeTheme should update state and persist value', () async {
       SharedPreferences.setMockInitialValues({});
       final container = createContainer();
       // Listen to keep provider alive
@@ -59,14 +59,14 @@ void main() {
       // Wait for unawaited _initPrefs to finish
       await Future.delayed(const Duration(milliseconds: 50));
 
-      await notifier.cambiarTema(ThemeMode.light);
+      await notifier.changeTheme(ThemeMode.light);
       expect(container.read(themeNotifierProvider), equals(ThemeMode.light));
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('tema_modo_str'), equals('light'));
     });
 
-    test('alternarTema should toggle between light and dark', () async {
+    test('toggleTheme should toggle between light and dark', () async {
       SharedPreferences.setMockInitialValues({});
       final container = createContainer();
       // Listen to keep provider alive
@@ -77,11 +77,11 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 50));
 
       // Initially ThemeMode.system -> AlternarTema should toggle to ThemeMode.dark
-      await notifier.alternarTema();
+      await notifier.toggleTheme();
       expect(container.read(themeNotifierProvider), equals(ThemeMode.dark));
 
       // Alternar from dark should toggle to light
-      await notifier.alternarTema();
+      await notifier.toggleTheme();
       expect(container.read(themeNotifierProvider), equals(ThemeMode.light));
     });
   });

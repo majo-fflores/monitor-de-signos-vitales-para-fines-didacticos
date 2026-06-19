@@ -5,8 +5,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/constants/breakpoints.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/historial_provider.dart';
-import '../../../../shared/providers/usuario_provider.dart';
+import '../../../../shared/providers/history_provider.dart';
+import '../../../../shared/providers/user_provider.dart';
 import '../widgets/history_statistics_summary.dart';
 import '../widgets/session_history_row.dart';
 
@@ -21,17 +21,15 @@ class SessionsHistoryView extends ConsumerStatefulWidget {
 }
 
 class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
-  int? _filaExpandida;
+  int? _expandedRowIndex;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      final activo = ref.read(notificadorUsuariosProvider).usuarioActivo;
-      if (activo != null) {
-        ref
-            .read(notificadorHistorialProvider.notifier)
-            .cargarHistorial(activo.id);
+      final active = ref.read(usersNotifierProvider).activeUser;
+      if (active != null) {
+        ref.read(historyNotifierProvider.notifier).loadHistory(active.id);
       }
     });
   }
@@ -39,21 +37,21 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final esOscuro = theme.brightness == Brightness.dark;
-    final estadoHistorial = ref.watch(notificadorHistorialProvider);
-    final usuarioActivo = ref.watch(notificadorUsuariosProvider).usuarioActivo;
+    final isDark = theme.brightness == Brightness.dark;
+    final historyState = ref.watch(historyNotifierProvider);
+    final activeUser = ref.watch(usersNotifierProvider).activeUser;
 
-    if (usuarioActivo == null) {
+    if (activeUser == null) {
       return const Center(
         child: Text('No hay ningún usuario activo seleccionado.'),
       );
     }
 
-    if (estadoHistorial.cargando) {
+    if (historyState.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final registros = estadoHistorial.registros;
+    final records = historyState.records;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -68,34 +66,34 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                 'Historial de Sesiones',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: esOscuro
-                      ? ColoresOscuros.foreground
-                      : ColoresClaros.foreground,
+                  color: isDark
+                      ? DarkColors.foreground
+                      : LightColors.foreground,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'Historial clínico de ${usuarioActivo.nombre}',
+                'Historial clínico de ${activeUser.name}',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: esOscuro
-                      ? ColoresOscuros.mutedForeground
-                      : ColoresClaros.mutedForeground,
+                  color: isDark
+                      ? DarkColors.mutedForeground
+                      : LightColors.mutedForeground,
                 ),
               ),
               const Gap(24),
 
               // ── KPI strip componentizado ──
               HistoryStatisticsSummary(
-                registros: registros,
+                records: records,
                 theme: theme,
-                esOscuro: esOscuro,
+                isDark: isDark,
               ),
               const Gap(24),
 
               // ── Tabla compacta con filas expandibles ──
-              registros.isEmpty
-                  ? _buildEmptyState(theme, esOscuro)
-                  : _buildTable(theme, esOscuro, esMobile, registros),
+              records.isEmpty
+                  ? _buildEmptyState(theme, isDark)
+                  : _buildTable(theme, isDark, esMobile, records),
             ],
           ),
         );
@@ -103,7 +101,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme, bool esOscuro) {
+  Widget _buildEmptyState(ThemeData theme, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 64),
@@ -111,7 +109,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
         ),
       ),
       child: Column(
@@ -133,9 +131,9 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
           Text(
             'Inicie el monitoreo en el Dashboard para registrar mediciones.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: esOscuro
-                  ? ColoresOscuros.mutedForeground
-                  : ColoresClaros.mutedForeground,
+              color: isDark
+                  ? DarkColors.mutedForeground
+                  : LightColors.mutedForeground,
             ),
           ),
         ],
@@ -145,16 +143,16 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
 
   Widget _buildTable(
     ThemeData theme,
-    bool esOscuro,
+    bool isDark,
     bool esMobile,
-    List registros,
+    List records,
   ) {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
         ),
       ),
       child: Column(
@@ -164,7 +162,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: esOscuro
+              color: isDark
                   ? Colors.white.withValues(alpha: 0.02)
                   : Colors.black.withValues(alpha: 0.02),
               borderRadius: const BorderRadius.vertical(
@@ -177,14 +175,14 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                 const SizedBox(width: 28),
                 Expanded(
                   flex: 2,
-                  child: Text('Fecha', style: _headerStyle(theme, esOscuro)),
+                  child: Text('Fecha', style: _headerStyle(theme, isDark)),
                 ),
                 if (!esMobile) ...[
                   Expanded(
                     flex: 2,
                     child: Text(
                       'Duración',
-                      style: _headerStyle(theme, esOscuro),
+                      style: _headerStyle(theme, isDark),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -192,7 +190,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                     flex: 3,
                     child: Text(
                       'MÍN | PROM | MÁX (FC)',
-                      style: _headerStyle(theme, esOscuro),
+                      style: _headerStyle(theme, isDark),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -200,7 +198,7 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
                     flex: 3,
                     child: Text(
                       'MÍN | PROM | MÁX (CO2)',
-                      style: _headerStyle(theme, esOscuro),
+                      style: _headerStyle(theme, isDark),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -216,19 +214,19 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: registros.length,
+            itemCount: records.length,
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              final r = registros[index];
-              final expandida = _filaExpandida == index;
+              final r = records[index];
+              final isExpanded = _expandedRowIndex == index;
 
               return SessionHistoryRow(
-                registro: r,
+                record: r,
                 esMobile: esMobile,
-                expandida: expandida,
+                isExpanded: isExpanded,
                 onTap: () {
                   setState(() {
-                    _filaExpandida = expandida ? null : index;
+                    _expandedRowIndex = isExpanded ? null : index;
                   });
                 },
               );
@@ -239,13 +237,13 @@ class _SessionsHistoryViewState extends ConsumerState<SessionsHistoryView> {
     );
   }
 
-  TextStyle? _headerStyle(ThemeData theme, bool esOscuro) {
+  TextStyle? _headerStyle(ThemeData theme, bool isDark) {
     return theme.textTheme.bodyMedium?.copyWith(
       fontWeight: FontWeight.bold,
       fontSize: 17,
-      color: esOscuro
-          ? ColoresOscuros.foreground.withValues(alpha: 0.9)
-          : ColoresClaros.foreground.withValues(alpha: 0.9),
+      color: isDark
+          ? DarkColors.foreground.withValues(alpha: 0.9)
+          : LightColors.foreground.withValues(alpha: 0.9),
     );
   }
 }

@@ -42,7 +42,7 @@ class Session {
   }
 
   /// Indica si la sesión ha finalizado.
-  bool get finalizada => endTime != null;
+  bool get isFinished => endTime != null;
 
   @override
   bool operator ==(Object other) =>

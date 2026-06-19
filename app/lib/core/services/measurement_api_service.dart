@@ -13,20 +13,20 @@ class MeasurementApiService {
     http.Client? client,
   }) : client = client ?? http.Client();
 
-  /// Guarda mediciones de un tipo específico para una sesión (POST /{tipo}).
-  /// [tipo] debe ser uno de: 'ecg', 'bpm', 'spo2', 'air'.
-  Future<Measurement> guardarMedicion(
-    String tipo,
+  /// Guarda mediciones de un tipo específico para una sesión (POST /{type}).
+  /// [type] debe ser uno de: 'ecg', 'bpm', 'spo2', 'air'.
+  Future<Measurement> saveMeasurement(
+    String type,
     int sessionId,
-    List<Sample> datos,
+    List<Sample> samples,
   ) async {
     try {
       final response = await client.post(
-        Uri.parse('$baseUrl/$tipo'),
+        Uri.parse('$baseUrl/$type'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'session_id': sessionId,
-          'datos': datos.map((d) => d.toJson()).toList(),
+          'datos': samples.map((d) => d.toJson()).toList(),
         }),
       );
 
@@ -35,22 +35,22 @@ class MeasurementApiService {
         return Measurement.fromJson(data);
       } else {
         throw Exception(
-          'Error al guardar medición de $tipo: Código ${response.statusCode}',
+          'Error al guardar medición de $type: Código ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Fallo al guardar medición de $tipo: $e');
+      throw Exception('Fallo al guardar medición de $type: $e');
     }
   }
 
-  /// Obtiene las mediciones de un tipo específico para una sesión (GET /sessions/:sessionId/{tipo}).
-  Future<List<Measurement>> obtenerMedicionesPorSesion(
-    String tipo,
+  /// Obtiene las mediciones de un tipo específico para una sesión (GET /sessions/:sessionId/{type}).
+  Future<List<Measurement>> getMeasurementsBySession(
+    String type,
     int sessionId,
   ) async {
     try {
       final response = await client.get(
-        Uri.parse('$baseUrl/sessions/$sessionId/$tipo'),
+        Uri.parse('$baseUrl/sessions/$sessionId/$type'),
       );
 
       if (response.statusCode == 200) {
@@ -60,24 +60,24 @@ class MeasurementApiService {
             .toList();
       } else {
         throw Exception(
-          'Error al obtener mediciones de $tipo para sesión $sessionId: Código ${response.statusCode}',
+          'Error al obtener mediciones de $type para sesión $sessionId: Código ${response.statusCode}',
         );
       }
     } catch (e) {
       throw Exception(
-        'Fallo al obtener mediciones de $tipo para sesión desde el backend: $e',
+        'Fallo al obtener mediciones de $type para sesión desde el backend: $e',
       );
     }
   }
 
-  /// Obtiene todas las mediciones de un tipo específico de un usuario (GET /users/:userId/{tipo}).
-  Future<List<Measurement>> obtenerMedicionesPorUsuario(
-    String tipo,
+  /// Obtiene todas las mediciones de un tipo específico de un usuario (GET /users/:userId/{type}).
+  Future<List<Measurement>> getMeasurementsByUser(
+    String type,
     int userId,
   ) async {
     try {
       final response = await client.get(
-        Uri.parse('$baseUrl/users/$userId/$tipo'),
+        Uri.parse('$baseUrl/users/$userId/$type'),
       );
 
       if (response.statusCode == 200) {
@@ -87,28 +87,28 @@ class MeasurementApiService {
             .toList();
       } else {
         throw Exception(
-          'Error al obtener mediciones de $tipo para usuario $userId: Código ${response.statusCode}',
+          'Error al obtener mediciones de $type para usuario $userId: Código ${response.statusCode}',
         );
       }
     } catch (e) {
       throw Exception(
-        'Fallo al obtener mediciones de $tipo para usuario desde el backend: $e',
+        'Fallo al obtener mediciones de $type para usuario desde el backend: $e',
       );
     }
   }
 
-  /// Elimina una medición específica por ID (DELETE /{tipo}/:id).
-  Future<void> eliminarMedicion(String tipo, int id) async {
+  /// Elimina una medición específica por ID (DELETE /{type}/:id).
+  Future<void> deleteMeasurement(String type, int id) async {
     try {
-      final response = await client.delete(Uri.parse('$baseUrl/$tipo/$id'));
+      final response = await client.delete(Uri.parse('$baseUrl/$type/$id'));
 
       if (response.statusCode != 200) {
         throw Exception(
-          'Error al eliminar medición de $tipo con ID $id: Código ${response.statusCode}',
+          'Error al eliminar medición de $type con ID $id: Código ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Fallo al eliminar medición de $tipo en el backend: $e');
+      throw Exception('Fallo al eliminar medición de $type en el backend: $e');
     }
   }
 }

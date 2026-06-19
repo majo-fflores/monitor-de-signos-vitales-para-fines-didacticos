@@ -132,7 +132,7 @@ func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
 				}
 				continue
 			}
-			if sample.Value > 1000 {
+			if sample.Value > 1600 {
 				alerts++
 			}
 		}

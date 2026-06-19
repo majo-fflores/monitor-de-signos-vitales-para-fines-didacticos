@@ -5,17 +5,17 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  group('TarjetaKpiVital Widget Tests', () {
+  group('VitalKpiCard Widget Tests', () {
     testWidgets('should render title, value and unit correctly', (
       tester,
     ) async {
       await tester.pumpWidget(
         createTestableWidget(
-          child: const TarjetaKpiVital(
-            titulo: 'ECG',
-            valor: '72',
-            unidad: 'bpm',
-            colorAcento: Colors.green,
+          child: const VitalKpiCard(
+            title: 'ECG',
+            value: '72',
+            unit: 'bpm',
+            accentColor: Colors.green,
           ),
         ),
       );
@@ -24,19 +24,19 @@ void main() {
       expect(find.text('72'), findsOneWidget);
     });
 
-    testWidgets('should render dual fields when valorSecundario is provided', (
+    testWidgets('should render dual fields when secondaryValue is provided', (
       tester,
     ) async {
       await tester.pumpWidget(
         createTestableWidget(
-          child: const TarjetaKpiVital(
-            titulo: 'SpO2',
-            valor: '98',
-            unidad: '%',
-            colorAcento: Colors.blue,
-            tituloSecundario: 'PPG',
-            valorSecundario: '75',
-            unidadSecundaria: 'bpm',
+          child: const VitalKpiCard(
+            title: 'SpO2',
+            value: '98',
+            unit: '%',
+            accentColor: Colors.blue,
+            secondaryTitle: 'PPG',
+            secondaryValue: '75',
+            secondaryUnit: 'bpm',
           ),
         ),
       );

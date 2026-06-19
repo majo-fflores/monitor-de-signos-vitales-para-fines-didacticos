@@ -18,12 +18,12 @@ class AppSidebar extends StatelessWidget {
       width: 96,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: esOscuro ? ColoresOscuros.sidebar : ColoresClaros.sidebar,
+        color: esOscuro ? DarkColors.sidebar : LightColors.sidebar,
         border: Border(
           right: BorderSide(
             color: esOscuro
-                ? ColoresOscuros.sidebarBorder
-                : ColoresClaros.sidebarBorder,
+                ? DarkColors.sidebarBorder
+                : LightColors.sidebarBorder,
             width: 1,
           ),
         ),

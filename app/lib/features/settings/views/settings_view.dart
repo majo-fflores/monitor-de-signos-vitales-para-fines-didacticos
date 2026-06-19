@@ -14,13 +14,11 @@ class SettingsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final titleColor = isDark
-        ? ColoresOscuros.foreground
-        : ColoresClaros.foreground;
+    final titleColor = isDark ? DarkColors.foreground : LightColors.foreground;
     final subtitleColor = isDark
-        ? ColoresOscuros.mutedForeground
-        : ColoresClaros.mutedForeground;
-    final borderColor = isDark ? ColoresOscuros.border : ColoresClaros.border;
+        ? DarkColors.mutedForeground
+        : LightColors.mutedForeground;
+    final borderColor = isDark ? DarkColors.border : LightColors.border;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),

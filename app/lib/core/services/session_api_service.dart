@@ -17,7 +17,7 @@ class SessionApiService {
   }) : client = client ?? http.Client();
 
   /// Crea una nueva sesión para un usuario (POST /sessions).
-  Future<Session> crearSesion(int userId) async {
+  Future<Session> createSession(int userId) async {
     try {
       final response = await client.post(
         Uri.parse('$baseUrl/sessions'),
@@ -39,7 +39,7 @@ class SessionApiService {
   }
 
   /// Obtiene una sesión específica por ID (GET /sessions/:id).
-  Future<Session> obtenerSesion(int id) async {
+  Future<Session> getSession(int id) async {
     try {
       final response = await client.get(Uri.parse('$baseUrl/sessions/$id'));
 
@@ -57,7 +57,7 @@ class SessionApiService {
   }
 
   /// Obtiene todas las sesiones de un usuario específico (GET /users/:userId/sessions).
-  Future<List<Session>> obtenerSesionesDeUsuario(int userId) async {
+  Future<List<Session>> getSessionsByUser(int userId) async {
     try {
       final response = await client.get(
         Uri.parse('$baseUrl/users/$userId/sessions'),
@@ -83,7 +83,7 @@ class SessionApiService {
   }
 
   /// Finaliza una sesión (PUT /sessions/:id/end).
-  Future<void> finalizarSesion(int id, {String notes = ''}) async {
+  Future<void> endSession(int id, {String notes = ''}) async {
     try {
       final response = await client.put(
         Uri.parse('$baseUrl/sessions/$id/end'),
@@ -102,7 +102,7 @@ class SessionApiService {
   }
 
   /// Elimina una sesión por su ID (DELETE /sessions/:id).
-  Future<void> eliminarSesion(int id) async {
+  Future<void> deleteSession(int id) async {
     try {
       final response = await client.delete(Uri.parse('$baseUrl/sessions/$id'));
 
@@ -118,7 +118,7 @@ class SessionApiService {
 
   /// Obtiene todos los resúmenes de sesiones de un usuario (GET /users/:userId/session-summaries).
   /// Endpoint batch optimizado: 1 sola llamada HTTP.
-  Future<List<SessionWithSummary>> obtenerResumenesSesiones(int userId) async {
+  Future<List<SessionWithSummary>> getSessionSummaries(int userId) async {
     try {
       final response = await client.get(
         Uri.parse('$baseUrl/users/$userId/session-summaries'),
@@ -146,7 +146,7 @@ class SessionApiService {
 
   /// Obtiene el resumen de una sesión individual (GET /sessions/:id/summary).
   /// Se usa solo para el diálogo de fin de sesión.
-  Future<SessionSummary> obtenerResumenSesion(int sessionId) async {
+  Future<SessionSummary> getSessionSummary(int sessionId) async {
     try {
       final response = await client.get(
         Uri.parse('$baseUrl/sessions/$sessionId/summary'),
@@ -168,7 +168,7 @@ class SessionApiService {
   }
 
   /// Exporta los datos de una sesión en CSV y devuelve la ruta del archivo guardado.
-  Future<String> exportarSesionCsv(int sessionId) async {
+  Future<String> exportSessionCsv(int sessionId) async {
     try {
       final response = await client.get(
         Uri.parse('$baseUrl/sessions/$sessionId/export.csv'),

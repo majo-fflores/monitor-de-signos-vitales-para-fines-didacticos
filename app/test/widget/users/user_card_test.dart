@@ -6,19 +6,19 @@ import '../../helpers/test_data.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  group('TarjetaUsuario Widget Tests', () {
+  group('UserCard Widget Tests', () {
     testWidgets('should render user information and handle tap', (
       tester,
     ) async {
-      final user = TestData.usuario1;
+      final user = TestData.user1;
       bool tapped = false;
 
       await tester.pumpWidget(
         createTestableWidget(
-          child: TarjetaUsuario(
-            usuario: user,
-            esSeleccionado: false,
-            cantidadSesiones: 5,
+          child: UserCard(
+            user: user,
+            isSelected: false,
+            sessionCount: 5,
             onTap: () {
               tapped = true;
             },
@@ -41,15 +41,15 @@ void main() {
     testWidgets('should show dialog and call onDelete when confirmed', (
       tester,
     ) async {
-      final user = TestData.usuario1;
+      final user = TestData.user1;
       bool deleted = false;
 
       await tester.pumpWidget(
         createTestableWidget(
-          child: TarjetaUsuario(
-            usuario: user,
-            esSeleccionado: true,
-            cantidadSesiones: 0,
+          child: UserCard(
+            user: user,
+            isSelected: true,
+            sessionCount: 0,
             onTap: () {},
             onDelete: () {
               deleted = true;

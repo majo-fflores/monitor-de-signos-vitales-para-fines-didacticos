@@ -5,40 +5,37 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_helpers.dart';
 
-class MockVitalSignsNotifier extends NotificadorSignosVitales {
-  final EstadoSignosVitales _state;
+class MockVitalSignsNotifier extends VitalSignsNotifier {
+  final VitalSignsState _state;
   MockVitalSignsNotifier(this._state);
 
   @override
-  EstadoSignosVitales build() => _state;
+  VitalSignsState build() => _state;
 
   @override
-  void iniciarSimulacion() {}
+  void startSimulation() {}
 }
 
 void main() {
-  group('GraficoEcg Widget Tests', () {
+  group('EcgChart Widget Tests', () {
     testWidgets('should render ECG title and LineChart', (tester) async {
-      final mockState = EstadoSignosVitales.inicial().copiarCon(
-        ecgDatos: [
-          const PuntoBiometrico(0, 50),
-          const PuntoBiometrico(100, 60),
-        ],
-        ecgActivo: true,
+      final mockState = VitalSignsState.inicial().copiarCon(
+        ecgData: [const BiometricPoint(0, 50), const BiometricPoint(100, 60)],
+        isEcgActive: true,
       );
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(
+            vitalSignsNotifierProvider.overrideWith(
               () => MockVitalSignsNotifier(mockState),
             ),
           ],
-          child: const GraficoEcg(),
+          child: const EcgChart(),
         ),
       );
 
-      expect(find.text('Frecuencia Cardíaca (ECG)'), findsOneWidget);
+      expect(find.text('Electrocardiograma (ECG)'), findsOneWidget);
       expect(find.byType(LineChart), findsOneWidget);
       expect(find.text('SENSOR DESCONECTADO'), findsNothing);
     });
@@ -46,19 +43,19 @@ void main() {
     testWidgets('should render warning message when ECG is disconnected', (
       tester,
     ) async {
-      final mockState = EstadoSignosVitales.inicial().copiarCon(
-        ecgDatos: [],
-        ecgActivo: false,
+      final mockState = VitalSignsState.inicial().copiarCon(
+        ecgData: [],
+        isEcgActive: false,
       );
 
       await tester.pumpWidget(
         createTestableWidget(
           overrides: [
-            notificadorSignosVitalesProvider.overrideWith(
+            vitalSignsNotifierProvider.overrideWith(
               () => MockVitalSignsNotifier(mockState),
             ),
           ],
-          child: const GraficoEcg(),
+          child: const EcgChart(),
         ),
       );
 
@@ -68,25 +65,25 @@ void main() {
     testWidgets(
       'should center raw AD8232 ADC values to reveal QRS morphology',
       (tester) async {
-        final mockState = EstadoSignosVitales.inicial().copiarCon(
-          ecgDatos: [
-            const PuntoBiometrico(0, 0),
-            const PuntoBiometrico(1, 1814),
-            const PuntoBiometrico(2, 2261),
-            const PuntoBiometrico(3, 1744),
-            const PuntoBiometrico(4, 1183),
+        final mockState = VitalSignsState.inicial().copiarCon(
+          ecgData: [
+            const BiometricPoint(0, 0),
+            const BiometricPoint(1, 1814),
+            const BiometricPoint(2, 2261),
+            const BiometricPoint(3, 1744),
+            const BiometricPoint(4, 1183),
           ],
-          ecgActivo: true,
+          isEcgActive: true,
         );
 
         await tester.pumpWidget(
           createTestableWidget(
             overrides: [
-              notificadorSignosVitalesProvider.overrideWith(
+              vitalSignsNotifierProvider.overrideWith(
                 () => MockVitalSignsNotifier(mockState),
               ),
             ],
-            child: const GraficoEcg(),
+            child: const EcgChart(),
           ),
         );
 

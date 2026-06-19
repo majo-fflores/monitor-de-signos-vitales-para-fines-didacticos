@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/historial_alarmas_provider.dart';
+import '../../../../shared/providers/alarm_history_provider.dart';
 
 class AlarmHistoryCard extends ConsumerWidget {
   final Color subtitleColor;
@@ -15,68 +15,68 @@ class AlarmHistoryCard extends ConsumerWidget {
     required this.borderColor,
   });
 
-  String _formatearFecha(DateTime fecha) {
-    final ahora = DateTime.now();
-    final diferencia = ahora.difference(fecha);
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
 
-    final horaMin =
-        '${fecha.hour.toString().padLeft(2, '0')}:${fecha.minute.toString().padLeft(2, '0')}:${fecha.second.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
 
-    if (diferencia.inSeconds < 10) {
-      return 'Ahora mismo ($horaMin)';
-    } else if (diferencia.inSeconds < 60) {
-      return 'Hace ${diferencia.inSeconds} seg ($horaMin)';
-    } else if (diferencia.inMinutes < 60) {
-      return 'Hace ${diferencia.inMinutes} min ($horaMin)';
-    } else if (diferencia.inHours < 24) {
-      return 'Hoy a las $horaMin';
+    if (difference.inSeconds < 10) {
+      return 'Ahora mismo ($timeStr)';
+    } else if (difference.inSeconds < 60) {
+      return 'Hace ${difference.inSeconds} seg ($timeStr)';
+    } else if (difference.inMinutes < 60) {
+      return 'Hace ${difference.inMinutes} min ($timeStr)';
+    } else if (difference.inHours < 24) {
+      return 'Hoy a las $timeStr';
     } else {
-      final dia = fecha.day.toString().padLeft(2, '0');
-      final mes = fecha.month.toString().padLeft(2, '0');
-      return '$dia/$mes $horaMin';
+      final day = date.day.toString().padLeft(2, '0');
+      final month = date.month.toString().padLeft(2, '0');
+      return '$day/$month $timeStr';
     }
   }
 
-  IconData _obtenerIconoMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') ||
-        metrica.toLowerCase().contains('cardíaca')) {
+  IconData _getMetricIcon(String metric) {
+    if (metric.toLowerCase().contains('frecuencia') ||
+        metric.toLowerCase().contains('cardíaca')) {
       return LucideIcons.heart;
-    } else if (metrica.toLowerCase().contains('saturación') ||
-        metrica.toLowerCase().contains('oxígeno')) {
+    } else if (metric.toLowerCase().contains('saturación') ||
+        metric.toLowerCase().contains('oxígeno')) {
       return LucideIcons.droplets;
-    } else if (metrica.toLowerCase().contains('dióxido') ||
-        metrica.toLowerCase().contains('carbono') ||
-        metrica.toLowerCase().contains('co2')) {
+    } else if (metric.toLowerCase().contains('dióxido') ||
+        metric.toLowerCase().contains('carbono') ||
+        metric.toLowerCase().contains('co2')) {
       return LucideIcons.wind;
     }
     return LucideIcons.alertTriangle;
   }
 
-  Color _obtenerColorMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') ||
-        metrica.toLowerCase().contains('cardíaca')) {
-      return ColoresSensores.ecgVerde;
-    } else if (metrica.toLowerCase().contains('saturación') ||
-        metrica.toLowerCase().contains('oxígeno')) {
-      return ColoresSensores.spo2Azul;
-    } else if (metrica.toLowerCase().contains('dióxido') ||
-        metrica.toLowerCase().contains('carbono') ||
-        metrica.toLowerCase().contains('co2')) {
-      return ColoresSensores.co2Amarillo;
+  Color _getMetricColor(String metric) {
+    if (metric.toLowerCase().contains('frecuencia') ||
+        metric.toLowerCase().contains('cardíaca')) {
+      return SensorColors.ecgGreen;
+    } else if (metric.toLowerCase().contains('saturación') ||
+        metric.toLowerCase().contains('oxígeno')) {
+      return SensorColors.spo2Blue;
+    } else if (metric.toLowerCase().contains('dióxido') ||
+        metric.toLowerCase().contains('carbono') ||
+        metric.toLowerCase().contains('co2')) {
+      return SensorColors.co2Yellow;
     }
     return Colors.red;
   }
 
-  String _obtenerUnidadMetrica(String metrica) {
-    if (metrica.toLowerCase().contains('frecuencia') ||
-        metrica.toLowerCase().contains('cardíaca')) {
+  String _getMetricUnit(String metric) {
+    if (metric.toLowerCase().contains('frecuencia') ||
+        metric.toLowerCase().contains('cardíaca')) {
       return 'LPM';
-    } else if (metrica.toLowerCase().contains('saturación') ||
-        metrica.toLowerCase().contains('oxígeno')) {
+    } else if (metric.toLowerCase().contains('saturación') ||
+        metric.toLowerCase().contains('oxígeno')) {
       return '%';
-    } else if (metrica.toLowerCase().contains('dióxido') ||
-        metrica.toLowerCase().contains('carbono') ||
-        metrica.toLowerCase().contains('co2')) {
+    } else if (metric.toLowerCase().contains('dióxido') ||
+        metric.toLowerCase().contains('carbono') ||
+        metric.toLowerCase().contains('co2')) {
       return 'PPM';
     }
     return '';
@@ -86,7 +86,7 @@ class AlarmHistoryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final historial = ref.watch(historialAlarmasProvider);
+    final history = ref.watch(alarmHistoryProvider);
 
     return Container(
       width: double.infinity,
@@ -112,12 +112,10 @@ class AlarmHistoryCard extends ConsumerWidget {
                   ),
                 ),
                 const Spacer(),
-                if (historial.isNotEmpty)
+                if (history.isNotEmpty)
                   IconButton(
                     onPressed: () {
-                      ref
-                          .read(historialAlarmasProvider.notifier)
-                          .limpiarHistorial();
+                      ref.read(alarmHistoryProvider.notifier).clearHistory();
                     },
                     icon: const Icon(LucideIcons.trash2, size: 18),
                     tooltip: 'Limpiar Historial',
@@ -131,7 +129,7 @@ class AlarmHistoryCard extends ConsumerWidget {
           const Divider(height: 1),
 
           // Cuerpo de la tarjeta
-          if (historial.isEmpty)
+          if (history.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -143,7 +141,7 @@ class AlarmHistoryCard extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: ColoresSensores.statusConectado.withValues(
+                        color: SensorColors.statusConnected.withValues(
                           alpha: 0.1,
                         ),
                         shape: BoxShape.circle,
@@ -151,7 +149,7 @@ class AlarmHistoryCard extends ConsumerWidget {
                       child: const Icon(
                         LucideIcons.shieldCheck,
                         size: 36,
-                        color: ColoresSensores.statusConectado,
+                        color: SensorColors.statusConnected,
                       ),
                     ),
                     const Gap(16),
@@ -177,10 +175,10 @@ class AlarmHistoryCard extends ConsumerWidget {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: historial.length > 5 ? 5 : historial.length,
+              itemCount: history.length > 5 ? 5 : history.length,
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final registro = historial[index];
+                final record = history[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -212,7 +210,7 @@ class AlarmHistoryCard extends ConsumerWidget {
                             ],
                           ),
                           Text(
-                            _formatearFecha(registro.fecha),
+                            _formatDate(record.timestamp),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: subtitleColor,
                             ),
@@ -223,10 +221,10 @@ class AlarmHistoryCard extends ConsumerWidget {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: registro.valores.entries.map((entry) {
-                          final colorMetrica = _obtenerColorMetrica(entry.key);
-                          final iconoMetrica = _obtenerIconoMetrica(entry.key);
-                          final unidad = _obtenerUnidadMetrica(entry.key);
+                        children: record.values.entries.map((entry) {
+                          final colorMetrica = _getMetricColor(entry.key);
+                          final iconoMetrica = _getMetricIcon(entry.key);
+                          final unidad = _getMetricUnit(entry.key);
 
                           return Container(
                             padding: const EdgeInsets.symmetric(
@@ -275,13 +273,13 @@ class AlarmHistoryCard extends ConsumerWidget {
               },
             ),
 
-          if (historial.length > 5) ...[
+          if (history.length > 5) ...[
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
                 child: Text(
-                  'Mostrando las últimas 5 de ${historial.length} alertas',
+                  'Mostrando las últimas 5 de ${history.length} alertas',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: subtitleColor,
                     fontStyle: FontStyle.italic,

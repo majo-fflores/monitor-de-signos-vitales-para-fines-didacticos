@@ -1,4 +1,4 @@
-import 'package:datavital_flutter/shared/providers/alarma_state.dart';
+import 'package:datavital_flutter/shared/providers/alarm_state.dart';
 import 'package:datavital_flutter/shared/providers/vital_signs_provider.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,12 +16,10 @@ void main() {
         final container = ProviderContainer();
 
         // Trigger loading of vital signs provider and connections
-        final notifier = container.read(
-          notificadorSignosVitalesProvider.notifier,
-        );
+        final notifier = container.read(vitalSignsNotifierProvider.notifier);
 
         // Start simulation which schedules periodic timers
-        notifier.iniciarSimulacion();
+        notifier.startSimulation();
 
         // Let some ticks execute
         async.elapse(const Duration(milliseconds: 100));
@@ -52,16 +50,14 @@ void main() {
         addTearDown(container.dispose);
 
         // Listen to the provider to keep it alive (prevent auto-dispose)
-        container.listen(notificadorAlarmaProvider, (_, __) {});
+        container.listen(alarmNotifierProvider, (_, __) {});
 
-        final alarmNotifier = container.read(
-          notificadorAlarmaProvider.notifier,
-        );
+        final alarmNotifier = container.read(alarmNotifierProvider.notifier);
         // Let async initialization of SharedPreferences finish
         async.elapse(const Duration(milliseconds: 100));
 
         // Monitorear critical values to trigger/fire the alarm count-down timer
-        alarmNotifier.monitorearValores(fc: 120, co2: 1200);
+        alarmNotifier.monitorValues(fc: 120, co2: 1200);
 
         // Let count-down start
         async.elapse(const Duration(seconds: 2));

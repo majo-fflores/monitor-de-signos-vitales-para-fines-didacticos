@@ -6,14 +6,14 @@ class Co2ThresholdBadge extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  final bool esOscuro;
+  final bool isDark;
 
   const Co2ThresholdBadge({
     super.key,
     required this.label,
     required this.value,
     required this.color,
-    required this.esOscuro,
+    required this.isDark,
   });
 
   @override
@@ -22,12 +22,12 @@ class Co2ThresholdBadge extends StatelessWidget {
       height: 96,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: esOscuro
-            ? ColoresComponentes.co2BadgeBgOscuro
-            : ColoresComponentes.co2BadgeBgClaro,
+        color: isDark
+            ? ComponentColors.co2BadgeBgDark
+            : ComponentColors.co2BadgeBgLight,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: esOscuro ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
           width: 1,
         ),
       ),
@@ -71,9 +71,7 @@ class Co2ThresholdBadge extends StatelessWidget {
                 fontSize: 16,
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w800,
-                color: esOscuro
-                    ? ColoresOscuros.foreground
-                    : ColoresClaros.foreground,
+                color: isDark ? DarkColors.foreground : LightColors.foreground,
               ),
             ),
           ),

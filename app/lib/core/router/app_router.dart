@@ -9,7 +9,7 @@ import '../../features/history/views/pdf_preview_view.dart';
 import '../../features/sessions/views/sessions_history_view.dart';
 import '../../features/settings/views/settings_view.dart';
 import '../../features/users/views/user_selection_view.dart';
-import '../../shared/providers/usuario_provider.dart';
+import '../../shared/providers/user_provider.dart';
 import '../../shared/utils/report_pdf_helper.dart';
 import '../../shared/widgets/layout/main_layout.dart';
 
@@ -18,7 +18,7 @@ import '../../shared/widgets/layout/main_layout.dart';
 class RouterRefreshListenable extends ChangeNotifier {
   RouterRefreshListenable(Ref ref) {
     ref.listen(
-      notificadorUsuariosProvider.select((s) => s.usuarioActivo),
+      usersNotifierProvider.select((s) => s.activeUser),
       (_, __) => notifyListeners(),
     );
   }
@@ -33,13 +33,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: listenable,
     redirect: (context, state) {
-      final usuariosState = ref.read(notificadorUsuariosProvider);
-      final usuarioActivo = usuariosState.usuarioActivo;
-      final enPantallaUsuarios = state.matchedLocation == '/usuarios';
+      final usersState = ref.read(usersNotifierProvider);
+      final activeUser = usersState.activeUser;
+      final enPantallaUsuarios = state.matchedLocation == '/users';
 
-      if (usuarioActivo == null) {
+      if (activeUser == null) {
         // Obligatorio ir a la pantalla de selección de usuario (evita mostrar el dashboard en carga)
-        return '/usuarios';
+        return '/users';
       }
 
       if (enPantallaUsuarios) {
@@ -52,7 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       // Ruta de selección de usuario (fuera del ShellRoute principal para no mostrar sidebar/header)
       GoRoute(
-        path: '/usuarios',
+        path: '/users',
         builder: (context, state) => const UserSelectionView(),
       ),
 
@@ -68,31 +68,31 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: DashboardView()),
           ),
           GoRoute(
-            path: '/historial',
+            path: '/history',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: HistoryView()),
             routes: [
               GoRoute(
                 path: 'preview-pdf',
                 builder: (context, state) {
-                  final datos = state.extra as ReporteDatos;
-                  return PdfPreviewView(datos: datos);
+                  final data = state.extra as ReportData;
+                  return PdfPreviewView(data: data);
                 },
               ),
             ],
           ),
           GoRoute(
-            path: '/sesiones',
+            path: '/sessions',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SessionsHistoryView()),
           ),
           GoRoute(
-            path: '/alertas',
+            path: '/alerts',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: AlertsView()),
           ),
           GoRoute(
-            path: '/configuracion',
+            path: '/settings',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SettingsView()),
           ),

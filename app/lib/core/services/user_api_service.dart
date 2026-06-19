@@ -1,28 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/usuario.dart';
+import '../models/user.dart';
 
 /// Servicio para comunicarse con los endpoints HTTP de usuarios en el backend Go.
-class UsuarioApiService {
+class UserApiService {
   final String baseUrl;
   final http.Client client;
 
-  UsuarioApiService({
-    this.baseUrl = 'http://localhost:8080',
-    http.Client? client,
-  }) : client = client ?? http.Client();
+  UserApiService({this.baseUrl = 'http://localhost:8080', http.Client? client})
+    : client = client ?? http.Client();
 
   /// Obtiene todos los usuarios desde el backend (GET /users).
-  Future<List<Usuario>> obtenerUsuarios() async {
+  Future<List<User>> getUsers() async {
     try {
       final response = await client.get(Uri.parse('$baseUrl/users'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data
-            .map(
-              (json) => Usuario.fromBackendJson(json as Map<String, dynamic>),
-            )
+            .map((json) => User.fromBackendJson(json as Map<String, dynamic>))
             .toList();
       } else {
         throw Exception(
@@ -35,8 +31,8 @@ class UsuarioApiService {
   }
 
   /// Crea un nuevo usuario en el backend (POST /users).
-  Future<Usuario> crearUsuario({
-    required String nombre,
+  Future<User> createUser({
+    required String name,
     required String email,
     required int dni,
   }) async {
@@ -44,14 +40,14 @@ class UsuarioApiService {
       final response = await client.post(
         Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'name': nombre, 'email': email, 'dni': dni}),
+        body: jsonEncode({'name': name, 'email': email, 'dni': dni}),
       );
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        return Usuario.fromBackendJson(data);
+        return User.fromBackendJson(data);
       } else {
-        final errorMsg = _obtenerMensajeError(response.body);
+        final errorMsg = _getErrorMessage(response.body);
         throw Exception(
           errorMsg ??
               'Error al crear usuario en el backend: Código ${response.statusCode}',
@@ -63,13 +59,13 @@ class UsuarioApiService {
   }
 
   /// Obtiene un usuario específico por su ID desde el backend (GET /users/:id).
-  Future<Usuario> obtenerUsuarioPorId(String id) async {
+  Future<User> getUserById(String id) async {
     try {
       final response = await client.get(Uri.parse('$baseUrl/users/$id'));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        return Usuario.fromBackendJson(data);
+        return User.fromBackendJson(data);
       } else {
         throw Exception(
           'Usuario no encontrado o error en el backend: Código ${response.statusCode}',
@@ -81,7 +77,7 @@ class UsuarioApiService {
   }
 
   /// Elimina un usuario por su ID en el backend (DELETE /users/:id).
-  Future<void> eliminarUsuario(String id) async {
+  Future<void> deleteUser(String id) async {
     try {
       final response = await client.delete(Uri.parse('$baseUrl/users/$id'));
 
@@ -95,7 +91,7 @@ class UsuarioApiService {
     }
   }
 
-  String? _obtenerMensajeError(String responseBody) {
+  String? _getErrorMessage(String responseBody) {
     try {
       final map = jsonDecode(responseBody) as Map<String, dynamic>;
       return map['error'] as String?;

@@ -3,64 +3,60 @@ import 'package:flutter/foundation.dart';
 /// Modelo inmutable de usuario del sistema.
 /// Se persiste localmente vía SharedPreferences como JSON serializado.
 @immutable
-class Usuario {
+class User {
   final String id;
-  final String nombre;
+  final String name;
   final String email;
   final int? dni;
-  final DateTime creadoEn;
+  final DateTime createdAt;
 
-  const Usuario({
+  const User({
     required this.id,
-    required this.nombre,
+    required this.name,
     required this.email,
     this.dni,
-    required this.creadoEn,
+    required this.createdAt,
   });
 
   /// Genera un ID único basado en timestamp + hash del nombre.
-  factory Usuario.crear({
-    required String nombre,
-    required String email,
-    int? dni,
-  }) {
+  factory User.crear({required String name, required String email, int? dni}) {
     final ahora = DateTime.now();
-    final id = '${ahora.millisecondsSinceEpoch}_${nombre.hashCode.abs()}';
-    return Usuario(
-      id: id,
-      nombre: nombre,
-      email: email,
-      dni: dni,
-      creadoEn: ahora,
-    );
+    final id = '${ahora.millisecondsSinceEpoch}_${name.hashCode.abs()}';
+    return User(id: id, name: name, email: email, dni: dni, createdAt: ahora);
   }
 
   /// Deserializa desde un Map JSON.
-  factory Usuario.fromJson(Map<String, dynamic> json) {
-    return Usuario(
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
       id: json['id'] as String,
-      nombre: json['nombre'] as String,
+      name: json['name'] as String? ?? json['nombre'] as String? ?? '',
       email: json['email'] as String? ?? '',
       dni: json['dni'] as int?,
-      creadoEn: DateTime.parse(json['creadoEn'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ??
+            json['creadoEn'] as String? ??
+            DateTime.now().toIso8601String(),
+      ),
     );
   }
 
   /// Deserializa desde el formato JSON del Backend.
-  factory Usuario.fromBackendJson(Map<String, dynamic> json) {
+  factory User.fromBackendJson(Map<String, dynamic> json) {
     final rawId = json['id'];
     final idStr = rawId is int ? rawId.toString() : (rawId?.toString() ?? '');
 
-    return Usuario(
+    return User(
       id: idStr,
-      nombre: json['name'] as String? ?? json['nombre'] as String? ?? '',
+      name: json['name'] as String? ?? json['nombre'] as String? ?? '',
       email: json['email'] as String? ?? '',
       dni: json['dni'] as int?,
-      creadoEn: json['created_at'] != null
+      createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : (json['creadoEn'] != null
                 ? DateTime.parse(json['creadoEn'] as String)
-                : DateTime.now()),
+                : (json['createdAt'] != null
+                      ? DateTime.parse(json['createdAt'] as String)
+                      : DateTime.now())),
     );
   }
 
@@ -68,21 +64,21 @@ class Usuario {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'nombre': nombre,
+      'name': name,
       'email': email,
       if (dni != null) 'dni': dni,
-      'creadoEn': creadoEn.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
   /// Convierte a formato JSON compatible con el Backend.
   Map<String, dynamic> toBackendJson() {
-    return {'name': nombre, 'email': email, if (dni != null) 'dni': dni};
+    return {'name': name, 'email': email, if (dni != null) 'dni': dni};
   }
 
   /// Obtiene las iniciales del nombre para mostrar en el avatar.
-  String get iniciales {
-    final trimNombre = nombre.trim();
+  String get initials {
+    final trimNombre = name.trim();
     if (trimNombre.isEmpty) return '?';
     final partes = trimNombre.split(RegExp(r'\s+'));
     if (partes.length >= 2) {
@@ -93,7 +89,7 @@ class Usuario {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Usuario && id == other.id;
+      identical(this, other) || other is User && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

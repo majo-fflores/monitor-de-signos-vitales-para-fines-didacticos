@@ -4,38 +4,38 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 /// Estructura de datos para pasar al generador de PDF.
-class ReporteDatos {
-  final String nombrePaciente;
-  final String dniPaciente;
-  final String duracionFormateada;
-  final String notasClinicas;
-  final int frecuenciaCardiaca;
-  final int minFrecuenciaCardiaca;
-  final int maxFrecuenciaCardiaca;
-  final int nivelCo2;
+class ReportData {
+  final String patientName;
+  final String patientDni;
+  final String formattedDuration;
+  final String clinicalNotes;
+  final int heartRate;
+  final int minHeartRate;
+  final int maxHeartRate;
+  final int co2Level;
   final int minCo2;
   final int maxCo2;
-  final DateTime fechaReporte;
+  final DateTime reportDate;
 
-  ReporteDatos({
-    required this.nombrePaciente,
-    required this.dniPaciente,
-    required this.duracionFormateada,
-    required this.notasClinicas,
-    required this.frecuenciaCardiaca,
-    required this.minFrecuenciaCardiaca,
-    required this.maxFrecuenciaCardiaca,
-    required this.nivelCo2,
+  ReportData({
+    required this.patientName,
+    required this.patientDni,
+    required this.formattedDuration,
+    required this.clinicalNotes,
+    required this.heartRate,
+    required this.minHeartRate,
+    required this.maxHeartRate,
+    required this.co2Level,
     required this.minCo2,
     required this.maxCo2,
-    required this.fechaReporte,
+    required this.reportDate,
   });
 }
 
 /// Helper encargado de maquetar el reporte PDF.
 class ReportPdfHelper {
   /// Genera los bytes del PDF a partir de los datos provistos.
-  static Future<Uint8List> generarPdf(ReporteDatos datos) async {
+  static Future<Uint8List> generatePdf(ReportData data) async {
     final pdf = pw.Document();
 
     // Cargamos la fuente Inter desde Google Fonts para dar soporte nativo a Unicode (tildes, eñes, etc.)
@@ -60,12 +60,10 @@ class ReportPdfHelper {
           final successGreen = PdfColor.fromHex('#10B981');
           final alertRed = PdfColor.fromHex('#D4183D');
 
-          final isFcCritica =
-              datos.frecuenciaCardiaca < 50 || datos.frecuenciaCardiaca > 120;
-          final isCo2Critico = datos.nivelCo2 > 800;
+          final isFcCritica = data.heartRate < 50 || data.heartRate > 120;
 
           final formatoFecha =
-              '${datos.fechaReporte.day.toString().padLeft(2, '0')}/${datos.fechaReporte.month.toString().padLeft(2, '0')}/${datos.fechaReporte.year} ${datos.fechaReporte.hour.toString().padLeft(2, '0')}:${datos.fechaReporte.minute.toString().padLeft(2, '0')}';
+              '${data.reportDate.day.toString().padLeft(2, '0')}/${data.reportDate.month.toString().padLeft(2, '0')}/${data.reportDate.year} ${data.reportDate.hour.toString().padLeft(2, '0')}:${data.reportDate.minute.toString().padLeft(2, '0')}';
 
           return pw.Padding(
             padding: const pw.EdgeInsets.all(32),
@@ -158,8 +156,8 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            datos.nombrePaciente.isNotEmpty
-                                ? datos.nombrePaciente
+                            data.patientName.isNotEmpty
+                                ? data.patientName
                                 : 'No especificado',
                             style: const pw.TextStyle(fontSize: 10),
                           ),
@@ -181,7 +179,7 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            datos.dniPaciente,
+                            data.patientDni,
                             style: const pw.TextStyle(fontSize: 10),
                           ),
                         ),
@@ -205,7 +203,7 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            datos.duracionFormateada,
+                            data.formattedDuration,
                             style: const pw.TextStyle(fontSize: 10),
                           ),
                         ),
@@ -308,27 +306,27 @@ class ReportPdfHelper {
                         ),
                       ],
                     ),
-                    // Fila ECG
+                    // Fila Frecuencia Cardíaca (BPM)
                     pw.TableRow(
                       children: [
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            'Frecuencia Cardíaca (ECG)',
+                            'Frecuencia Cardíaca (BPM)',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.minFrecuenciaCardiaca}',
+                            '${data.minHeartRate}',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.frecuenciaCardiaca}',
+                            '${data.heartRate}',
                             style: pw.TextStyle(
                               fontSize: 9,
                               fontWeight: pw.FontWeight.bold,
@@ -338,7 +336,7 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.maxFrecuenciaCardiaca}',
+                            '${data.maxHeartRate}',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
@@ -363,7 +361,7 @@ class ReportPdfHelper {
                       ],
                     ),
 
-                    // Fila CO2
+                    // Fila Electrocardiograma (ECG)
                     pw.TableRow(
                       decoration: const pw.BoxDecoration(
                         color: PdfColors.grey50,
@@ -372,21 +370,21 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            'Dióxido de Carbono (CO2)',
+                            'Electrocardiograma (ECG)',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.minCo2}',
+                            '—',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.nivelCo2}',
+                            'Activo',
                             style: pw.TextStyle(
                               fontSize: 9,
                               fontWeight: pw.FontWeight.bold,
@@ -396,23 +394,23 @@ class ReportPdfHelper {
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            '${datos.maxCo2}',
+                            '—',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            'ppm',
+                            '—',
                             style: const pw.TextStyle(fontSize: 9),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(8),
                           child: pw.Text(
-                            isCo2Critico ? 'MALA VENTILACIÓN' : 'NORMAL',
+                            'ESTABLE',
                             style: pw.TextStyle(
-                              color: isCo2Critico ? alertRed : successGreen,
+                              color: successGreen,
                               fontWeight: pw.FontWeight.bold,
                               fontSize: 8,
                             ),
@@ -444,12 +442,12 @@ class ReportPdfHelper {
                     ),
                   ),
                   child: pw.Text(
-                    datos.notasClinicas.isNotEmpty
-                        ? datos.notasClinicas
+                    data.clinicalNotes.isNotEmpty
+                        ? data.clinicalNotes
                         : 'Sin observaciones adicionales registradas por el personal de enfermería/médico.',
                     style: pw.TextStyle(
                       fontSize: 10,
-                      fontStyle: datos.notasClinicas.isEmpty
+                      fontStyle: data.clinicalNotes.isEmpty
                           ? pw.FontStyle.italic
                           : pw.FontStyle.normal,
                     ),

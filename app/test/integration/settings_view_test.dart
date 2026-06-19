@@ -1,4 +1,4 @@
-import 'package:datavital_flutter/core/services/servicio_audio.dart';
+import 'package:datavital_flutter/core/services/audio_service.dart';
 import 'package:datavital_flutter/features/settings/views/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,15 +11,15 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('SettingsView Integration Tests', () {
-    late MockServicioAudio mockAudio;
+    late MockAudioService mockAudio;
 
     setUp(() {
       SharedPreferences.setMockInitialValues({});
-      mockAudio = MockServicioAudio();
-      ServicioAudio.instancia = mockAudio;
-      when(() => mockAudio.iniciarAlarma(any())).thenAnswer((_) async {});
-      when(() => mockAudio.detenerAlarma()).thenAnswer((_) async {});
-      when(() => mockAudio.probarSonido(any())).thenAnswer((_) async {});
+      mockAudio = MockAudioService();
+      AudioService.instance = mockAudio;
+      when(() => mockAudio.startAlarm(any())).thenAnswer((_) async {});
+      when(() => mockAudio.stopAlarm()).thenAnswer((_) async {});
+      when(() => mockAudio.testSound(any())).thenAnswer((_) async {});
     });
 
     testWidgets(
@@ -72,8 +72,8 @@ void main() {
         await tester.tap(testBtnFinder);
         await tester.pumpAndSettle();
 
-        // Verify that mockAudio.probarSonido was called with 'alarma_urgente'
-        verify(() => mockAudio.probarSonido('alarma_urgente')).called(1);
+        // Verify that mockAudio.testSound was called with 'alarma_urgente'
+        verify(() => mockAudio.testSound('alarma_urgente')).called(1);
 
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();

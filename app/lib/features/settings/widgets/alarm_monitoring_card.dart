@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/services/servicio_audio.dart';
-import '../../../../shared/providers/alarma_state.dart';
+import '../../../../core/services/audio_service.dart';
+import '../../../../shared/providers/alarm_state.dart';
 
 class AlarmMonitoringCard extends ConsumerWidget {
   final Color subtitleColor;
@@ -18,8 +18,8 @@ class AlarmMonitoringCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final estadoAlarma = ref.watch(notificadorAlarmaProvider);
-    final notifierAlarma = ref.read(notificadorAlarmaProvider.notifier);
+    final alarmState = ref.watch(alarmNotifierProvider);
+    final alarmNotifier = ref.read(alarmNotifierProvider.notifier);
 
     return Container(
       width: double.infinity,
@@ -59,9 +59,9 @@ class AlarmMonitoringCard extends ConsumerWidget {
               subtitle: const Text(
                 'Dispara alertas visuales ante anomalías fisiológicas',
               ),
-              value: estadoAlarma.habilitada,
+              value: alarmState.isEnabled,
               onChanged: (val) {
-                notifierAlarma.cambiarHabilitacion(val);
+                alarmNotifier.toggleEnabled(val);
               },
               contentPadding: EdgeInsets.zero,
             ),
@@ -76,10 +76,10 @@ class AlarmMonitoringCard extends ConsumerWidget {
               subtitle: const Text(
                 'Emite un tono audible cuando se dispara una alarma crítica',
               ),
-              value: estadoAlarma.sonidoHabilitado,
-              onChanged: estadoAlarma.habilitada
+              value: alarmState.isSoundEnabled,
+              onChanged: alarmState.isEnabled
                   ? (val) {
-                      notifierAlarma.cambiarHabilitacionSonido(val);
+                      alarmNotifier.toggleSoundEnabled(val);
                     }
                   : null,
               contentPadding: EdgeInsets.zero,
@@ -111,12 +111,11 @@ class AlarmMonitoringCard extends ConsumerWidget {
                       borderSide: BorderSide(color: borderColor),
                     ),
                   ),
-                  initialValue: estadoAlarma.sonidoSeleccionado,
-                  onChanged:
-                      (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
+                  initialValue: alarmState.selectedSound,
+                  onChanged: (alarmState.isEnabled && alarmState.isSoundEnabled)
                       ? (val) {
                           if (val != null) {
-                            notifierAlarma.cambiarSonidoSeleccionado(val);
+                            alarmNotifier.changeSelectedSound(val);
                           }
                         }
                       : null,
@@ -140,11 +139,10 @@ class AlarmMonitoringCard extends ConsumerWidget {
               SizedBox(
                 height: 48,
                 child: FilledButton.icon(
-                  onPressed:
-                      (estadoAlarma.habilitada && estadoAlarma.sonidoHabilitado)
+                  onPressed: (alarmState.isEnabled && alarmState.isSoundEnabled)
                       ? () {
-                          ServicioAudio.instancia.probarSonido(
-                            estadoAlarma.sonidoSeleccionado,
+                          AudioService.instance.testSound(
+                            alarmState.selectedSound,
                           );
                         }
                       : null,

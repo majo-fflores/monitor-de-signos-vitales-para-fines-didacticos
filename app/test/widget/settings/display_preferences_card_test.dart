@@ -15,7 +15,7 @@ class MockThemeNotifier extends ThemeNotifier {
   ThemeMode? changedTheme;
 
   @override
-  Future<void> cambiarTema(ThemeMode modo) async {
+  Future<void> changeTheme(ThemeMode modo) async {
     changedTheme = modo;
   }
 }

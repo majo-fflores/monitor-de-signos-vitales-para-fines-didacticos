@@ -34,28 +34,28 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
     super.dispose();
   }
 
-  Color _obtenerColor(EstadoConexion estadoWs) {
-    switch (estadoWs) {
-      case EstadoConexion.conectado:
-        return ColoresSensores.statusConectado;
-      case EstadoConexion.conectando:
+  Color _getColor(ConnectionStatus wsStatus) {
+    switch (wsStatus) {
+      case ConnectionStatus.connected:
+        return SensorColors.statusConnected;
+      case ConnectionStatus.connecting:
         return Colors.amber;
-      case EstadoConexion.error:
+      case ConnectionStatus.error:
         return Colors.redAccent;
-      case EstadoConexion.desconectado:
+      case ConnectionStatus.disconnected:
         return Colors.grey.shade500;
     }
   }
 
-  String _obtenerTexto(EstadoConexion estadoWs) {
-    switch (estadoWs) {
-      case EstadoConexion.conectado:
+  String _getText(ConnectionStatus wsStatus) {
+    switch (wsStatus) {
+      case ConnectionStatus.connected:
         return 'Conectado';
-      case EstadoConexion.conectando:
+      case ConnectionStatus.connecting:
         return 'Conectando...';
-      case EstadoConexion.error:
+      case ConnectionStatus.error:
         return 'Desconectado'; // error se muestra como Desconectado por pedido del usuario
-      case EstadoConexion.desconectado:
+      case ConnectionStatus.disconnected:
         return 'Desconectado';
     }
   }
@@ -66,18 +66,18 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
     final isDark = theme.brightness == Brightness.dark;
 
     // Escuchamos el estado de conexión global
-    final estadoConexion = ref.watch(notificadorConexionProvider);
-    final color = _obtenerColor(estadoConexion.estadoWs);
-    final texto = _obtenerTexto(estadoConexion.estadoWs);
+    final connectionState = ref.watch(connectionNotifierProvider);
+    final color = _getColor(connectionState.wsStatus);
+    final text = _getText(connectionState.wsStatus);
 
     // Solo parpadea el LED si está conectado o conectando
-    final debeAnimar =
-        estadoConexion.estadoWs == EstadoConexion.conectado ||
-        estadoConexion.estadoWs == EstadoConexion.conectando;
+    final shouldAnimate =
+        connectionState.wsStatus == ConnectionStatus.connected ||
+        connectionState.wsStatus == ConnectionStatus.connecting;
 
-    if (!debeAnimar && _controller.isAnimating) {
+    if (!shouldAnimate && _controller.isAnimating) {
       _controller.stop();
-    } else if (debeAnimar && !_controller.isAnimating) {
+    } else if (shouldAnimate && !_controller.isAnimating) {
       _controller.repeat();
     }
 
@@ -99,7 +99,7 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (debeAnimar)
+                if (shouldAnimate)
                   ScaleTransition(
                     scale: Tween<double>(begin: 1.0, end: 2.2).animate(
                       CurvedAnimation(
@@ -135,7 +135,7 @@ class _ArduinoStatusState extends ConsumerState<ArduinoStatus>
           ),
           const SizedBox(width: 8),
           Text(
-            texto,
+            text,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,

@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../../../shared/providers/alarma_state.dart';
+import '../../../../shared/providers/alarm_state.dart';
 
 class ThresholdRangeSlider extends ConsumerStatefulWidget {
-  final String titulo;
-  final String unidad;
-  final IconData icono;
-  final Color colorAcento;
+  final String title;
+  final String unit;
+  final IconData icon;
+  final Color accentColor;
   final double min;
   final double max;
 
   const ThresholdRangeSlider({
     super.key,
-    required this.titulo,
-    required this.unidad,
-    required this.icono,
-    required this.colorAcento,
+    required this.title,
+    required this.unit,
+    required this.icon,
+    required this.accentColor,
     required this.min,
     required this.max,
   });
@@ -27,19 +27,19 @@ class ThresholdRangeSlider extends ConsumerStatefulWidget {
 }
 
 class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
-  RangeValues? _rangoLocal;
+  RangeValues? _localRange;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     // Obtenemos los valores iniciales del provider si no han sido cargados localmente
-    final umbrales = ref.read(
-      notificadorAlarmaProvider.select((s) => s.umbrales),
+    final thresholds = ref.read(
+      alarmNotifierProvider.select((s) => s.thresholds),
     );
-    final rangoActual =
-        _rangoLocal ??
-        RangeValues(umbrales.fcMin.toDouble(), umbrales.fcMax.toDouble());
+    final currentRange =
+        _localRange ??
+        RangeValues(thresholds.bpmMin.toDouble(), thresholds.bpmMax.toDouble());
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,11 +50,11 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
             Expanded(
               child: Row(
                 children: [
-                  Icon(widget.icono, color: widget.colorAcento, size: 20),
+                  Icon(widget.icon, color: widget.accentColor, size: 20),
                   const Gap(8),
                   Expanded(
                     child: Text(
-                      widget.titulo,
+                      widget.title,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -65,9 +65,9 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
             ),
             const Gap(16),
             Text(
-              '${rangoActual.start.round()} - ${rangoActual.end.round()} ${widget.unidad}',
+              '${currentRange.start.round()} - ${currentRange.end.round()} ${widget.unit}',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: widget.colorAcento,
+                color: widget.accentColor,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -75,30 +75,28 @@ class _ThresholdRangeSliderState extends ConsumerState<ThresholdRangeSlider> {
         ),
         const Gap(8),
         RangeSlider(
-          values: rangoActual,
+          values: currentRange,
           min: widget.min,
           max: widget.max,
-          activeColor: widget.colorAcento,
-          inactiveColor: widget.colorAcento.withValues(alpha: 0.2),
+          activeColor: widget.accentColor,
+          inactiveColor: widget.accentColor.withValues(alpha: 0.2),
           labels: RangeLabels(
-            '${rangoActual.start.round()}',
-            '${rangoActual.end.round()}',
+            '${currentRange.start.round()}',
+            '${currentRange.end.round()}',
           ),
           onChanged: (values) {
             setState(() {
-              _rangoLocal = values;
+              _localRange = values;
             });
             ref
-                .read(notificadorAlarmaProvider.notifier)
-                .actualizarUmbralesMemoria(
-                  fcMin: values.start.round(),
-                  fcMax: values.end.round(),
+                .read(alarmNotifierProvider.notifier)
+                .updateThresholdsInMemory(
+                  bpmMin: values.start.round(),
+                  bpmMax: values.end.round(),
                 );
           },
           onChangeEnd: (_) {
-            ref
-                .read(notificadorAlarmaProvider.notifier)
-                .guardarUmbralesEnDisco();
+            ref.read(alarmNotifierProvider.notifier).saveThresholdsToDisk();
           },
         ),
       ],

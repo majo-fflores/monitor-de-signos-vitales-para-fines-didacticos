@@ -9,7 +9,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/ws_packet.dart';
 
 /// Estado de conexión del WebSocket.
-enum EstadoConexion { desconectado, conectando, conectado, error }
+enum ConnectionStatus { disconnected, connecting, connected, error }
 
 /// Comando de control enviado al Isolate de fondo.
 class _IsolateCommand {
@@ -21,7 +21,7 @@ class _IsolateCommand {
 
 /// Mensaje de datos u holgura enviado desde el Isolate al hilo principal.
 class _IsolateMessage {
-  final EstadoConexion? status;
+  final ConnectionStatus? status;
   final String? packetJson;
   final String? error;
 
@@ -39,13 +39,13 @@ class WebSocketService {
 
   String? _currentUrl;
 
-  final _statusNotifier = ValueNotifier<EstadoConexion>(
-    EstadoConexion.desconectado,
+  final _statusNotifier = ValueNotifier<ConnectionStatus>(
+    ConnectionStatus.disconnected,
   );
   final _packetController = StreamController<WsPacket>.broadcast();
 
   /// Estado reactivo de la conexión.
-  ValueListenable<EstadoConexion> get status => _statusNotifier;
+  ValueListenable<ConnectionStatus> get status => _statusNotifier;
 
   /// Stream de paquetes entrantes del backend (parseados asíncronamente en el Isolate).
   Stream<WsPacket> get packetStream => _packetController.stream;
@@ -56,7 +56,7 @@ class WebSocketService {
   /// Establece conexión WebSocket con el backend mediante Isolate.
   Future<void> connect(String url) async {
     _currentUrl = url;
-    _statusNotifier.value = EstadoConexion.conectando;
+    _statusNotifier.value = ConnectionStatus.connecting;
 
     if (_isolate == null) {
       _receivePort = ReceivePort();
@@ -104,7 +104,7 @@ class WebSocketService {
 
   /// Desconecta intencionalmente del servidor.
   void disconnect() {
-    _statusNotifier.value = EstadoConexion.desconectado;
+    _statusNotifier.value = ConnectionStatus.disconnected;
     _commandPort?.send(_IsolateCommand('disconnect'));
   }
 
@@ -167,7 +167,7 @@ class WebSocketService {
     isolateConnect = (String url) {
       cleanup();
       intentionalDisconnect = false;
-      mainSendPort.send(_IsolateMessage(status: EstadoConexion.conectando));
+      mainSendPort.send(_IsolateMessage(status: ConnectionStatus.connecting));
 
       try {
         channel = WebSocketChannel.connect(Uri.parse(url));
@@ -175,7 +175,7 @@ class WebSocketService {
         channel!.ready
             .then((_) {
               mainSendPort.send(
-                _IsolateMessage(status: EstadoConexion.conectado),
+                _IsolateMessage(status: ConnectionStatus.connected),
               );
               reconnectAttempts = 0;
 
@@ -189,7 +189,7 @@ class WebSocketService {
                 onError: (err) {
                   mainSendPort.send(
                     _IsolateMessage(
-                      status: EstadoConexion.error,
+                      status: ConnectionStatus.error,
                       error: err.toString(),
                     ),
                   );
@@ -197,7 +197,7 @@ class WebSocketService {
                 },
                 onDone: () {
                   mainSendPort.send(
-                    _IsolateMessage(status: EstadoConexion.desconectado),
+                    _IsolateMessage(status: ConnectionStatus.disconnected),
                   );
                   if (!intentionalDisconnect) {
                     scheduleReconnect(url);
@@ -208,7 +208,7 @@ class WebSocketService {
             .catchError((err) {
               mainSendPort.send(
                 _IsolateMessage(
-                  status: EstadoConexion.error,
+                  status: ConnectionStatus.error,
                   error: 'Handshake fallido: $err',
                 ),
               );
@@ -217,7 +217,7 @@ class WebSocketService {
       } catch (e) {
         mainSendPort.send(
           _IsolateMessage(
-            status: EstadoConexion.error,
+            status: ConnectionStatus.error,
             error: 'Error al instanciar socket: $e',
           ),
         );
@@ -238,7 +238,7 @@ class WebSocketService {
             intentionalDisconnect = true;
             cleanup();
             mainSendPort.send(
-              _IsolateMessage(status: EstadoConexion.desconectado),
+              _IsolateMessage(status: ConnectionStatus.disconnected),
             );
             break;
           case 'dispose':

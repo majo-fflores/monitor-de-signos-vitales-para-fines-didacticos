@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../../core/models/registro_medicion.dart';
+import '../../../../core/models/measurement_record.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class PatientReportForm extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-  final TextEditingController nombreController;
-  final TextEditingController notasController;
-  final List<RegistroMedicion> sesiones;
-  final RegistroMedicion? sesionSeleccionada;
-  final ValueChanged<RegistroMedicion?> onSesionChanged;
-  final VoidCallback onGenerarReporte;
-  final VoidCallback onExportarCsv;
+  final TextEditingController nameController;
+  final TextEditingController notesController;
+  final List<MeasurementRecord> sessions;
+  final MeasurementRecord? selectedSession;
+  final ValueChanged<MeasurementRecord?> onSessionChanged;
+  final VoidCallback onGenerateReport;
+  final VoidCallback onExportCsv;
 
   const PatientReportForm({
     super.key,
     required this.formKey,
-    required this.nombreController,
-    required this.notasController,
-    required this.sesiones,
-    required this.sesionSeleccionada,
-    required this.onSesionChanged,
-    required this.onGenerarReporte,
-    required this.onExportarCsv,
+    required this.nameController,
+    required this.notesController,
+    required this.sessions,
+    required this.selectedSession,
+    required this.onSessionChanged,
+    required this.onGenerateReport,
+    required this.onExportCsv,
   });
 
   @override
@@ -32,14 +32,14 @@ class PatientReportForm extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    if (sesiones.isEmpty) {
+    if (sessions.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: theme.cardTheme.color,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? ColoresOscuros.border : ColoresClaros.border,
+            color: isDark ? DarkColors.border : LightColors.border,
           ),
         ),
         child: Column(
@@ -63,8 +63,8 @@ class PatientReportForm extends StatelessWidget {
               'Para generar un reporte clínico, primero debe registrar una sesión de monitoreo para el paciente actual desde el Dashboard.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: isDark
-                    ? ColoresOscuros.mutedForeground
-                    : ColoresClaros.mutedForeground,
+                    ? DarkColors.mutedForeground
+                    : LightColors.mutedForeground,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -142,7 +142,7 @@ class PatientReportForm extends StatelessWidget {
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? ColoresOscuros.border : ColoresClaros.border,
+          color: isDark ? DarkColors.border : LightColors.border,
         ),
       ),
       child: Form(
@@ -158,8 +158,8 @@ class PatientReportForm extends StatelessWidget {
             ),
             const Gap(16),
             // Dropdown de Sesiones
-            DropdownButtonFormField<RegistroMedicion>(
-              initialValue: sesionSeleccionada,
+            DropdownButtonFormField<MeasurementRecord>(
+              initialValue: selectedSession,
               decoration: InputDecoration(
                 labelText: 'Seleccionar Sesión Médica',
                 border: OutlineInputBorder(
@@ -170,16 +170,16 @@ class PatientReportForm extends StatelessWidget {
                   vertical: 12,
                 ),
               ),
-              items: sesiones.map((s) {
-                return DropdownMenuItem<RegistroMedicion>(
+              items: sessions.map((s) {
+                return DropdownMenuItem<MeasurementRecord>(
                   value: s,
                   child: Text(
-                    '${s.fechaFormateada} (${s.duracionFormateada})',
+                    '${s.formattedDate} (${s.formattedDuration})',
                     style: theme.textTheme.bodyMedium,
                   ),
                 );
               }).toList(),
-              onChanged: onSesionChanged,
+              onChanged: onSessionChanged,
               validator: (val) {
                 if (val == null) {
                   return 'Por favor seleccione una sesión';
@@ -189,7 +189,7 @@ class PatientReportForm extends StatelessWidget {
             ),
             const Gap(16),
             TextFormField(
-              controller: nombreController,
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Nombre Completo del Paciente',
                 hintText: 'Ej. Juan Pérez',
@@ -211,7 +211,7 @@ class PatientReportForm extends StatelessWidget {
 
             const Gap(16),
             TextFormField(
-              controller: notasController,
+              controller: notesController,
               maxLines: 4,
               decoration: InputDecoration(
                 labelText: 'Notas y Observaciones Clínicas',
@@ -237,7 +237,7 @@ class PatientReportForm extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: onGenerarReporte,
+                      onPressed: onGenerateReport,
                       icon: const Icon(Icons.picture_as_pdf, size: 20),
                       label: const Text(
                         'REPORTE PDF',
@@ -261,7 +261,7 @@ class PatientReportForm extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: onExportarCsv,
+                      onPressed: onExportCsv,
                       icon: const Icon(LucideIcons.download, size: 20),
                       label: const Text(
                         'EXPORTAR CSV',
