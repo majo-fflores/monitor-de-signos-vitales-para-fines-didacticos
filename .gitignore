@@ -61,3 +61,9 @@ backend/**/*.db-wal
 
 # Golden tests visual regression artifacts
 **/goldens/**/*.png
+
+# Build y Archivos generados
+# Build y Archivos generados
+/build/*
+!/build/justfile
+gorm.db

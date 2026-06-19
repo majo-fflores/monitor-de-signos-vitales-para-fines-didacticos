@@ -131,6 +131,7 @@ DataVital/
 | `just front-build-linux` | Compila release para Linux |
 | `just front-build-apk` | Compila APK para Android |
 | `just front-build-web` | Compila bundle de produccion web |
+| `just build-linux-appimage` | Compila Backend y Frontend, y genera AppImage para Linux |
 
 ---
 

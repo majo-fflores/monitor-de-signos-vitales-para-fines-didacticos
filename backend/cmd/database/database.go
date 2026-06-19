@@ -15,9 +15,16 @@ func InitDB() {
 	// Intentamos leer la ruta desde las variables de entorno (.env)
 	dbPath := os.Getenv("DB_PATH")
 
-	// Si no está definida en el .env, usamos "gorm.db" por defecto en la raíz
+	// Si no está definida en el .env, usamos ~/.datavital/gorm.db
 	if dbPath == "" {
-		dbPath = "gorm.db"
+		home, err := os.UserHomeDir()
+		if err == nil {
+			configDir := home + "/.datavital"
+			os.MkdirAll(configDir, 0755)
+			dbPath = configDir + "/gorm.db"
+		} else {
+			dbPath = "gorm.db"
+		}
 	}
 
 	var err error

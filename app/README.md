@@ -18,7 +18,8 @@ lib/
 │   ├── dashboard/         # Modulo de visualizacion en tiempo real
 │   ├── history/           # Modulo de historial clinico
 │   ├── sessions/          # Modulo de sesiones de medicion
-│   └── settings/          # Modulo de configuracion de umbrales
+│   ├── settings/          # Modulo de configuracion de umbrales
+│   └── users/             # Modulo de gestion de usuarios/pacientes
 └── shared/                # Recursos y logica compartida
     ├── providers/         # Providers globales (Riverpod)
     ├── utils/             # Helpers compartidos (pdf, etc)
