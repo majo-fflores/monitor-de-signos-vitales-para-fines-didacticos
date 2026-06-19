@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
@@ -19,6 +20,22 @@ import (
 )
 
 func main() {
+	// Configurar archivo de log permanente
+	var logFile *os.File
+	home, err := os.UserHomeDir()
+	if err == nil {
+		logDir := home + "/.datavital"
+		os.MkdirAll(logDir, 0755)
+		var logErr error
+		logFile, logErr = os.OpenFile(logDir+"/datavital-backend.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if logErr == nil {
+			log.SetOutput(logFile)
+			log.Println("═══════════════════════════════════════════════════════════")
+			log.Println(" Iniciando DataVital Backend")
+			log.Println("═══════════════════════════════════════════════════════════")
+		}
+	}
+
 	// Cargar variables de entorno desde el archivo .env si existe
 	if err := godotenv.Load(); err != nil {
 		log.Println("Aviso: No se pudo cargar el archivo .env, usando variables del entorno del sistema")
@@ -50,7 +67,11 @@ func main() {
 
 	serialPort := os.Getenv("SERIAL_PORT")
 	if serialPort == "" {
-		serialPort = "/dev/ttyUSB0"
+		if runtime.GOOS == "windows" {
+			serialPort = "COM3"
+		} else {
+			serialPort = "/dev/ttyUSB0"
+		}
 	}
 
 	source, err := sensors.NewSerialArduino(serialPort)

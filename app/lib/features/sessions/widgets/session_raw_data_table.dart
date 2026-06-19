@@ -4,6 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/models/measurement.dart';
 import '../../../shared/providers/session_provider.dart';
+import '../../../shared/providers/alarm_state.dart';
 
 /// Widget que carga bajo demanda y muestra en tablas scrollables los datos crudos
 /// de BPM, ECG y AIR para una sesión en particular.
@@ -102,6 +103,8 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final alarmState = ref.watch(alarmNotifierProvider);
+    final thresholds = alarmState.thresholds;
 
     if (_isLoading) {
       return const Padding(
@@ -214,7 +217,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                   _buildSensorTable(
                     _bpmSamples,
                     'BPM',
-                    (val) => val < 60 || val > 100,
+                    (val) => val < thresholds.bpmMin || val > thresholds.bpmMax,
                     'LPM',
                     _bpmScrollController,
                   ),
@@ -228,7 +231,7 @@ class _SessionRawDataTableState extends ConsumerState<SessionRawDataTable> {
                   _buildSensorTable(
                     _airSamples,
                     'AIR',
-                    (val) => val > 1000,
+                    (val) => val > thresholds.co2Max,
                     'ppm',
                     _airScrollController,
                   ),

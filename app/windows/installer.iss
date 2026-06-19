@@ -53,6 +53,8 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; --- Prevenir instalaciones concurrentes (mutex) ---
 SetupMutex=DataVitalSetupMutex
+AppMutex=Local\DataVitalSingleInstanceMutex
+UsedUserAreasWarning=no
 
 ; --- Gestión de aplicaciones en ejecución ---
 CloseApplications=yes
@@ -60,7 +62,7 @@ CloseApplicationsFilter=*.exe
 RestartApplications=yes
 
 ; --- Compilación y salida ---
-OutputDir=..\build\windows\x64\runner\Release
+OutputDir=..\..\build\windows\dist
 OutputBaseFilename=DataVital-Installer
 SetupIconFile=runner\resources\app_icon.ico
 Compression=lzma2
@@ -72,7 +74,6 @@ UninstallDisplayName={#AppName}
 
 ; --- Estilo visual moderno ---
 WizardStyle=modern
-WizardResizable=yes
 WizardSizePercent=120,120
 
 ; Assets visuales del wizard
@@ -91,9 +92,13 @@ spanish.WelcomeLabel1=Bienvenido al asistente de instalación de DataVital
 spanish.WelcomeLabel2=Este asistente guiará el proceso de instalación de DataVital en su sistema, la plataforma inteligente para el monitoreo, adquisición y visualización de bioseñales en tiempo real.%n%nSe recomienda cerrar todas las demás aplicaciones antes de continuar para asegurar una instalación sin conflictos.
 
 [Files]
-Source: "..\build\windows\x64\runner\Release\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\windows\x64\runner\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Frontend Flutter
+Source: "..\..\build\windows\dist\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\build\windows\dist\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\build\windows\dist\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Backend Go
+Source: "..\..\build\windows\dist\datavital-backend.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Iconos
 Source: "runner\resources\app_icon_shortcut.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
@@ -101,12 +106,23 @@ Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\app_icon_shortcut.ico"; Check: ShouldCreateDesktopIcon
 
 [Run]
+; Agregar excepción de firewall para que el backend pueda escuchar en localhost
+Filename: "netsh"; Parameters: "advfirewall firewall add rule name=""DataVital Backend"" dir=in action=allow program=""{app}\datavital-backend.exe"" enable=yes"; Flags: runhidden; StatusMsg: "Configurando firewall..."
 Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+; Eliminar la regla de firewall al desinstalar
+Filename: "netsh"; Parameters: "advfirewall firewall delete rule name=""DataVital Backend"""; Flags: runhidden; RunOnceId: "DeleteFirewallRule"
+; Asegurarse de que el backend esté detenido antes de borrar archivos
+Filename: "taskkill"; Parameters: "/F /IM datavital-backend.exe"; Flags: runhidden; RunOnceId: "KillBackend"
 
 [UninstallDelete]
 ; Limpiar archivos generados por la app en tiempo de ejecución
 Type: filesandordirs; Name: "{app}\data"
 Type: files; Name: "{app}\app_icon_shortcut.ico"
+Type: files; Name: "{app}\datavital-backend.exe"
+; Limpiar base de datos local creada por el backend
+Type: filesandordirs; Name: "{userdocs}\..\.datavital"
 
 [Code]
 var

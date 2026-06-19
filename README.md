@@ -132,27 +132,45 @@ DataVital/
 | `just front-build-apk` | Compila APK para Android |
 | `just front-build-web` | Compila bundle de produccion web |
 | `just build-linux-appimage` | Compila Backend y Frontend, y genera AppImage para Linux |
+| `just build-windows-exe` | Compila Backend y Frontend para Windows en `build/windows/dist/` |
+| `just build-windows-installer` | Genera el instalador completo con Inno Setup |
 
 ---
 
 ## Generacion del instalador (Windows)
 
-El instalador se genera con [Inno Setup 6](https://jrsoftware.org/isinfo.php) a partir del archivo `app/windows/installer.iss`.
+El instalador se genera con [Inno Setup 6](https://jrsoftware.org/isinfo.php). El proceso compila tanto el backend Go como el frontend Flutter y los empaqueta en un unico instalador.
 
-1. Compilar la aplicacion:
-   ```bash
-   just front-build-windows
-   ```
-2. Abrir **Inno Setup Compiler**, cargar `app/windows/installer.iss` y presionar `Ctrl+F9`.
-   - Alternativa por consola (si ISCC esta en el PATH): `ISCC app/windows/installer.iss`
+### Prerrequisitos
+
+- [GCC/MinGW](https://winlibs.com/) — Necesario para compilar el backend (CGO/SQLite)
+- [Inno Setup 6](https://jrsoftware.org/isinfo.php) — Solo para generar el instalador
+
+### Opcion 1: Comando unico (recomendado)
+
+```bash
+# Compila backend + frontend + genera instalador automaticamente
+just build-windows-installer
+```
+
+### Opcion 2: Paso a paso
+
+```bash
+# 1. Compilar backend y frontend
+just build-windows-exe
+
+# 2. Generar instalador con Inno Setup (manual)
+#    Abrir Inno Setup Compiler, cargar app/windows/installer.iss y Ctrl+F9
+#    O por consola: "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" app\windows\installer.iss
+```
 
 El instalador listo para distribuir se genera en:
 
 ```text
-app/build/windows/x64/runner/Release/DataVital-Installer.exe
+build/windows/dist/DataVital-Installer.exe
 ```
 
-Este unico archivo `.exe` contiene todo lo necesario para instalar la aplicacion. Es el archivo que se comparte con los usuarios finales.
+Este unico archivo `.exe` contiene el frontend Flutter, el backend Go y todo lo necesario para instalar la aplicacion. Al ejecutar DataVital, el backend se lanza automaticamente en segundo plano.
 
 ---
 

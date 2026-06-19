@@ -32,10 +32,54 @@ build-linux-appimage:
     rm -f appimagetool
     @echo "¡AppImage generado exitosamente en build/linux/DataVital-linux-x86_64.AppImage!"
 
-# Empaquetar ejecutable para Windows (A Implementar)
+# Compilar Backend + Frontend y ensamblar la distribución para Windows
 build-windows-exe:
-    @echo "Comando para compilar el instalador Inno Setup de Windows (Próximamente)"
+    @echo "═══════════════════════════════════════════════════════════"
+    @echo " DataVital - Build Windows (Backend + Frontend)"
+    @echo "═══════════════════════════════════════════════════════════"
+    @echo ""
+    @echo "[1/4] Compilando Backend (Go con CGO)..."
+    mkdir -p build/windows/dist
+    cd backend && CGO_ENABLED=1 go build -ldflags="-H windowsgui" -o ../build/windows/dist/datavital-backend.exe ./cmd/app
+    @echo "[2/4] Compilando Frontend (Flutter Windows release)..."
+    cd app && flutter build windows --release --obfuscate --split-debug-info=build/windows/symbols
+    @echo "[3/4] Ensamblando distribución..."
+    cp -r app/build/windows/x64/runner/Release/* build/windows/dist/
+    @echo "[4/4] Verificando archivos..."
+    @test -f build/windows/dist/DataVital.exe && echo "   ✓ DataVital.exe" || (echo "   ✗ DataVital.exe NO ENCONTRADO" && exit 1)
+    @test -f build/windows/dist/datavital-backend.exe && echo "   ✓ datavital-backend.exe" || (echo "   ✗ datavital-backend.exe NO ENCONTRADO" && exit 1)
+    @echo ""
+    @echo "═══════════════════════════════════════════════════════════"
+    @echo " ¡Build exitoso! Distribución en: build/windows/dist/"
+    @echo "═══════════════════════════════════════════════════════════"
+
+# Generar el instalador completo de Windows con Inno Setup (requiere Inno Setup 6)
+build-windows-installer: build-windows-exe
+    @echo ""
+    @echo "[+] Generando instalador con Inno Setup..."
+    @ISCC_PATH=""; \
+    for p in "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" "/c/Program Files/Inno Setup 6/ISCC.exe" "${LOCALAPPDATA}/Programs/Inno Setup 6/ISCC.exe" "/c/Users/luka-/AppData/Local/Programs/Inno Setup 6/ISCC.exe"; do \
+        if [ -f "$p" ]; then \
+            ISCC_PATH="$p"; \
+            break; \
+        fi; \
+    done; \
+    if [ -z "$ISCC_PATH" ]; then \
+        if command -v ISCC.exe >/dev/null 2>&1; then \
+            ISCC_PATH="ISCC.exe"; \
+        else \
+            echo "Error: No se encontró el compilador ISCC.exe de Inno Setup 6 en rutas comunes."; \
+            exit 1; \
+        fi; \
+    fi; \
+    "$ISCC_PATH" app/windows/installer.iss
+    @echo ""
+    @echo "═══════════════════════════════════════════════════════════"
+    @echo " ¡Instalador generado exitosamente!"
+    @echo " Archivo: build/windows/dist/DataVital-Installer.exe"
+    @echo "═══════════════════════════════════════════════════════════"
 
 # Empaquetar ejecutable para Android (A Implementar)
 build-android-apk:
     @echo "Comando para generar el APK (Próximamente)"
+

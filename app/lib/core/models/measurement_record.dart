@@ -95,6 +95,9 @@ class MeasurementRecord {
     List<Measurement>? bpm,
     List<Measurement>? air,
     String? clinicalNotes,
+    int? bpmMin,
+    int? bpmMax,
+    int? co2Max,
   }) {
     final bpmValues =
         bpm?.expand((m) => m.samples).map((s) => s.value).toList() ?? [];
@@ -118,16 +121,20 @@ class MeasurementRecord {
     int co2Min = airValues.isEmpty
         ? 0
         : airValues.reduce((a, b) => a < b ? a : b).round();
-    int co2Max = airValues.isEmpty
+    int co2MaxVal = airValues.isEmpty
         ? 0
         : airValues.reduce((a, b) => a > b ? a : b).round();
 
+    final thresholdBpmMin = bpmMin ?? 60;
+    final thresholdBpmMax = bpmMax ?? 100;
+    final thresholdCo2Max = co2Max ?? 1600;
+
     int alertas = 0;
     for (var val in bpmValues) {
-      if (val < 60 || val > 100) alertas++;
+      if (val < thresholdBpmMin || val > thresholdBpmMax) alertas++;
     }
     for (var val in airValues) {
-      if (val > 1000) alertas++;
+      if (val > thresholdCo2Max) alertas++;
     }
 
     final duracion = (session.endTime ?? DateTime.now())
@@ -144,7 +151,7 @@ class MeasurementRecord {
       maxHeartRate: fcMax,
       co2Level: co2Prom,
       minCo2: co2Min,
-      maxCo2: co2Max,
+      maxCo2: co2MaxVal,
       alertsTriggered: alertas,
       clinicalNotes: clinicalNotes ?? '',
     );

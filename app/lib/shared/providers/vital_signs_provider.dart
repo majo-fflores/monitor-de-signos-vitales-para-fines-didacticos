@@ -228,8 +228,13 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         _ecgBuffer.add(
           Sample(timestamp: ahora.toInt(), value: valEcg, alert: false),
         );
+        final alarmState = ref.read(alarmNotifierProvider);
         _airBuffer.add(
-          Sample(timestamp: ahora.toInt(), value: valCo2, alert: false),
+          Sample(
+            timestamp: ahora.toInt(),
+            value: valCo2,
+            alert: valCo2 > alarmState.thresholds.co2Max,
+          ),
         );
       }
 
@@ -240,11 +245,13 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         final co2 = 380 + _random.nextInt(40) - 20;
 
         if (_isBuffering) {
+          final alarmState = ref.read(alarmNotifierProvider);
           _bpmBuffer.add(
             Sample(
               timestamp: ahora.toInt(),
               value: fc.toDouble(),
-              alert: false,
+              alert: fc < alarmState.thresholds.bpmMin ||
+                  fc > alarmState.thresholds.bpmMax,
             ),
           );
         }
@@ -349,10 +356,24 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
       final punto = BiometricPoint(normalizedTime, valor);
 
       if (_isBuffering) {
+        bool isAlert = false;
+        if (pType == 'bpm') {
+          final alarmState = ref.read(alarmNotifierProvider);
+          isAlert = valor < alarmState.thresholds.bpmMin ||
+              valor > alarmState.thresholds.bpmMax;
+        } else if (pType == 'air' ||
+            pType == 'co2' ||
+            pType == 'mq' ||
+            pType == 'mq135' ||
+            pType == 'gas') {
+          final alarmState = ref.read(alarmNotifierProvider);
+          isAlert = valor > alarmState.thresholds.co2Max;
+        }
+
         final sample = Sample(
           timestamp: packet.timestamp,
           value: packet.value,
-          alert: packet.alert ?? false,
+          alert: isAlert,
         );
         if (pType == 'ecg') {
           _ecgBuffer.add(sample);

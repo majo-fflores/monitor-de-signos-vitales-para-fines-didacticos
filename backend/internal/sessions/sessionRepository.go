@@ -113,26 +113,14 @@ func countAlerts(bpmData []SensorMeasurement, airData []SensorMeasurement) int {
 	var alerts int
 	for _, m := range bpmData {
 		for _, sample := range m.Datos {
-			if sample.Alert != nil {
-				if *sample.Alert {
-					alerts++
-				}
-				continue
-			}
-			if sample.Value < 60 || sample.Value > 100 {
+			if sample.Alert != nil && *sample.Alert {
 				alerts++
 			}
 		}
 	}
 	for _, m := range airData {
 		for _, sample := range m.Datos {
-			if sample.Alert != nil {
-				if *sample.Alert {
-					alerts++
-				}
-				continue
-			}
-			if sample.Value > 1600 {
+			if sample.Alert != nil && *sample.Alert {
 				alerts++
 			}
 		}

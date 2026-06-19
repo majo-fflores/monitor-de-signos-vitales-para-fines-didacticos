@@ -72,12 +72,42 @@ class _UserSelectionViewState extends ConsumerState<UserSelectionView> {
   }
 
   void _createUser(String nombre, String email, int dni) async {
-    await ref
-        .read(usersNotifierProvider.notifier)
-        .createUser(name: nombre, email: email, dni: dni);
-    await _loadSessionCounts();
-    if (mounted) {
-      context.go('/');
+    try {
+      await ref
+          .read(usersNotifierProvider.notifier)
+          .createUser(name: nombre, email: email, dni: dni);
+      await _loadSessionCounts();
+      if (mounted) {
+        context.go('/');
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMsg = e.toString();
+        if (errorMsg.startsWith('Exception: ')) {
+          errorMsg = errorMsg.substring('Exception: '.length);
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    errorMsg,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
     }
   }
 
