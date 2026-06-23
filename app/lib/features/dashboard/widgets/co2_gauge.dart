@@ -143,8 +143,8 @@ class _PremiumGaugePainter extends CustomPainter {
       textPainter.paint(canvas, labelCenter);
     }
 
-    drawLabel('300', startAngle, const Offset(0.3, 0.5));
-    drawLabel('1500', endAngle, const Offset(0.7, 0.5));
+    drawLabel('${minValue.toInt()}', startAngle, const Offset(0.3, 0.5));
+    drawLabel('${maxValue.toInt()}', endAngle, const Offset(0.7, 0.5));
 
     // 5. Dibujar punto dinámico en el extremo del progreso (Indicator needle dot)
     if (pct > 0.0) {

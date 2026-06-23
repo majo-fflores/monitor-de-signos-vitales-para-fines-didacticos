@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +38,17 @@ _Co2ChartData _prepareCo2Data(List<BiometricPoint> data) {
     );
   }
 
+  // Encontrar el valor máximo de CO2 en la ventana de datos para usarlo como línea base dinámica.
+  // Como la señal de CO2 disminuye durante la espiración, la invertimos contra esta base.
+  double baseline = puntosValidos
+      .map((p) => p.y)
+      .fold(double.negativeInfinity, math.max);
+
+  // Asegurar que la línea base sea razonable si los valores son muy bajos o inválidos.
+  if (baseline < 300.0) {
+    baseline = 1200.0;
+  }
+
   final spots = <FlSpot>[];
   var minVal = double.infinity;
   var maxVal = double.negativeInfinity;
@@ -56,9 +69,9 @@ _Co2ChartData _prepareCo2Data(List<BiometricPoint> data) {
     }
     double avgY = sum / count;
 
-    // El valor directo: 1200 es la base, y al soplar baja a ~950.
-    // Lo invertimos para que el pico vaya hacia arriba (1250.0 - avgY)
-    final finalY = 1250.0 - avgY;
+    // El gráfico debe subir cuando el valor baja.
+    // Usamos el baseline dinámico calculado en lugar de un valor fijo.
+    final finalY = baseline - avgY;
 
     double pointTime = puntosValidos[i].x;
     double xMod = pointTime % 15000;

@@ -410,7 +410,7 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
             nuevosCo2.clear();
           }
           nuevosCo2.add(punto);
-          co2Nivel = packet.value.round().clamp(300, 1500);
+          co2Nivel = packet.value.round().clamp(300, 10000);
           isCo2Active = true;
           break;
       }
