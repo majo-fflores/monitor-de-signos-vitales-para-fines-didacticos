@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 
-import '../../shared/utils/export_path_helper.dart';
 import '../models/session.dart';
 import '../models/session_summary.dart';
 
@@ -168,8 +168,8 @@ class SessionApiService {
     }
   }
 
-  /// Exporta los datos de una sesión en CSV y devuelve la ruta del archivo guardado.
-  Future<String> exportSessionCsv(int sessionId) async {
+  /// Exporta los datos de una sesión en CSV y devuelve la ruta del archivo guardado (o null si el usuario canceló).
+  Future<String?> exportSessionCsv(int sessionId) async {
     try {
       final response = await client.get(
         Uri.parse('$baseUrl/sessions/$sessionId/export.csv'),
@@ -192,8 +192,18 @@ class SessionApiService {
         }
       }
 
-      final exportDir = ExportPathHelper.getExportDir('csv');
-      final file = File('${exportDir.path}${Platform.pathSeparator}$filename');
+      final selectedPath = await FilePicker.saveFile(
+        dialogTitle: 'Seleccione dónde guardar el archivo CSV',
+        fileName: filename,
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+
+      if (selectedPath == null) {
+        return null;
+      }
+
+      final file = File(selectedPath);
       await file.writeAsBytes(response.bodyBytes);
       return file.path;
     } catch (e) {

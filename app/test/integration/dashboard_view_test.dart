@@ -229,7 +229,7 @@ class FakeSessionApiService implements SessionApiService {
   }
 
   @override
-  Future<String> exportSessionCsv(int sessionId) async {
+  Future<String?> exportSessionCsv(int sessionId) async {
     return '';
   }
 }

@@ -250,7 +250,8 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
             Sample(
               timestamp: ahora.toInt(),
               value: fc.toDouble(),
-              alert: fc < alarmState.thresholds.bpmMin ||
+              alert:
+                  fc < alarmState.thresholds.bpmMin ||
                   fc > alarmState.thresholds.bpmMax,
             ),
           );
@@ -359,7 +360,8 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         bool isAlert = false;
         if (pType == 'bpm') {
           final alarmState = ref.read(alarmNotifierProvider);
-          isAlert = valor < alarmState.thresholds.bpmMin ||
+          isAlert =
+              valor < alarmState.thresholds.bpmMin ||
               valor > alarmState.thresholds.bpmMax;
         } else if (pType == 'air' ||
             pType == 'co2' ||

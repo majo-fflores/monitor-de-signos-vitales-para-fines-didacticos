@@ -7,7 +7,7 @@ part of 'vital_signs_provider.dart';
 // **************************************************************************
 
 String _$vitalSignsNotifierHash() =>
-    r'd9924ad740d37e286db37a009a451b3200caf8dc';
+    r'5534e23fb961b79d723c9d59b80134a2d8932a30';
 
 /// Notifier reactivo para signos vitales de alto rendimiento.
 ///

@@ -43,6 +43,7 @@ class SessionHistoryRow extends ConsumerWidget {
       final path = await ref
           .read(sessionApiServiceProvider)
           .exportSessionCsv(sessionId);
+      if (path == null) return; // Se canceló la selección de archivo
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

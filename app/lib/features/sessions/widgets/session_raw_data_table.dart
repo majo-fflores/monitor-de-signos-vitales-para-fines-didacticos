@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/models/measurement.dart';
-import '../../../shared/providers/session_provider.dart';
 import '../../../shared/providers/alarm_state.dart';
+import '../../../shared/providers/session_provider.dart';
 
 /// Widget que carga bajo demanda y muestra en tablas scrollables los datos crudos
 /// de BPM, ECG y AIR para una sesión en particular.

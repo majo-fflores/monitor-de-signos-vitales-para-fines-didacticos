@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/utils/export_path_helper.dart';
 import '../../../shared/utils/report_pdf_helper.dart';
 
 /// Vista para previsualizar, imprimir y guardar el reporte en PDF.
@@ -53,12 +53,20 @@ class PdfPreviewView extends StatelessWidget {
             onPressed: (context, build, pageFormat) async {
               try {
                 final bytes = await build(pageFormat);
-                final exportDir = ExportPathHelper.getExportDir('pdf');
                 final fileName =
                     'reporte_datavital_${data.patientName.replaceAll(' ', '_')}.pdf';
-                final file = File(
-                  '${exportDir.path}${Platform.pathSeparator}$fileName',
+                final selectedPath = await FilePicker.saveFile(
+                  dialogTitle: 'Seleccione dónde guardar el archivo PDF',
+                  fileName: fileName,
+                  type: FileType.custom,
+                  allowedExtensions: ['pdf'],
                 );
+
+                if (selectedPath == null) {
+                  return;
+                }
+
+                final file = File(selectedPath);
                 await file.writeAsBytes(bytes);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

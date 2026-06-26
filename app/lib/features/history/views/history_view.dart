@@ -83,6 +83,7 @@ class _HistoryViewState extends ConsumerState<HistoryView> {
         final path = await ref
             .read(sessionApiServiceProvider)
             .exportSessionCsv(sessionId);
+        if (path == null) return; // Se canceló la selección de archivo
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
