@@ -127,7 +127,7 @@ class MeasurementRecord {
 
     final thresholdBpmMin = bpmMin ?? 60;
     final thresholdBpmMax = bpmMax ?? 100;
-    final thresholdCo2Max = co2Max ?? 1600;
+    final thresholdCo2Max = co2Max ?? 3500;
 
     int alertas = 0;
     for (var val in bpmValues) {

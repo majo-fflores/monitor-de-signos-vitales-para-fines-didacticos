@@ -1,4 +1,4 @@
-set shell := ["C:\\Program Files\\Git\\bin\\sh.exe", "-cu"]
+# set shell := ["C:\\Program Files\\Git\\bin\\sh.exe", "-cu"]
 
 # Importar comandos del backend y frontend desde la carpeta just
 import 'just/backend.just'

@@ -21,7 +21,7 @@ class AlertThresholds {
   });
 
   factory AlertThresholds.defecto() {
-    return const AlertThresholds(bpmMin: 60, bpmMax: 100, co2Max: 1600);
+    return const AlertThresholds(bpmMin: 60, bpmMax: 100, co2Max: 3500);
   }
 
   AlertThresholds copiarCon({int? bpmMin, int? bpmMax, int? co2Max}) {
@@ -148,7 +148,7 @@ class AlarmNotifier extends _$AlarmNotifier {
       _prefs = await SharedPreferences.getInstance();
       final bpmMin = _prefs?.getInt('umbral_fc_min') ?? 60;
       final bpmMax = _prefs?.getInt('umbral_fc_max') ?? 100;
-      final co2Max = _prefs?.getInt('umbral_co2_max') ?? 1600;
+      final co2Max = _prefs?.getInt('umbral_co2_max') ?? 3500;
       final isEnabled = _prefs?.getBool('alarma_habilitada') ?? true;
       final isSoundEnabled =
           _prefs?.getBool('alarma_sonido_habilitado') ?? true;

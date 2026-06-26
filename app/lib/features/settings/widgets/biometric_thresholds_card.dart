@@ -66,7 +66,7 @@ class BiometricThresholdsCard extends ConsumerWidget {
             icon: Icons.air,
             accentColor: SensorColors.co2Yellow,
             min: 0.0,
-            max: 2000.0,
+            max: 4000.0,
             initialValue: thresholds.co2Max.toDouble(),
             onChanged: (val) {
               ref

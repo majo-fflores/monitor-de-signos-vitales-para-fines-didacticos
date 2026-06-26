@@ -16,7 +16,7 @@ void main() {
       final defaults = AlertThresholds.defecto();
       expect(defaults.bpmMin, equals(60));
       expect(defaults.bpmMax, equals(100));
-      expect(defaults.co2Max, equals(1600));
+      expect(defaults.co2Max, equals(3500));
     });
 
     test('initial state should be normal', () async {
@@ -76,7 +76,7 @@ void main() {
         async.elapse(const Duration(milliseconds: 50));
 
         final notifier = container.read(alarmNotifierProvider.notifier);
-        notifier.monitorValues(fc: 110, co2: 1700);
+        notifier.monitorValues(fc: 110, co2: 3700);
 
         final state = container.read(alarmNotifierProvider);
         expect(state.alarmActive, isTrue);
@@ -225,8 +225,8 @@ void main() {
 
           final notifier = container.read(alarmNotifierProvider.notifier);
 
-          // 1. Traspasar umbral superior de CO2 (co2Max = 1600) -> Debe activarse la alarma
-          notifier.monitorValues(fc: 75, co2: 1605);
+          // 1. Traspasar umbral superior de CO2 (co2Max = 3500) -> Debe activarse la alarma
+          notifier.monitorValues(fc: 75, co2: 3505);
           var state = container.read(alarmNotifierProvider);
           expect(state.alarmActive, isTrue);
           expect(
@@ -234,14 +234,14 @@ void main() {
             isTrue,
           );
 
-          // 2. Retornar levemente a un value normal pero dentro del margen de histéresis (ej: 1590 ppm)
+          // 2. Retornar levemente a un value normal pero dentro del margen de histéresis (ej: 3490 ppm)
           // -> Debe mantenerse activa
-          notifier.monitorValues(fc: 75, co2: 1590);
+          notifier.monitorValues(fc: 75, co2: 3490);
           state = container.read(alarmNotifierProvider);
           expect(state.alarmActive, isTrue);
 
-          // 3. Bajar por debajo del margen de histéresis (ej: 1575 ppm)
-          notifier.monitorValues(fc: 75, co2: 1575);
+          // 3. Bajar por debajo del margen de histéresis (ej: 3440 ppm)
+          notifier.monitorValues(fc: 75, co2: 3440);
           state = container.read(alarmNotifierProvider);
           expect(
             state.alarmActive,
