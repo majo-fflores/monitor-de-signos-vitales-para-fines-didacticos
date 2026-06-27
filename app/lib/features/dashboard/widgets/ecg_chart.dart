@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -108,13 +109,23 @@ _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
   currentSweep.sort((a, b) => a.x.compareTo(b.x));
   previousSweep.sort((a, b) => a.x.compareTo(b.x));
 
-  // Escala fija clínica de +/- 170 unidades para dar zoom y hacer la señal bien visible.
-  const double fixedRange = 170.0;
+  // Determinar la escala de forma semi-dinámica:
+  // Usamos una escala simétrica basada en el valor absoluto máximo en el conjunto de puntos,
+  // con un límite mínimo de 170.0 para evitar amplificar el ruido (efecto "grass")
+  // y un margen del 15% para que no toque los bordes.
+  double maxAbs = 0.0;
+  for (final p in puntosValidos) {
+    final absY = p.y.abs();
+    if (absY > maxAbs) {
+      maxAbs = absY;
+    }
+  }
+  final double fixedRange = math.max(170.0, maxAbs * 1.15);
 
   return _EcgChartData(
     currentSweep: currentSweep,
     previousSweep: previousSweep,
-    scale: const _EcgScale(minY: -fixedRange, maxY: fixedRange),
+    scale: _EcgScale(minY: -fixedRange, maxY: fixedRange),
   );
 }
 
