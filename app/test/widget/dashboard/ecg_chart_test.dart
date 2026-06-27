@@ -99,5 +99,80 @@ void main() {
         expect(barData.belowBarData.show, isFalse);
       },
     );
+
+    testWidgets(
+      'should split trace into two LineChartBarData when gap does not wrap',
+      (tester) async {
+        final points = <BiometricPoint>[];
+        // Puntos del barrido anterior que quedan adelante del cursor
+        points.add(const BiometricPoint(4400, 10.0));
+        points.add(const BiometricPoint(4500, 10.0));
+
+        // Puntos del barrido actual (de 5000 a 9000 ms, cursor en 4000)
+        for (int i = 0; i <= 40; i++) {
+          points.add(BiometricPoint(5000.0 + i * 100.0, 10.0));
+        }
+
+        final mockState = VitalSignsState.inicial().copiarCon(
+          ecgData: points,
+          isEcgActive: true,
+        );
+
+        await tester.pumpWidget(
+          createTestableWidget(
+            overrides: [
+              vitalSignsNotifierProvider.overrideWith(
+                () => MockVitalSignsNotifier(mockState),
+              ),
+            ],
+            child: const EcgChart(),
+          ),
+        );
+
+        final chart = tester.widget<LineChart>(find.byType(LineChart));
+        expect(chart.data.lineBarsData.length, equals(2));
+        expect(
+          chart.data.lineBarsData[0].spots.length,
+          equals(41),
+        ); // 0 to 4000
+        expect(
+          chart.data.lineBarsData[1].spots.length,
+          equals(2),
+        ); // 4400, 4500
+      },
+    );
+
+    testWidgets('should have only one LineChartBarData when gap wraps', (
+      tester,
+    ) async {
+      final points = <BiometricPoint>[];
+      for (int i = 0; i <= 49; i++) {
+        points.add(BiometricPoint(i * 100.0, 10.0));
+      }
+
+      final mockState = VitalSignsState.inicial().copiarCon(
+        ecgData: points,
+        isEcgActive: true,
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          overrides: [
+            vitalSignsNotifierProvider.overrideWith(
+              () => MockVitalSignsNotifier(mockState),
+            ),
+          ],
+          child: const EcgChart(),
+        ),
+      );
+
+      final chart = tester.widget<LineChart>(find.byType(LineChart));
+      expect(chart.data.lineBarsData.length, equals(1));
+      expect(
+        chart.data.lineBarsData[0].spots.length,
+        equals(48),
+      ); // [200, 4900]
+      expect(chart.data.lineBarsData[0].spots.first.x, equals(200.0));
+    });
   });
 }

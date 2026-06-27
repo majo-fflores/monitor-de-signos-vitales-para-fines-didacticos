@@ -13,17 +13,23 @@ class _EcgScale {
 }
 
 class _EcgChartData {
-  final List<FlSpot> spots;
+  final List<FlSpot> currentSweep;
+  final List<FlSpot> previousSweep;
   final _EcgScale scale;
 
-  const _EcgChartData({required this.spots, required this.scale});
+  const _EcgChartData({
+    required this.currentSweep,
+    required this.previousSweep,
+    required this.scale,
+  });
 }
 
 _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
   final puntosValidos = data.where((p) => p.y.isFinite).toList(growable: false);
   if (puntosValidos.isEmpty) {
     return const _EcgChartData(
-      spots: [],
+      currentSweep: [],
+      previousSweep: [],
       scale: _EcgScale(minY: -250, maxY: 250),
     );
   }
@@ -32,7 +38,9 @@ _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
 
   if (N <= 10) {
     // Para tests y listas cortas, aplicamos el filtrado con descarte del dato inicial si es cero.
-    final primerDatoAdc = puntosValidos.indexWhere((punto) => punto.y.abs() > 200);
+    final primerDatoAdc = puntosValidos.indexWhere(
+      (punto) => punto.y.abs() > 200,
+    );
     final datosGrafico = primerDatoAdc > 0
         ? puntosValidos.sublist(primerDatoAdc)
         : puntosValidos;
@@ -40,7 +48,11 @@ _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
     final yValues = datosGrafico.map((p) => p.y).toList();
     final int count = yValues.length;
     if (count == 0) {
-      return const _EcgChartData(spots: [], scale: _EcgScale(minY: -250, maxY: 250));
+      return const _EcgChartData(
+        currentSweep: [],
+        previousSweep: [],
+        scale: _EcgScale(minY: -250, maxY: 250),
+      );
     }
 
     const double alpha = 0.03;
@@ -56,23 +68,52 @@ _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
     spots.sort((a, b) => a.x.compareTo(b.x));
     const double fixedRange = 800.0;
     return _EcgChartData(
-      spots: spots,
+      currentSweep: spots,
+      previousSweep: const [],
       scale: const _EcgScale(minY: -fixedRange, maxY: fixedRange),
     );
   }
 
   // Si N > 10 y es señal ADC, los datos ya vienen pre-filtrados de forma causal desde el provider.
-  // Solo los mapeamos a FlSpots para evitar saltos o vibraciones de la línea histórica.
-  final spots = puntosValidos
-      .map((p) => FlSpot(p.x % 5000, p.y))
-      .toList();
-  spots.sort((a, b) => a.x.compareTo(b.x));
+  // Determinamos la posición del cursor de barrido y dividimos en dos trazos
+  // con un espacio de borrado de 300 ms directamente adelante de él.
+  final latestPoint = puntosValidos.last;
+  final double tLatest = latestPoint.x;
+  final double cursor = tLatest % 5000;
+  const double gapWidth = 300.0;
+  final double end = cursor + gapWidth;
+
+  final currentSweep = <FlSpot>[];
+  final previousSweep = <FlSpot>[];
+
+  if (end < 5000) {
+    for (final p in puntosValidos) {
+      final xWrapped = p.x % 5000;
+      if (xWrapped <= cursor) {
+        currentSweep.add(FlSpot(xWrapped, p.y));
+      } else if (xWrapped >= end) {
+        previousSweep.add(FlSpot(xWrapped, p.y));
+      }
+    }
+  } else {
+    final wrappedEnd = end - 5000;
+    for (final p in puntosValidos) {
+      final xWrapped = p.x % 5000;
+      if (xWrapped >= wrappedEnd && xWrapped <= cursor) {
+        currentSweep.add(FlSpot(xWrapped, p.y));
+      }
+    }
+  }
+
+  currentSweep.sort((a, b) => a.x.compareTo(b.x));
+  previousSweep.sort((a, b) => a.x.compareTo(b.x));
 
   // Escala fija clínica de +/- 170 unidades para dar zoom y hacer la señal bien visible.
   const double fixedRange = 170.0;
 
   return _EcgChartData(
-    spots: spots,
+    currentSweep: currentSweep,
+    previousSweep: previousSweep,
     scale: const _EcgScale(minY: -fixedRange, maxY: fixedRange),
   );
 }
@@ -153,15 +194,26 @@ class EcgChart extends ConsumerWidget {
                   titlesData: const FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
-                    LineChartBarData(
-                      spots: chartData.spots,
-                      isCurved: false,
-                      color: colorLinea,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
+                    if (chartData.currentSweep.isNotEmpty)
+                      LineChartBarData(
+                        spots: chartData.currentSweep,
+                        isCurved: false,
+                        color: colorLinea,
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                    if (chartData.previousSweep.isNotEmpty)
+                      LineChartBarData(
+                        spots: chartData.previousSweep,
+                        isCurved: false,
+                        color: colorLinea,
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
                   ],
                 ),
                 duration: Duration.zero,

@@ -85,7 +85,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
   Timer? _simulationTimer;
   int _simIndex = 0;
   bool _isActive = false;
-  int _lastEcgWindowIndex = 0;
   int _lastCo2WindowIndex = 0;
   final math.Random _random = math.Random();
 
@@ -133,7 +132,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
 
   /// Inicializa la ventana de datos con puntos vacíos.
   void _initializeWindow() {
-    _lastEcgWindowIndex = -1;
     _lastCo2WindowIndex = -1;
 
     state = state.copiarCon(ecgData: [], co2Data: []);
@@ -212,16 +210,13 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
       final nuevosEcg = List<BiometricPoint>.of(state.ecgData);
       final nuevosCo2 = List<BiometricPoint>.of(state.co2Data);
 
-      final currentPacketWindow = (ahora / 5000).floor();
-      if (currentPacketWindow > _lastEcgWindowIndex) {
-        _lastEcgWindowIndex = currentPacketWindow;
-        nuevosEcg.clear();
-      }
-
       double rawEcg = ecgTemplate[_simIndex % ecgTemplate.length];
       double valEcg = -10.0 + rawEcg * 90.0;
       nuevosEcg.add(BiometricPoint(ahora, valEcg));
-      if (nuevosEcg.length > 1000) nuevosEcg.removeAt(0);
+
+      final cutoff = ahora - 5000;
+      nuevosEcg.removeWhere((p) => p.x < cutoff);
+      if (nuevosEcg.length > 1200) nuevosEcg.removeAt(0);
 
       double base = 1150.0 + math.Random().nextDouble() * 100.0;
       double cycle = (ahora / 1000.0) % 4.0;
@@ -407,11 +402,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
 
       switch (pType) {
         case 'ecg':
-          final currentPacketWindow = (normalizedTime / 5000).floor();
-          if (currentPacketWindow > _lastEcgWindowIndex) {
-            _lastEcgWindowIndex = currentPacketWindow;
-            nuevosEcg.clear();
-          }
           final leadsOff = packet.leadsOff ?? false;
           isEcgLeadsOff = leadsOff;
           if (leadsOff) {
@@ -441,18 +431,23 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
               // 3. Filtro Pasa-Bajos: Promedio móvil causal de 3 muestras
               _ecgHistory.add(centered);
               if (_ecgHistory.length > 3) _ecgHistory.removeAt(0);
-              double ma3Val = _ecgHistory.reduce((a, b) => a + b) / _ecgHistory.length;
+              double ma3Val =
+                  _ecgHistory.reduce((a, b) => a + b) / _ecgHistory.length;
 
               // 4. IIR EMA (alpha = 0.55)
               const double lpAlpha = 0.55;
-              double filtered = lpAlpha * ma3Val + (1.0 - lpAlpha) * _lastEcgFiltered;
+              double filtered =
+                  lpAlpha * ma3Val + (1.0 - lpAlpha) * _lastEcgFiltered;
               _lastEcgFiltered = filtered;
 
               final puntoFiltrado = BiometricPoint(normalizedTime, filtered);
               nuevosEcg.add(puntoFiltrado);
             }
+
+            final cutoff = normalizedTime - 5000;
+            nuevosEcg.removeWhere((p) => p.x < cutoff);
           }
-          if (nuevosEcg.length > 1000) nuevosEcg.removeAt(0);
+          if (nuevosEcg.length > 1200) nuevosEcg.removeAt(0);
           isEcgActive = true;
           break;
         case 'bpm':

@@ -72,6 +72,28 @@ void main() {
       expect(copied.isCo2Active, isFalse);
       expect(copied.isEcgActive, isTrue); // unchanged
     });
+
+    test(
+      'startSimulation should maintain rolling 5-second window for ECG points',
+      () {
+        fakeAsync((async) {
+          final container = createContainer();
+          final notifier = container.read(vitalSignsNotifierProvider.notifier);
+
+          notifier.startSimulation();
+
+          // 300 ticks * 20ms = 6000ms (6 seconds)
+          async.elapse(const Duration(milliseconds: 6000));
+
+          final state = container.read(vitalSignsNotifierProvider);
+
+          expect(state.ecgData, isNotEmpty);
+          // The earliest point should be at or after 1000ms because t_latest is ~6000ms
+          // and the window keeps only the last 5000ms.
+          expect(state.ecgData.first.x, greaterThanOrEqualTo(1000.0));
+        });
+      },
+    );
   });
 }
 
