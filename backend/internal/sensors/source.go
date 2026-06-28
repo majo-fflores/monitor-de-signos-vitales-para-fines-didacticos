@@ -71,22 +71,8 @@ func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
 			0.0, -0.05, 0.8, -0.2, 0.0, 0.05, 0.1, 0.15, 0.2, 0.15,
 			0.1, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
 		}
-		// Generar ECG en rango ADC (Amplitud de ~800, centrado en 2048)
-		val = 2048.0 + (ecgTemplate[s.ecgIndex%len(ecgTemplate)] * 800.0)
+		val = 0.3 + ecgTemplate[s.ecgIndex%len(ecgTemplate)]
 		s.ecgIndex++
-
-		// Simular deriva de la línea base (onda sinusoidal lenta +/- 400 unidades)
-		drift := 400.0 * math.Sin(s.airSimTime*0.5)
-		val += drift
-
-		// Simular un 2% de probabilidad de picos de ruido extremos (outliers)
-		if rand.Float64() < 0.02 {
-			if rand.Float64() < 0.5 {
-				val = 4095.0
-			} else {
-				val = 0.0
-			}
-		}
 	case "air":
 		s.airSimTime += 0.01 // advances 10ms per cycle
 		// Ruido real entre 1150 y 1250

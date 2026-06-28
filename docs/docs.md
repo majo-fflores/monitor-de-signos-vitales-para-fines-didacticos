@@ -149,16 +149,6 @@ Uso en la app:
 - Indicador de conexion de electrodos.
 - Posible calculo o visualizacion de frecuencia cardiaca si se implementa deteccion de picos.
 
-#### Procesamiento y filtrado de la señal de ECG
-
-La visualización del ECG en la aplicación incluye un pipeline de procesamiento digital en tiempo real para limpiar el ruido del sensor sin deformar la morfología de la señal:
-
-1. **Estimación y remoción de línea base mediante filtro pasa-altos IIR de 1er orden**: Se estima la deriva lenta (baseline wander) mediante un filtro pasa-altos con una constante alfa (hpAlpha = 0.044, equivalente a ~0.5 Hz a una frecuencia de muestreo de ~70 Hz). Restar este componente a cada muestra elimina el baseline wander de manera estable y causal, evitando los saltos o vibraciones verticales en el trazado que ocurren con filtros no causales.
-2. **Rechazo de outliers (limitador de picos extremos)**: Tras centrar la señal, se limita el valor a un rango de +/- 900 unidades. Esto previene que ruidos transitorios de alta tensión (provocados por el movimiento de cables o desprendimiento parcial de electrodos) disparen el trazado fuera de los límites visuales del gráfico, permitiendo además una recuperación inmediata de los filtros pasa-bajos.
-3. **Suavizado mediante promedio móvil de 3 muestras (MA3)**: La frecuencia de muestreo efectiva del hardware es de aproximadamente 70 Hz. A esta frecuencia, el ruido eléctrico de 50/60 Hz sufre aliasing y se alinea en torno a los 30 Hz. Un promedio móvil corto de 3 muestras reduce significativamente este hum de alta frecuencia sin amortiguar la onda R (el pico QRS), que posee una duración muy corta (1 a 2 muestras).
-4. **Filtro pasa-bajos recursivo EMA**: Se aplica un filtro de media móvil exponencial (IIR EMA) con un coeficiente alfa de 0.55 sobre el resultado del promedio móvil. Esta etapa alisa el trazado de la curva y mantiene la morfología de los latidos conservando cerca del 85% de la amplitud del pico QRS.
-5. **Escala y visualización con zoom fijo**: El gráfico se representa sobre una escala simétrica fija de +/- 170 unidades. Esto amplía la curva de ECG para que el complejo QRS real (de unos 100-120 unidades de amplitud) ocupe cerca del 70%-80% de la altura vertical de la rejilla, garantizando una excelente visibilidad y permitiendo que picos de ruido extremos se recorten limpiamente sin desconfigurar la escala.
-
 ### MAX30100 / HW-827 - Frecuencia cardiaca y SpO2
 
 El MAX30100 permite medir frecuencia cardiaca y saturacion de oxigeno usando fotopletismografia. El HW-827 puede utilizarse como sensor de pulso para frecuencia cardiaca.

@@ -29,7 +29,6 @@ class VitalSignsState {
   final int co2Level;
   final bool isEcgActive;
   final bool isCo2Active;
-  final bool isEcgLeadsOff;
 
   const VitalSignsState({
     required this.ecgData,
@@ -38,7 +37,6 @@ class VitalSignsState {
     required this.co2Level,
     required this.isEcgActive,
     required this.isCo2Active,
-    required this.isEcgLeadsOff,
   });
 
   factory VitalSignsState.inicial() {
@@ -49,7 +47,6 @@ class VitalSignsState {
       co2Level: 35,
       isEcgActive: true,
       isCo2Active: true,
-      isEcgLeadsOff: false,
     );
   }
 
@@ -60,7 +57,6 @@ class VitalSignsState {
     int? co2Level,
     bool? isEcgActive,
     bool? isCo2Active,
-    bool? isEcgLeadsOff,
   }) {
     return VitalSignsState(
       ecgData: ecgData ?? this.ecgData,
@@ -69,7 +65,6 @@ class VitalSignsState {
       co2Level: co2Level ?? this.co2Level,
       isEcgActive: isEcgActive ?? this.isEcgActive,
       isCo2Active: isCo2Active ?? this.isCo2Active,
-      isEcgLeadsOff: isEcgLeadsOff ?? this.isEcgLeadsOff,
     );
   }
 }
@@ -93,10 +88,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
   final List<Sample> _ecgBuffer = [];
   final List<Sample> _bpmBuffer = [];
   final List<Sample> _airBuffer = [];
-  double _ecgBaseline = 0.0;
-  double _lastEcgFiltered = 0.0;
-  bool _isFirstEcg = true;
-  final List<double> _ecgHistory = [];
 
   void startBuffering() {
     _ecgBuffer.clear();
@@ -153,10 +144,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
     _lastEcgTime = null;
     _lastCo2Time = null;
     _startTimeMs = null;
-    _ecgBaseline = 0.0;
-    _lastEcgFiltered = 0.0;
-    _isFirstEcg = true;
-    _ecgHistory.clear();
   }
 
   /// Inicia la simulación local de signos vitales para pruebas.
@@ -291,11 +278,7 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
     _isActive = true;
     _initializeWindow();
 
-    state = state.copiarCon(
-      isEcgActive: false,
-      isCo2Active: false,
-      isEcgLeadsOff: false,
-    );
+    state = state.copiarCon(isEcgActive: false, isCo2Active: false);
 
     _wsSubscription = stream.listen((packet) {
       if (!_isActive) return;
@@ -339,7 +322,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         state = state.copiarCon(
           isEcgActive: ecgOk,
           isCo2Active: co2Ok,
-          isEcgLeadsOff: ecgOk ? null : false,
           ecgData: ecgOk ? null : [],
           co2Data: co2Ok ? null : [],
           heartRate: ecgOk ? null : 0,
@@ -362,7 +344,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
     int co2Nivel = state.co2Level;
     bool isEcgActive = state.isEcgActive;
     bool isCo2Active = state.isCo2Active;
-    bool isEcgLeadsOff = state.isEcgLeadsOff;
 
     for (final packet in batch) {
       final pType = packet.type.trim().toLowerCase();
@@ -412,46 +393,7 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
             _lastEcgWindowIndex = currentPacketWindow;
             nuevosEcg.clear();
           }
-          final leadsOff = packet.leadsOff ?? false;
-          isEcgLeadsOff = leadsOff;
-          if (leadsOff) {
-            nuevosEcg.clear();
-            _isFirstEcg = true;
-            _ecgHistory.clear();
-          } else {
-            if (packet.value <= 3.0) {
-              nuevosEcg.add(punto);
-            } else {
-              double rawVal = valor;
-              if (_isFirstEcg) {
-                _ecgBaseline = rawVal;
-                _lastEcgFiltered = 0.0;
-                _isFirstEcg = false;
-                _ecgHistory.clear();
-              }
-
-              // 1. Filtro Pasa-Altos (0.5 Hz) para eliminar deriva de línea base (fs ~ 70 Hz)
-              const double hpAlpha = 0.044;
-              _ecgBaseline = hpAlpha * rawVal + (1.0 - hpAlpha) * _ecgBaseline;
-              double centered = rawVal - _ecgBaseline;
-
-              // 2. Rechazo de outliers (limitador de picos extremos)
-              centered = centered.clamp(-900.0, 900.0);
-
-              // 3. Filtro Pasa-Bajos: Promedio móvil causal de 3 muestras
-              _ecgHistory.add(centered);
-              if (_ecgHistory.length > 3) _ecgHistory.removeAt(0);
-              double ma3Val = _ecgHistory.reduce((a, b) => a + b) / _ecgHistory.length;
-
-              // 4. IIR EMA (alpha = 0.55)
-              const double lpAlpha = 0.55;
-              double filtered = lpAlpha * ma3Val + (1.0 - lpAlpha) * _lastEcgFiltered;
-              _lastEcgFiltered = filtered;
-
-              final puntoFiltrado = BiometricPoint(normalizedTime, filtered);
-              nuevosEcg.add(puntoFiltrado);
-            }
-          }
+          nuevosEcg.add(punto);
           if (nuevosEcg.length > 1000) nuevosEcg.removeAt(0);
           isEcgActive = true;
           break;
@@ -486,7 +428,6 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         co2Level: co2Nivel,
         isEcgActive: isEcgActive,
         isCo2Active: isCo2Active,
-        isEcgLeadsOff: isEcgLeadsOff,
       );
 
       ref

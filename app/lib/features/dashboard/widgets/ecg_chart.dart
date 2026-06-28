@@ -19,8 +19,59 @@ class _EcgChartData {
   const _EcgChartData({required this.spots, required this.scale});
 }
 
+double _median(List<double> valores) {
+  final ordenados = List<double>.of(valores)..sort();
+  final medio = ordenados.length ~/ 2;
+  if (ordenados.length.isOdd) return ordenados[medio];
+  return (ordenados[medio - 1] + ordenados[medio]) / 2;
+}
+
+_EcgScale _calculateNormalizedScale(List<FlSpot> spots) {
+  const escalaNormalizada = _EcgScale(minY: -30, maxY: 100);
+  if (spots.isEmpty) return escalaNormalizada;
+
+  final valores = spots
+      .map((spot) => spot.y)
+      .where((value) => value.isFinite)
+      .toList(growable: false);
+  if (valores.isEmpty) return escalaNormalizada;
+
+  var minVal = valores.first;
+  var maxVal = valores.first;
+  for (final value in valores.skip(1)) {
+    if (value < minVal) minVal = value;
+    if (value > maxVal) maxVal = value;
+  }
+
+  final minY = minVal < escalaNormalizada.minY
+      ? minVal - 8
+      : escalaNormalizada.minY;
+  final maxY = maxVal > escalaNormalizada.maxY
+      ? maxVal + 8
+      : escalaNormalizada.maxY;
+
+  return _EcgScale(minY: minY, maxY: maxY);
+}
+
 _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
-  final puntosValidos = data.where((p) => p.y.isFinite).toList(growable: false);
+  final primerDatoAdc = data.indexWhere((punto) => punto.y.abs() > 200);
+  final ecgCrudoAdc = primerDatoAdc >= 0;
+  final datosGrafico = ecgCrudoAdc && primerDatoAdc > 0
+      ? data.sublist(primerDatoAdc)
+      : data;
+
+  if (!ecgCrudoAdc) {
+    final spots = datosGrafico
+        .map((punto) => FlSpot(punto.x % 5000, punto.y))
+        .toList();
+    spots.sort((a, b) => a.x.compareTo(b.x));
+
+    return _EcgChartData(spots: spots, scale: _calculateNormalizedScale(spots));
+  }
+
+  final puntosValidos = datosGrafico
+      .where((p) => p.y.isFinite)
+      .toList(growable: false);
   if (puntosValidos.isEmpty) {
     return const _EcgChartData(
       spots: [],
@@ -28,52 +79,24 @@ _EcgChartData _prepareEcgData(List<BiometricPoint> data) {
     );
   }
 
-  final int N = puntosValidos.length;
+  final lineaBase = _median(
+    puntosValidos.map((p) => p.y).toList(growable: false),
+  );
+  final spots = <FlSpot>[];
+  var maxAbs = 0.0;
 
-  if (N <= 10) {
-    // Para tests y listas cortas, aplicamos el filtrado con descarte del dato inicial si es cero.
-    final primerDatoAdc = puntosValidos.indexWhere((punto) => punto.y.abs() > 200);
-    final datosGrafico = primerDatoAdc > 0
-        ? puntosValidos.sublist(primerDatoAdc)
-        : puntosValidos;
-
-    final yValues = datosGrafico.map((p) => p.y).toList();
-    final int count = yValues.length;
-    if (count == 0) {
-      return const _EcgChartData(spots: [], scale: _EcgScale(minY: -250, maxY: 250));
-    }
-
-    const double alpha = 0.03;
-    double baseline = yValues.first;
-    final spots = <FlSpot>[];
-    for (int i = 0; i < count; i++) {
-      final rawVal = yValues[i];
-      baseline = alpha * rawVal + (1.0 - alpha) * baseline;
-      final centrado = rawVal - baseline;
-      final centradoFiltrado = centrado.clamp(-1500.0, 1500.0);
-      spots.add(FlSpot(datosGrafico[i].x % 5000, centradoFiltrado));
-    }
-    spots.sort((a, b) => a.x.compareTo(b.x));
-    const double fixedRange = 800.0;
-    return _EcgChartData(
-      spots: spots,
-      scale: const _EcgScale(minY: -fixedRange, maxY: fixedRange),
-    );
+  for (final punto in puntosValidos) {
+    final centrado = punto.y - lineaBase;
+    if (centrado.abs() > maxAbs) maxAbs = centrado.abs();
+    spots.add(FlSpot(punto.x % 5000, centrado));
   }
 
-  // Si N > 10 y es señal ADC, los datos ya vienen pre-filtrados de forma causal desde el provider.
-  // Solo los mapeamos a FlSpots para evitar saltos o vibraciones de la línea histórica.
-  final spots = puntosValidos
-      .map((p) => FlSpot(p.x % 5000, p.y))
-      .toList();
+  final halfRange = (maxAbs * 1.15).clamp(250.0, 1800.0).toDouble();
   spots.sort((a, b) => a.x.compareTo(b.x));
-
-  // Escala fija clínica de +/- 170 unidades para dar zoom y hacer la señal bien visible.
-  const double fixedRange = 170.0;
 
   return _EcgChartData(
     spots: spots,
-    scale: const _EcgScale(minY: -fixedRange, maxY: fixedRange),
+    scale: _EcgScale(minY: -halfRange, maxY: halfRange),
   );
 }
 
@@ -88,9 +111,6 @@ class EcgChart extends ConsumerWidget {
     final ecgActive = ref.watch(
       vitalSignsNotifierProvider.select((s) => s.isEcgActive),
     );
-    final ecgLeadsOff = ref.watch(
-      vitalSignsNotifierProvider.select((s) => s.isEcgLeadsOff),
-    );
     final chartData = _prepareEcgData(data);
 
     final theme = Theme.of(context);
@@ -102,16 +122,12 @@ class EcgChart extends ConsumerWidget {
     final colorFondoGrafico = isDark
         ? ComponentColors.chartBodyDark
         : ComponentColors.chartBodyLight;
-    final colorLinea = isDark
-        ? SensorColors.spo2Blue
-        : ComponentColors.sensorSpo2Light;
-
     final colorRejilla = isDark
         ? ComponentColors.chartGridDark
         : ComponentColors.chartGridLight;
-
-    final colorRejillaMayor = colorRejilla;
-    final colorRejillaMenor = colorRejilla.withValues(alpha: 0.4);
+    final colorLinea = isDark
+        ? SensorColors.spo2Blue
+        : ComponentColors.sensorSpo2Light;
 
     final chartWidget = Container(
       width: double.infinity,
@@ -120,55 +136,45 @@ class EcgChart extends ConsumerWidget {
       child: Stack(
         children: [
           RepaintBoundary(
-            child: ClipRect(
-              child: LineChart(
-                LineChartData(
-                  minX: 0,
-                  maxX: 5000,
-                  minY: chartData.scale.minY,
-                  maxY: chartData.scale.maxY,
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: true,
-                    drawHorizontalLine: true,
-                    horizontalInterval: 50.0,
-                    verticalInterval: 50.0,
-                    getDrawingHorizontalLine: (value) {
-                      final isMajor = (value.round().abs() % 250) == 0;
-                      return FlLine(
-                        color: isMajor ? colorRejillaMayor : colorRejillaMenor,
-                        strokeWidth: isMajor ? 1.0 : 0.5,
-                        dashArray: isMajor ? null : const [2, 2],
-                      );
-                    },
-                    getDrawingVerticalLine: (value) {
-                      final isMajor = (value.round().abs() % 250) == 0;
-                      return FlLine(
-                        color: isMajor ? colorRejillaMayor : colorRejillaMenor,
-                        strokeWidth: isMajor ? 1.0 : 0.5,
-                        dashArray: isMajor ? null : const [2, 2],
-                      );
-                    },
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: 5000,
+                minY: chartData.scale.minY,
+                maxY: chartData.scale.maxY,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  drawHorizontalLine: true,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: colorRejilla,
+                    strokeWidth: 1,
+                    dashArray: const [4, 4],
                   ),
-                  titlesData: const FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: chartData.spots,
-                      isCurved: false,
-                      color: colorLinea,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
+                  getDrawingVerticalLine: (value) => FlLine(
+                    color: colorRejilla,
+                    strokeWidth: 1,
+                    dashArray: const [4, 4],
+                  ),
                 ),
-                duration: Duration.zero,
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: chartData.spots,
+                    isCurved: false,
+                    color: colorLinea,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
               ),
+              duration: Duration.zero,
             ),
           ),
-          if (!ecgActive || ecgLeadsOff)
+          if (!ecgActive)
             Positioned.fill(
               child: Container(
                 color: isDark
@@ -187,20 +193,18 @@ class EcgChart extends ConsumerWidget {
                         color: Colors.redAccent.withValues(alpha: 0.4),
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.warning_amber_rounded,
                           color: Colors.redAccent,
                           size: 16,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
-                          !ecgActive
-                              ? 'SENSOR DESCONECTADO'
-                              : 'ELECTRODOS DESCONECTADOS',
-                          style: const TextStyle(
+                          'SENSOR DESCONECTADO',
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.redAccent,

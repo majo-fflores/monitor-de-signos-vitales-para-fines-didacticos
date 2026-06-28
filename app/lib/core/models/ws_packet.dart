@@ -8,14 +8,12 @@ class WsPacket {
   final double value;
   final int timestamp;
   final bool? alert;
-  final bool? leadsOff;
 
   const WsPacket({
     required this.type,
     required this.value,
     required this.timestamp,
     this.alert,
-    this.leadsOff,
   });
 
   /// Factory constructor de mínima asignación para parsing rápido.
@@ -24,6 +22,5 @@ class WsPacket {
     value: (json['value'] as num).toDouble(),
     timestamp: (json['timestamp'] as num).toInt(),
     alert: json['alerta'] as bool?,
-    leadsOff: json['leads_off'] as bool?,
   );
 }
