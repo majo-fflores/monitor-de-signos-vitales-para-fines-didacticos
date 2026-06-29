@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
@@ -65,23 +64,11 @@ func main() {
 	air.ServiceInstance = air.NewAirService(database.DB)
 	sessions.ServiceInstance = sessions.NewSessionService(database.DB)
 
-	serialPort := os.Getenv("SERIAL_PORT")
-	if serialPort == "" {
-		if runtime.GOOS == "windows" {
-			serialPort = "COM3"
-		} else {
-			serialPort = "/dev/ttyUSB0"
-		}
-	}
-
-	source, err := sensors.NewSerialArduino(serialPort)
-	if err != nil {
-		log.Printf("Aviso: No se pudo abrir el puerto serial %s: %v. Usando Arduino simulado.", serialPort, err)
-		source = sensors.NewSimulatedArduino()
-	}
+	// Cargar origen de datos desde el Arduino con auto-conexión y auto-detección de puerto
+	// Se deshabilita y comenta la lógica de simulación para utilizar únicamente datos reales del Arduino.
+	source := sensors.NewAutoSerialArduino()
 	sensors.GlobalManager = sensors.NewManager(source)
 	go sensors.GlobalManager.StartBackgroundListening()
-	// ─────────────────────────────────────────────────────────────────
 
 	// Inicializar servidor Echo
 	e := echo.New()

@@ -298,6 +298,12 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
     final nivelCo2 = ref.watch(
       vitalSignsNotifierProvider.select((s) => s.co2Level),
     );
+    final isEcgActive = ref.watch(
+      vitalSignsNotifierProvider.select((s) => s.isEcgActive),
+    );
+    final isCo2Active = ref.watch(
+      vitalSignsNotifierProvider.select((s) => s.isCo2Active),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -305,14 +311,16 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
         final fcCard = VitalKpiCard(
           title: 'Frecuencia Cardíaca',
-          value: frecuenciaCardiaca == 0 ? '-' : '$frecuenciaCardiaca',
+          value: !isEcgActive || frecuenciaCardiaca == 0
+              ? '-'
+              : '$frecuenciaCardiaca',
           unit: 'LPM',
           accentColor: SensorColors.ecgGreen,
         );
 
         final co2Card = VitalKpiCard(
           title: 'Dióxido de Carbono',
-          value: nivelCo2 == 0 ? '-' : '$nivelCo2',
+          value: !isCo2Active || nivelCo2 == 0 ? '-' : '$nivelCo2',
           unit: 'ppm',
           accentColor: SensorColors.co2Yellow,
         );
@@ -399,6 +407,58 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               onStopRecording: _stopAndSave,
             ),
             const SizedBox(height: 24),
+
+            // Banner de Sensores Desconectados si ambos están inactivos
+            if (!isEcgActive && !isCo2Active) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.redAccent,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dispositivo Desconectado',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Por favor, conecte el dispositivo por USB para iniciar la lectura de los sensores.',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: isDark
+                                  ? DarkColors.mutedForeground
+                                  : LightColors.mutedForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Grid adaptativo
             Expanded(

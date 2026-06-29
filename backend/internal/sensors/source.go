@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
-	"math/rand"
+	"os"
 	"strings"
-	"time"
+	"sync"
 
 	"go.bug.st/serial"
+	"go.bug.st/serial/enumerator"
 )
 
 const baudRate = 115200
@@ -20,6 +20,7 @@ type DataSource interface {
 	Close() error
 }
 
+/*
 type SimulatedArduino struct {
 	types       []string
 	typeIndex   int
@@ -98,6 +99,173 @@ func (s *SimulatedArduino) ReadPacket() (ArduinoPacket, error) {
 
 func (s *SimulatedArduino) Close() error {
 	return nil
+}
+*/
+
+type AutoSerialArduino struct {
+	portName string
+	port     serial.Port
+	reader   *bufio.Reader
+	mu       sync.Mutex
+}
+
+func NewAutoSerialArduino() DataSource {
+	return &AutoSerialArduino{}
+}
+
+// ReadPacket intenta leer el siguiente paquete del Arduino.
+// Si no hay un puerto abierto, busca uno e intenta conectarse de forma dinámica.
+func (a *AutoSerialArduino) ReadPacket() (ArduinoPacket, error) {
+	a.mu.Lock()
+	if a.port == nil {
+		portName, err := findArduinoPort()
+		if err != nil {
+			a.mu.Unlock()
+			return ArduinoPacket{}, fmt.Errorf("no se detectó ningún Arduino: %w", err)
+		}
+
+		log.Printf("[AutoSerial] Arduino detectado en puerto: %s. Conectando...", portName)
+		mode := &serial.Mode{
+			BaudRate: baudRate,
+		}
+		port, err := serial.Open(portName, mode)
+		if err != nil {
+			a.mu.Unlock()
+			return ArduinoPacket{}, fmt.Errorf("error al abrir puerto %s: %w", portName, err)
+		}
+
+		a.portName = portName
+		a.port = port
+		a.reader = bufio.NewReader(port)
+	}
+	a.mu.Unlock()
+
+	for {
+		// Leer el siguiente objeto JSON completo del stream serial
+		jsonStr, err := a.readNextJSON()
+		if err != nil {
+			log.Printf("[AutoSerial] Error leyendo de puerto %s: %v. Cerrando conexión...", a.portName, err)
+			a.mu.Lock()
+			if a.port != nil {
+				a.port.Close()
+				a.port = nil
+				a.reader = nil
+			}
+			a.mu.Unlock()
+			return ArduinoPacket{}, err
+		}
+
+		// Parsear el JSON del Arduino
+		var raw RawArduinoData
+		if err := json.Unmarshal([]byte(jsonStr), &raw); err != nil {
+			log.Printf("[AutoSerial] JSON inválido (descartando): %v → %q", err, jsonStr)
+			continue
+		}
+
+		packet, ok := normalizeArduinoData(raw)
+		if !ok {
+			log.Printf("[AutoSerial] JSON de sensor inválido o no soportado (descartando): %q", jsonStr)
+			continue
+		}
+
+		log.Printf("[AutoSerial] Arduino → sensor=%s type=%s value=%.0f alerta=%s leads_off=%s",
+			raw.Sensor,
+			packet.Type,
+			packet.Value,
+			formatOptionalBool(packet.Alert),
+			formatOptionalBool(packet.LeadsOff),
+		)
+		return packet, nil
+	}
+}
+
+func (a *AutoSerialArduino) readNextJSON() (string, error) {
+	var buf []byte
+	depth := 0
+	inside := false
+
+	for {
+		a.mu.Lock()
+		rd := a.reader
+		a.mu.Unlock()
+		if rd == nil {
+			return "", fmt.Errorf("puerto serie desconectado")
+		}
+
+		b, err := rd.ReadByte()
+		if err != nil {
+			return "", fmt.Errorf("error leyendo byte: %w", err)
+		}
+
+		if b == '{' {
+			if !inside {
+				buf = buf[:0]
+				inside = true
+			}
+			depth++
+			buf = append(buf, b)
+		} else if inside {
+			buf = append(buf, b)
+			if b == '}' {
+				depth--
+				if depth == 0 {
+					return string(buf), nil
+				}
+			}
+		}
+	}
+}
+
+func (a *AutoSerialArduino) Close() error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.port != nil {
+		err := a.port.Close()
+		a.port = nil
+		a.reader = nil
+		return err
+	}
+	return nil
+}
+
+// findArduinoPort busca un puerto serie dinámicamente.
+func findArduinoPort() (string, error) {
+	// 1. Priorizar variable de entorno SERIAL_PORT si existe
+	if envPort := os.Getenv("SERIAL_PORT"); envPort != "" {
+		return envPort, nil
+	}
+
+	// 2. Usar enumerator para buscar puertos USB
+	ports, err := enumerator.GetDetailedPortsList()
+	if err == nil {
+		for _, p := range ports {
+			if p.IsUSB {
+				return p.Name, nil
+			}
+		}
+	}
+
+	// 3. Fallback: buscar nombres de puertos conocidos
+	names, err := serial.GetPortsList()
+	if err != nil {
+		return "", err
+	}
+
+	for _, name := range names {
+		nameLower := strings.ToLower(name)
+		if strings.HasPrefix(nameLower, "com") || 
+			strings.Contains(nameLower, "ttyusb") || 
+			strings.Contains(nameLower, "ttyacm") {
+			return name, nil
+		}
+	}
+
+	// Si hay puertos, probar el primero
+	if len(names) > 0 {
+		return names[0], nil
+	}
+
+	return "", fmt.Errorf("no se encontraron puertos serie")
 }
 
 type SerialArduino struct {

@@ -278,7 +278,12 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
     _isActive = true;
     _initializeWindow();
 
-    state = state.copiarCon(isEcgActive: false, isCo2Active: false);
+    state = state.copiarCon(
+      isEcgActive: false,
+      isCo2Active: false,
+      heartRate: 0,
+      co2Level: 0,
+    );
 
     _wsSubscription = stream.listen((packet) {
       if (!_isActive) return;

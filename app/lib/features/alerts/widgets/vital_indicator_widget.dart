@@ -149,11 +149,15 @@ class VitalIndicatorWidget extends ConsumerWidget {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          isOutOfRange ? 'CRÍTICO' : 'NORMAL',
+                          !isActive
+                              ? 'DESCONECTADO'
+                              : (isOutOfRange ? 'CRÍTICO' : 'NORMAL'),
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: isOutOfRange
-                                ? theme.colorScheme.error
-                                : SensorColors.statusConnected,
+                            color: !isActive
+                                ? Colors.grey
+                                : (isOutOfRange
+                                    ? theme.colorScheme.error
+                                    : SensorColors.statusConnected),
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.0,
                           ),
