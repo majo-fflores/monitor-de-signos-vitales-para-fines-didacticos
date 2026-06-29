@@ -70,15 +70,7 @@ class AppHeader extends ConsumerWidget {
                   const ArduinoStatus(),
                 ] else ...[
                   const SizedBox(width: 8),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: SensorColors
-                          .statusConnected, // Emerald green hex value
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+                  const ArduinoStatus(isCompact: true),
                 ],
               ],
             ),

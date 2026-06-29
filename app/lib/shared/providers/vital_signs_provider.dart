@@ -365,9 +365,9 @@ class VitalSignsNotifier extends _$VitalSignsNotifier {
         bool isAlert = false;
         if (pType == 'bpm') {
           final alarmState = ref.read(alarmNotifierProvider);
-          isAlert =
+          isAlert = valor > 0 && (
               valor < alarmState.thresholds.bpmMin ||
-              valor > alarmState.thresholds.bpmMax;
+              valor > alarmState.thresholds.bpmMax);
         } else if (pType == 'air' ||
             pType == 'co2' ||
             pType == 'mq' ||

@@ -3,6 +3,7 @@ import 'package:datavital_flutter/shared/providers/connection_provider.dart';
 import 'package:datavital_flutter/shared/providers/theme_provider.dart';
 import 'package:datavital_flutter/shared/providers/user_provider.dart';
 import 'package:datavital_flutter/shared/widgets/layout/app_header.dart';
+import 'package:datavital_flutter/shared/widgets/layout/arduino_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -118,6 +119,42 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(usersNotifier.changeUserCalled, isTrue);
+    });
+
+    testWidgets('should render status in compact mode on small screen', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final usersState = UsersState.inicial().copiarCon(isLoading: false);
+      final conState = BackendConnectionState.inicial();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          overrides: [
+            usersNotifierProvider.overrideWith(
+              () => MockUsersNotifier(usersState),
+            ),
+            connectionNotifierProvider.overrideWith(
+              () => MockConexionNotifier(conState),
+            ),
+          ],
+          child: const AppHeader(),
+        ),
+      );
+
+      // Verify that the text "Desconectado" is not rendered in compact mode
+      expect(find.text('Desconectado'), findsNothing);
+      // Verify that the ArduinoStatus widget exists and has compact mode enabled
+      final statusFinder = find.byType(ArduinoStatus);
+      expect(statusFinder, findsOneWidget);
+      final arduinoStatusWidget = tester.widget<ArduinoStatus>(statusFinder);
+      expect(arduinoStatusWidget.isCompact, isTrue);
     });
   });
 }
