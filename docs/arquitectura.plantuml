@@ -1,0 +1,127 @@
+@startuml
+title Arquitectura general - DataVital
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam wrapWidth 180
+skinparam maxMessageSize 120
+
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #475569
+  FontColor #0F172A
+}
+
+skinparam database {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+}
+
+skinparam node {
+  BackgroundColor #F1F5F9
+  BorderColor #334155
+}
+
+actor "Usuario" as user
+
+package "Módulo embebido" {
+  component "AD8232\nECG crudo" as ad8232
+  component "HW-827\nFrecuencia cardíaca" as hw827
+  component "MQ-135\nCO2 / calidad de aire" as mq135
+  component "OLED SSD1306\nVisualización local" as oled
+
+  node "ESP32\nFirmware Arduino" as esp32 {
+    component "Lectura de sensores" as sensor_read
+    component "Detección de electrodos" as leads
+    component "Generación JSON" as json_fw
+    component "Actualización OLED" as oled_update
+  }
+}
+
+package "Backend local" {
+  node "Go / Echo" as backend {
+    component "Lector serial" as serial_reader
+    component "Simulador de sensores" as simulator
+    component "Normalizador de muestras" as normalizer
+    component "WebSocket\n/ws/sensors" as websocket
+    component "API REST" as rest
+    component "Servicios de dominio\nusuarios, sesiones, mediciones" as services
+  }
+
+  database "SQLite\nusuarios, sesiones,\nmediciones y resúmenes" as sqlite
+}
+
+package "Aplicación de escritorio" {
+  node "Flutter" as flutter {
+    component "Router y selección\nde usuario" as router
+    component "Dashboard en tiempo real" as dashboard
+    component "Providers Riverpod" as providers
+    component "Grabación de sesión" as recorder
+    component "Historial y reportes" as history
+    component "Configuración de alarmas" as settings
+  }
+
+  component "PDF / CSV\nexportados" as exports
+  component "SharedPreferences\numbrales y preferencias" as prefs
+}
+
+ad8232 --> sensor_read : señal analógica\nGPIO36 + LO-/LO+
+hw827 --> sensor_read : pulso analógico\nGPIO34
+mq135 --> sensor_read : lectura analógica\nGPIO14
+sensor_read --> leads
+sensor_read --> json_fw
+leads --> json_fw
+json_fw --> oled_update
+oled_update --> oled
+
+json_fw --> serial_reader : JSON por USB serial\n115200 baudios
+simulator --> normalizer : muestras simuladas\nsi no hay puerto serial
+serial_reader --> normalizer : paquetes crudos
+normalizer --> websocket : muestras normalizadas
+normalizer --> services : datos recibidos
+services --> rest
+services --> sqlite : persistencia local
+
+websocket --> providers : stream en tiempo real
+rest --> recorder : crear/finalizar sesiones\nguardar mediciones
+rest --> history : consultar historiales\nresúmenes y CSV
+providers --> dashboard
+providers --> settings
+recorder --> services : bloques de muestras
+history --> exports
+settings --> prefs
+
+user --> router
+router --> dashboard
+user --> recorder
+user --> history
+user --> settings
+
+note right of esp32
+  El ESP32 concentra la adquisición:
+  lee sensores, detecta electrodos
+  desconectados, actualiza la OLED
+  y envía objetos JSON al backend.
+end note
+
+note right of backend
+  El backend desacopla hardware e interfaz.
+  Normaliza datos, publica WebSocket,
+  expone REST y guarda información
+  histórica en SQLite.
+end note
+
+note bottom of flutter
+  Flutter muestra datos en vivo,
+  permite grabar sesiones, revisar
+  historial, configurar alarmas
+  y generar reportes.
+end note
+
+@enduml
